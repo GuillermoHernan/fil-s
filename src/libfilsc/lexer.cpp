@@ -116,7 +116,7 @@ std::string LexToken::strValue()const
             case 'x':
                 copyWhile(buf, m_code + i + 1, isHexadecimal, 2);
 				if (buf[0] == 0)
-					errorAt(m_code + i, "'\\x' escape sequence shall be followed by at least one heaxadecimal digit");
+					errorAt(m_code + i, ETYPE_INVALID_HEX_ESCAPE_SEQ);
                 result.push_back((char) strtol(buf, 0, 16));
 				i += strlen(buf);
                 break;
@@ -203,11 +203,7 @@ LexToken LexToken::nextDispatch()const
 LexToken LexToken::match(int expected_tk)const
 {
     if (type() != expected_tk)
-    {
-        ostringstream errorString;
-        errorString << "Got '" << text() << "' expected " << tokenType2String(expected_tk);
-        return errorAt(m_code, "%s", errorString.str().c_str());
-	}
+		return errorAt(m_code, ETYPE_UNEXPECTED_TOKEN_2, text().c_str(), tokenType2String(expected_tk));
 	else
 		return next();
 }
@@ -221,13 +217,7 @@ LexToken LexToken::match(int expected_tk)const
 LexToken LexToken::match(int expected_tk, const char* expected_text)const
 {
 	if (type() != expected_tk || text() != expected_text)
-	{
-		ostringstream errorString;
-		errorString << "Got '" << text() << "' expected '" << expected_text
-			<< "'(" << tokenType2String(expected_tk) << ")";
-
-		return errorAt(m_code, "%s", errorString.str().c_str());
-	}
+		return errorAt(m_code, ETYPE_UNEXPECTED_TOKEN_2, text().c_str(), expected_text);
 	else
 		return next();
 
@@ -254,7 +244,7 @@ LexToken LexToken::parseComment(const char * const code)const
 			++end;
 
 		if (*end == 0)
-			errorAt(code, "Unclosed multi-line comment");
+			errorAt(code, ETYPE_UNCLOSED_COMMENT);
 		else
 			end += 2;
 	}
@@ -340,9 +330,9 @@ LexToken LexToken::parseString(const char * code)const
         if (c == '\\' && end[1] != 0)
             ++end;
         else if (c == '\n' || c == '\r')
-            errorAt(end, "New line in string constant");
+            errorAt(end, ETYPE_NEWLINE_IN_STRING);
         else if (c == 0)
-            errorAt(end, "End of file in string constant");
+            errorAt(end, ETYPE_EOF_IN_STRING);
     }
 
     return buildNextToken(LEX_STR, code, (end - code) + 1);
@@ -418,12 +408,21 @@ LexToken LexToken::parseOperator(const char * code)const
  * @param msgFormat 'printf-like' format string
  * @param ...       Optional message parameters
  */
-LexToken LexToken::errorAt(const char* code, const char* msgFormat, ...)const
+/// <summary>
+/// Generates an error message located at the given position
+/// </summary>
+/// <param name="code">Pointer to the code location where the error occurs. 
+///	It is used to calculate line and column for the error message
+/// </param>
+/// <param name="type">Error type</param>
+/// <param name="">Error parameters</param>
+/// <returns></returns>
+LexToken LexToken::errorAt(const char* code, ErrorTypes type, ...)const
 {
     va_list aptr;
 
-    va_start(aptr, msgFormat);
-    ::errorAt_v(calcPosition(code), msgFormat, aptr);
+    va_start(aptr, type);
+    ::errorAt_v(calcPosition(code), type, aptr);
     va_end(aptr);
 
     return *this;

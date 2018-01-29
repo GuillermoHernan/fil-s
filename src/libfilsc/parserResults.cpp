@@ -84,7 +84,7 @@ ExprResult ExprResult::require(TokenCheck checkFn)
         return r;
     }
     else
-        return getError("Unexpected token: '%s'", token.text().c_str());
+        return getError(ETYPE_UNEXPECTED_TOKEN_1, token.text().c_str());
 }
 
 /**
@@ -105,7 +105,9 @@ ExprResult ExprResult::require(int tokenType)
         return r;
     }
     else
-        return getError("Unexpected token: '%s'", token.text().c_str());
+        return getError(ETYPE_UNEXPECTED_TOKEN_2, 
+			token.text().c_str(), 
+			tokenType2String(tokenType).c_str());
 }
 
 /**
@@ -123,7 +125,7 @@ ExprResult ExprResult::requireId(const char* text)
 	if (r.ok() && token.text() == text)
 		return r;
 	else
-		return getError("Unexpected id. '%s' expected, '%s' found", text, token.text().c_str());
+		return getError(ETYPE_UNEXPECTED_TOKEN_2, token.text().c_str(), text);
 }
 
 /// <summary>
@@ -141,7 +143,7 @@ ExprResult ExprResult::requireOp(const char* text)
 	if (r.ok() && token.text() == text)
 		return r;
 	else
-		return getError("Unexpected id. '%s' expected, '%s' found", text, token.text().c_str());
+		return getError(ETYPE_UNEXPECTED_TOKEN_2, token.text().c_str(), text);
 }
 
 /**
@@ -160,23 +162,23 @@ ExprResult ExprResult::skip()
 }
 
 
-/**
- * Gets an error result located at the current token.
- * @param format
- * @param ...
- * @return 
- */
-ExprResult ExprResult::getError(const char* format, ...)
+/// <summary>
+/// Gets an error result located at the current token.
+/// </summary>
+/// <param name="type"></param>
+/// <param name=""></param>
+/// <returns></returns>
+ExprResult ExprResult::getError(ErrorTypes type, ...)
 {
     va_list args;
     char buffer[2048];
 
-    va_start(args, format);
-    vsprintf_s(buffer, format, args);
-    va_end(args);
+    va_start(args, type);
     
-    ExprResult result (token, CompileError(buffer, token.getPosition()));
+	ExprResult result(token, CompileError::create(token.getPosition(), type, args));
     result.m_initialToken = m_initialToken;
+
+	va_end(args);
 
     return result;
     

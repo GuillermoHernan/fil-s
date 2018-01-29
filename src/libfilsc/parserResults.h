@@ -51,7 +51,7 @@ public:
 	ExprResult requireSeparator(const char* separator, const char* ending);
 	ExprResult readId(std::string* name);
 	ExprResult skip();
-    ExprResult getError(const char* format, ...);
+    ExprResult getError(ErrorTypes type, ...);
 
     bool error()const
     {

@@ -5,6 +5,7 @@
 #pragma once
 
 #include "scriptPosition.h"
+#include "errorTypes.h"
 
 enum LEX_TYPES
 {
@@ -102,5 +103,5 @@ private:
     LexToken parseOperator(const char * code)const;
 
     ScriptPosition calcPosition(const char* code)const;
-    LexToken errorAt(const char* charPos, const char* msgFormat, ...)const;
+    LexToken errorAt(const char* charPos, ErrorTypes type, ...)const;
 };

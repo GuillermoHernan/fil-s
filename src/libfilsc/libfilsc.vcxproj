@@ -149,6 +149,7 @@
   <ItemGroup>
     <ClInclude Include="ast.h" />
     <ClInclude Include="compileError.h" />
+    <ClInclude Include="errorTypes.h" />
     <ClInclude Include="lexer.h" />
     <ClInclude Include="parser.h" />
     <ClInclude Include="parserResults.h" />

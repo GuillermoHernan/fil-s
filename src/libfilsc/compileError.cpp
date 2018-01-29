@@ -7,11 +7,20 @@
 
 using namespace std;
 
+const char * errorTypeTemplate(ErrorTypes type);
 
-static string generateErrorMessage(const ScriptPosition* pPos, const char* msgFormat, va_list args)
+/// <summary>
+/// Generates a textual error message from an error type and a list of parameters.
+/// </summary>
+/// <param name="pPos"></param>
+/// <param name="type"></param>
+/// <param name="args"></param>
+/// <returns></returns>
+static string generateErrorMessage(const ScriptPosition* pPos, ErrorTypes type, va_list args)
 {
     char buffer [2048];
     string message;
+	const char * msgFormat = errorTypeTemplate(type);
 
     if (pPos)
     {
@@ -25,28 +34,64 @@ static string generateErrorMessage(const ScriptPosition* pPos, const char* msgFo
     return message;
 }
 
-/**
- * Generates an error message located at the given position
- * @param code      Pointer to the code location where the error occurs. 
- * It is used to calculate line and column for the error message
- * @param msgFormat 'printf-like' format string
- * @param ...       Optional message parameters
- */
-void errorAt(const ScriptPosition& position, const char* msgFormat, ...)
+/// <summary>
+/// Creates an error message object located at the given position. 
+/// </summary>
+/// <param name="pos"></param>
+/// <param name="type"></param>
+/// <param name="args"></param>
+/// <returns></returns>
+CompileError CompileError::create(const ScriptPosition& pos, ErrorTypes type, va_list args)
+{
+	const string text = generateErrorMessage(&pos, type, args);
+
+	return CompileError(text, pos, type);
+}
+
+
+/// <summary>
+/// Generates an error message located at the given position
+/// </summary>
+/// <param name="position">Error position</param>
+/// <param name="type">Error type</param>
+/// <param name="">Optional message parameters. They depend on the type.</param>
+void errorAt(const ScriptPosition& position, ErrorTypes type, ...)
 {
     va_list aptr;
 
-    va_start(aptr, msgFormat);
-    const std::string message = generateErrorMessage(&position, msgFormat, aptr);
+    va_start(aptr, type);
+	errorAt_v(position, type, aptr);
     va_end(aptr);
-
-    throw CompileError(message, position);
 }
 
-void errorAt_v(const ScriptPosition& position, const char* msgFormat, va_list args)
+/// <summary>
+/// Generates an error message located at the given position. 
+/// </summary>
+/// <param name="position">Error position</param>
+/// <param name="type">Error type</param>
+/// <param name="args">Optional message parameters. They depend on the type.</param>
+void errorAt_v(const ScriptPosition& position, ErrorTypes type, va_list args)
 {
-    const std::string message = generateErrorMessage(&position, msgFormat, args);
-
-    throw CompileError(message, position);
+    throw CompileError::create(position, type, args);
 }
 
+/// <summary>
+/// Gets the message template for a given error type
+/// </summary>
+/// <param name="type"></param>
+/// <returns></returns>
+const char * errorTypeTemplate(ErrorTypes type)
+{
+	static const char* templates[] = {
+		/*ETYPE_OK*/					"Ok",
+		/*ETYPE_NOT_IMPLEMENTED_1*/		"%s is not yet implemented",
+		/*ETYPE_UNEXPECTED_TOKEN_1*/	"Unexpected token: '%s'",
+		/*ETYPE_UNEXPECTED_TOKEN_2*/	"Unexpected token: '%s'. '%s' was expected.",
+		/*ETYPE_INVALID_HEX_ESCAPE_SEQ*/"'\\x' escape sequence shall be followed by at least one hexadecimal digit",
+		/*ETYPE_UNCLOSED_COMMENT*/		"Unclosed multi-line comment",
+		/*ETYPE_NEWLINE_IN_STRING*/		"New line in string constant",
+		/*ETYPE_EOF_IN_STRING*/			"End of file in string constant"
+	};
+
+	return templates[type];
+}

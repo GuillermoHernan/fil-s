@@ -17,6 +17,7 @@
     <ClInclude Include="parserResults.h" />
     <ClInclude Include="refCountObj.h" />
     <ClInclude Include="ast.h" />
+    <ClInclude Include="errorTypes.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp" />

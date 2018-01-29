@@ -640,7 +640,7 @@ ExprResult parseSelect(LexToken token)
 	r = r.requireId("select").requireOp("(").then(parseExpression);
 
 	if (r.ok())
-		r = r.getError("'select' parsing not yet implemented");
+		r = r.getError(ETYPE_NOT_IMPLEMENTED_1, "'select' parsing");
 
 	return r.final();
 }
@@ -1058,7 +1058,7 @@ ExprResult parseLiteral(LexToken token)
 	if (value.notNull())
 		return ExprResult(token.next(), value);
 	else
-		return ExprResult(token).getError("Unexpected token: '%s'", token.text().c_str());
+		return ExprResult(token).getError(ETYPE_UNEXPECTED_TOKEN_2, token.text().c_str(), "literal");
 }
 
 
@@ -1407,7 +1407,7 @@ ExprResult parseFunctionExpr (LexToken token)
         return r.final();
 
 	//TODO: Implement function parsing.
-	return r.getError("Function parsing not implemented");
+	return r.getError(ETYPE_NOT_IMPLEMENTED_1, "Function parsing");
 
     ////unnamed functions are legal.
     //if (r.token.type() == LEX_ID)
@@ -1734,7 +1734,7 @@ ExprResult parseActorExpr (LexToken token)
         return r.final();
 
 	//TODO: implement actor parsing
-	return r.getError("Actor parsing not implemented");
+	return r.getError(ETYPE_NOT_IMPLEMENTED_1, "Actor parsing");
 
     //const string name = r.token.text();
     //
