@@ -1,0 +1,31 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="pch.h" />
+    <ClInclude Include="targetver.h" />
+    <ClInclude Include="lexer.h" />
+    <ClInclude Include="scriptPosition.h" />
+    <ClInclude Include="utils.h" />
+    <ClInclude Include="compileError.h" />
+    <ClInclude Include="parser.h" />
+    <ClInclude Include="parserResults.h" />
+    <ClInclude Include="refCountObj.h" />
+    <ClInclude Include="ast.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="pch.cpp" />
+    <ClCompile Include="lexer.cpp" />
+    <ClCompile Include="scriptPosition.cpp" />
+    <ClCompile Include="utils.cpp" />
+    <ClCompile Include="compileError.cpp" />
+    <ClCompile Include="parserResults.cpp" />
+    <ClCompile Include="parser.cpp" />
+    <ClCompile Include="ast.cpp" />
+  </ItemGroup>
+</Project>
