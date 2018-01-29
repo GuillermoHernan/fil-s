@@ -153,6 +153,7 @@
     <ClInclude Include="lexer.h" />
     <ClInclude Include="parser.h" />
     <ClInclude Include="parserResults.h" />
+    <ClInclude Include="parser_internal.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="refCountObj.h" />
     <ClInclude Include="scriptPosition.h" />
