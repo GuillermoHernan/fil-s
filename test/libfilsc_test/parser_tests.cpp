@@ -233,6 +233,7 @@ TEST(Parser, parseBlock)
 
 /// <summary>
 /// Tests 'parseDeclaration' function.
+/// Also tests 'parseTypeSpecifier' and 'parseTypeDescriptor' functions.
 /// </summary>
 TEST(Parser, parseDeclaration)
 {
@@ -245,6 +246,7 @@ TEST(Parser, parseDeclaration)
 	EXPECT_PARSE_OK(parseDeclaration_("typed:int"));
 	EXPECT_PARSE_OK(parseDeclaration_("initialized = a"));
 	EXPECT_PARSE_OK(parseDeclaration_("full:int = 3"));
+	EXPECT_PARSE_OK(parseDeclaration_("tuple1:(int, int, float)"));
 
 	EXPECT_PARSE_ERROR(parseDeclaration_("var full:int = a"));
 	EXPECT_PARSE_ERROR(parseDeclaration_("if = 3"));
