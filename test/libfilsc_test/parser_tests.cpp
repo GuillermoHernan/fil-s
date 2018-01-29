@@ -281,3 +281,26 @@ TEST(Parser, parseVarConst)
 	EXPECT_PARSE_ERROR(parseVar_("a: int = 7"));
 	EXPECT_PARSE_ERROR(parseConst_("a: int = 7"));
 }
+
+/// <summary>
+/// Tests 'parseTupleDef' and 'parseTupleDefItem' functions
+/// </summary>
+TEST(Parser, parseTupleDef)
+{
+	auto parseTupleDef_ = [](const char* code)
+	{
+		return checkAllParsed(code, parseTupleDef);
+	};
+
+	EXPECT_PARSE_OK(parseTupleDef_("(int, int, int)"));
+	EXPECT_PARSE_OK(parseTupleDef_("(float)"));
+	EXPECT_PARSE_OK(parseTupleDef_("()"));
+	EXPECT_PARSE_OK(parseTupleDef_("(a:int, b:float)"));
+	EXPECT_PARSE_OK(parseTupleDef_("(const a:int, b:float, var c:string)"));
+	EXPECT_PARSE_OK(parseTupleDef_("(int, int, (float, otherType))"));
+
+	EXPECT_PARSE_ERROR(parseTupleDef_("(1, 2, 3)"));
+	EXPECT_PARSE_ERROR(parseTupleDef_("(int, int"));
+	EXPECT_PARSE_ERROR(parseTupleDef_("u(int, int)"));
+	EXPECT_PARSE_ERROR(parseTupleDef_("(int, int; int"));
+}
