@@ -306,7 +306,6 @@ TEST(Parser, parseTupleDef)
 }
 
 
-
 /// <summary>
 /// Tests 'parseIf' function
 /// </summary>
@@ -329,4 +328,26 @@ TEST(Parser, parseIf)
 	EXPECT_PARSE_ERROR(parseIf_("if (a b else c"));
 	EXPECT_PARSE_ERROR(parseIf_("if (a) b c"));
 	EXPECT_PARSE_ERROR(parseIf_("if (a) b;; else c"));
+}
+
+
+/// <summary>
+/// Tests 'parseExpression' function
+/// </summary>
+TEST(Parser, parseExpression)
+{
+	auto parseExpression_ = [](const char* code)
+	{
+		return checkAllParsed(code, parseExpression);
+	};
+
+	EXPECT_PARSE_OK(parseExpression_("a*=b"));
+	EXPECT_PARSE_OK(parseExpression_("a+b"));
+	EXPECT_PARSE_OK(parseExpression_("-a"));
+	EXPECT_PARSE_OK(parseExpression_("a++"));
+	EXPECT_PARSE_OK(parseExpression_("(hello)"));
+	EXPECT_PARSE_OK(parseExpression_("if (a) b else c"));
+
+	EXPECT_PARSE_ERROR(parseExpression_("const a = 7"));
+	EXPECT_PARSE_ERROR(parseExpression_("var a = 7"));
 }
