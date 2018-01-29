@@ -11,15 +11,9 @@
 /// </summary>
 TEST(Parser, parseScript)
 {
-	const char* goodCode =
-		"function add (a:int, b:int){\n"
-		"  return a+b\n"
-		"}";
+	const char* goodCode = "function add (a:int, b:int) {a+b}\n";
 
-	const char* badCode =
-		"function add (a:int, b:int){\n"
-		"  returns a+b\n"
-		"}";
+	const char* badCode = "funcion add (a:int, b:int) {a+b}\n";
 
 	auto result = parseScript(goodCode);
 	EXPECT_STREQ("", result.errorDesc.what());

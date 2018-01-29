@@ -39,6 +39,30 @@ Ref<AstNode> astCreateDeclaration(LexToken token,
 	return result;
 }
 
+/// <summary>
+/// Creates a function definition AST node.
+/// </summary>
+/// <param name="pos"></param>
+/// <param name="name"></param>
+/// <param name="params"></param>
+/// <param name="returnType"></param>
+/// <param name="bodyExpr"></param>
+/// <returns></returns>
+Ref<AstNode> astCreateFunction(ScriptPosition pos,
+	const std::string& name,
+	Ref<AstNode> params,
+	Ref<AstNode> returnType,
+	Ref<AstNode> bodyExpr)
+{
+	auto result = refFromNew(new AstNamedBranch(AST_FUNCTION, pos, name));
+
+	result->addChild(params);
+	result->addChild(returnType);
+	result->addChild(bodyExpr);
+
+	return result;
+}
+
 
 Ref<AstNode> astCreateBlock(LexToken token)
 {
@@ -230,15 +254,15 @@ Ref<AstNode> astCreateActor(ScriptPosition pos, const std::string& name)
     return refFromNew(new AstNamedBranch(AST_ACTOR, pos, name));
 }
 
-Ref<AstFunction> astCreateInputMessage(ScriptPosition pos, const std::string& name)
-{
-    return refFromNew(new AstFunction(AST_INPUT, pos, name));
-}
-
-Ref<AstFunction> astCreateOutputMessage(ScriptPosition pos, const std::string& name)
-{
-    return refFromNew(new AstFunction(AST_OUTPUT, pos, name));
-}
+//Ref<AstFunction> astCreateInputMessage(ScriptPosition pos, const std::string& name)
+//{
+//    return refFromNew(new AstFunction(AST_INPUT, pos, name));
+//}
+//
+//Ref<AstFunction> astCreateOutputMessage(ScriptPosition pos, const std::string& name)
+//{
+//    return refFromNew(new AstFunction(AST_OUTPUT, pos, name));
+//}
 
 //Ref<AstNode> astCreateConnect(ScriptPosition pos,
 //                                 Ref<AstNode> lexpr, 

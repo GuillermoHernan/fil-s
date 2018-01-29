@@ -45,7 +45,7 @@ public:
     ExprResult then(ParseFunction parseFn);
     ExprResult then(ChainParseFunction parseFn);
     ExprResult require(TokenCheck checkFn);
-    ExprResult require(int tokenType);
+    ExprResult require(LEX_TYPES tokenType);
 	ExprResult requireId(const char* text);
 	ExprResult requireOp(const char* text);
 	ExprResult requireSeparator(const char* separator, const char* ending);
@@ -55,7 +55,7 @@ public:
 
     bool error()const
     {
-        return '\0' != *errorDesc.what();
+        return errorDesc.type() != ETYPE_OK;
     }
     
     bool ok()const

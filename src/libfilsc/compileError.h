@@ -28,6 +28,11 @@ public:
 		return m_position;
 	}
 
+	ErrorTypes	type()const
+	{
+		return m_type;
+	}
+
 private:
 	CompileError(const std::string& text, const ScriptPosition& pos, ErrorTypes type) :
 		logic_error(text), m_position(pos), m_type(type)

@@ -70,7 +70,7 @@ ExprResult parseIdentifier (LexToken token);
 //ExprResult parseNewExpr (LexToken token);
 ExprResult parseMemberExpr (LexToken token);
 ExprResult parsePrimaryExpr (LexToken token);
-ExprResult parseFunctionExpr (LexToken token);
+ExprResult parseFunctionDef (LexToken token);
 ExprResult parseArrayLiteral (LexToken token);
 ExprResult parseObjectLiteral (LexToken token);
 ExprResult parseCallArguments (LexToken token, Ref<AstNode> fnExpr);
@@ -243,7 +243,7 @@ bool oneOf (LexToken token, const int* ids)
 /// <param name="itemParseFn">Function to parse each item node</param>
 /// <param name="beginTok">Text of the begin token. Optional, use an empty string to
 /// not use a begin token.</param>
-/// <param name="endTok">Text of the end token.</param>
+/// <param name="endTok">Text of the end token. Mandatory</param>
 /// <param name="separator">Text of the separator token. Optional, use an empty string to
 /// not use a separator token.</param>
 /// <returns></returns>
@@ -267,6 +267,8 @@ ExprResult parseList(LexToken token, ExprResult::ParseFunction itemParseFn,
 		if (*separator && r.token.text() != endTok)
 			r = r.requireOp(separator);
 	}
+
+	r = r.requireOp(endTok);
 
 	if (r.ok())
 		r.result = result;
@@ -318,7 +320,7 @@ ExprResult parseScript(LexToken token)
 /// <returns></returns>
 ExprResult parseTopLevelItem(LexToken token)
 {
-	return parseConst(token).orElse(parseActorExpr).orElse(parseFunctionExpr);
+	return parseConst(token).orElse(parseActorExpr).orElse(parseFunctionDef);
 }
 
 
@@ -438,30 +440,38 @@ ExprResult parseTopLevelItem(LexToken token)
  * @param token
  * @return Code block object
  */
-//ExprResult parseBlock (LexToken token)
-//{
-//    //TODO: Better handling of ';'
-//    Ref<AstNode>    block = astCreateBlock(token);
-//    ExprResult      r(token);
-//    
-//    r = r.require('{');
-//    
-//    while (r.ok() && r.token.type() != '}')
-//    {
-//        //TODO: Migrate all parsing functions to 'ExprResult'
-//        ExprResult pr = parseStatement(r.token);
-//        
-//        block->addChild (pr.ast);
-//        r.token = pr.nextToken;
-//    }
-//    
-//    r = r.require('}');
-//    
-//    if (r.ok())
-//        r.result = block;
-//    
-//    return r.final();
-//}
+
+/// <summary>Parses a block expression.</summary>
+/// <remarks>
+/// A block expression is a list of expressions delimited by brackets {...},
+/// which yields the value of the last expression on the list.
+/// </remarks>
+/// <param name="token"></param>
+/// <returns></returns>
+ExprResult parseBlock (LexToken token)
+{
+    Ref<AstNode>    block = astCreateBlock(token);
+    ExprResult      r(token);
+    
+    r = r.requireOp("{");
+    
+    while (r.ok() && !r.token.isOperator("}"))
+    {
+		r = r.then(parseExpression);
+		block->addChild(r.result);
+
+		//Skip optional ';' separators.
+		while (r.ok() && r.token.isOperator(";"))
+			r = r.skip();
+    }
+    
+    r = r.requireOp("}");
+    
+    if (r.ok())
+        r.result = block;
+    
+    return r.final();
+}
 
 /**
  * Parses a 'var' declaration
@@ -594,7 +604,7 @@ ExprResult parseTupleDef(LexToken token)
 /// <returns></returns>
 ExprResult parseTupleDefItem(LexToken token)
 {
-	return parseTypeDescriptor(token).orElse(parseDeclaration);
+	return parseDeclaration(token).orElse(parseTypeDescriptor);
 }
 
 /// <summary>
@@ -1396,18 +1406,46 @@ ExprResult parseIdentifier (LexToken token)
  * @param token
  * @return 
  */
-ExprResult parseFunctionExpr (LexToken token)
+
+/// <summary>
+/// Parses a function definition
+/// </summary>
+/// <param name="token"></param>
+/// <returns></returns>
+ExprResult parseFunctionDef (LexToken token)
 {
     ScriptPosition  pos = token.getPosition();
     string          name;
     ExprResult      r(token);
 
-    r = r.requireId("function");
-    if (r.error())
-        return r.final();
+	r = r.requireId("function");
+	
+	//function name is optional, since unnamed functions are legal.
+	if (r.ok() && r.token.type() == LEX_ID)
+	{
+		name = r.token.text();
+		r = r.skip();
+	}
 
-	//TODO: Implement function parsing.
-	return r.getError(ETYPE_NOT_IMPLEMENTED_1, "Function parsing");
+	//Parameters tuple.
+	r = r.then(parseTupleDef);
+	auto params = r.result;
+
+	//return type (optional)
+	Ref<AstNode>	returnType;
+
+	if (r.ok() && r.token.isOperator(":"))
+	{
+		r = r.skip().then(parseIdentifier).orElse(parseTupleDef);
+		returnType = r.result;
+	}
+
+	r = r.then(parseExpression);
+
+	if (r.ok())
+		r.result = astCreateFunction(token.getPosition(), name, params, returnType, r.result);
+
+	return r.final();
 
     ////unnamed functions are legal.
     //if (r.token.type() == LEX_ID)
@@ -1439,7 +1477,8 @@ ExprResult parsePrimaryExpr(LexToken token)
 {
 	return parseIdentifier(token)
 		.orElse(parseLiteral)
-		.orElse(parseParenthesisExpr);
+		.orElse(parseParenthesisExpr)
+		.orElse(parseBlock);
 }
 
 
@@ -1575,7 +1614,7 @@ ExprResult parseMemberAccess (LexToken token, Ref<AstNode> objExpr)
 {
     ExprResult     r(token);
     
-    r = r.require('.').then(parseIdentifier);
+    r = r.requireOp(".").then(parseIdentifier);
     
     if (r.ok())
         r.result = astCreateMemberAccess(token.getPosition(), objExpr, r.result);

@@ -73,6 +73,12 @@ Ref<AstNode> astCreateDeclaration(LexToken token,
 	Ref<AstNode> typeDesc,
 	Ref<AstNode> initExpr);
 
+Ref<AstNode> astCreateFunction(ScriptPosition pos, 
+	const std::string& name, 
+	Ref<AstNode> params, 
+	Ref<AstNode> returnType, 
+	Ref<AstNode> bodyExpr);
+
 Ref<AstNode> astCreateBlock(LexToken token);
 Ref<AstNode> astCreateTuple(LexToken token);
 Ref<AstNode> astCreateIf (ScriptPosition pos,
@@ -262,57 +268,57 @@ protected:
     const std::string m_name;
 };
 
-/**
- * AST node for function definitions
- */
-class AstFunction : public AstNode
-{
-public:
-    static Ref<AstFunction> create(ScriptPosition position,
-                                   const std::string& name)
-    {
-        return refFromNew (new AstFunction(AST_FUNCTION, position, name));
-    }
-
-    void setCode(Ref<AstNode> code)
-    {
-        m_code = code;
-    }
-
-    Ref<AstNode> getCode()const
-    {
-        return m_code;
-    }
-    
-    virtual const std::string getName()const
-    {
-        return m_name;
-    }
-
-    virtual void addParam(const std::string& paramName)
-    {
-        m_params.push_back(paramName);
-    }
-
-    virtual const Params& getParams()const
-    {
-        return m_params;
-    }
-    
-    ////virtual ASValue toJS()const;
-
-    AstFunction(AstNodeTypes type, ScriptPosition position, const std::string& name) :
-    AstNode(type, position),
-    m_name(name)
-    {
-    }
-    
-protected:
-
-    const std::string   m_name;
-    Params              m_params;
-    Ref<AstNode>        m_code;
-};
+///**
+// * AST node for function definitions
+// */
+//class AstFunction : public AstNode
+//{
+//public:
+//    static Ref<AstFunction> create(ScriptPosition position,
+//                                   const std::string& name)
+//    {
+//        return refFromNew (new AstFunction(AST_FUNCTION, position, name));
+//    }
+//
+//    void setCode(Ref<AstNode> code)
+//    {
+//        m_code = code;
+//    }
+//
+//    Ref<AstNode> getCode()const
+//    {
+//        return m_code;
+//    }
+//    
+//    virtual const std::string getName()const
+//    {
+//        return m_name;
+//    }
+//
+//    virtual void addParam(const std::string& paramName)
+//    {
+//        m_params.push_back(paramName);
+//    }
+//
+//    virtual const Params& getParams()const
+//    {
+//        return m_params;
+//    }
+//    
+//    ////virtual ASValue toJS()const;
+//
+//    AstFunction(AstNodeTypes type, ScriptPosition position, const std::string& name) :
+//    AstNode(type, position),
+//    m_name(name)
+//    {
+//    }
+//    
+//protected:
+//
+//    const std::string   m_name;
+//    Params              m_params;
+//    Ref<AstNode>        m_code;
+//};
 
 /**
  * AST node for actor definitions

@@ -93,7 +93,7 @@ ExprResult ExprResult::require(TokenCheck checkFn)
  * @param tokenType     Token type
  * @return 
  */
-ExprResult ExprResult::require(int tokenType)
+ExprResult ExprResult::require(LEX_TYPES tokenType)
 {
     if (error())
         return *this;
@@ -171,7 +171,6 @@ ExprResult ExprResult::skip()
 ExprResult ExprResult::getError(ErrorTypes type, ...)
 {
     va_list args;
-    char buffer[2048];
 
     va_start(args, type);
     
