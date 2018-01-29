@@ -49,12 +49,12 @@ TEST(Parser, isAssignment)
 
 
 /// <summary>
-/// Tests 'isBinaryOp' function, which checks if an operator is an binary operator.
+/// Tests 'isBinaryOp' function, which checks if an operator is a binary operator.
 /// </summary>
 TEST(Parser, isBinaryOp)
 {
 	const char * binaryOps = ">>> >> << ** + - * / % & | && || ^ < > >= <= == != ";
-	const char * otherOps = "-= += ~ !";
+	const char * otherOps = "-= += ~ ! ++ --";
 
 	LexToken	tok(binaryOps);
 
@@ -65,5 +65,45 @@ TEST(Parser, isBinaryOp)
 
 	for (tok = tok.next(); !tok.eof(); tok = tok.next())
 		EXPECT_FALSE(isBinaryOp(tok));
+}
+
+
+/// <summary>
+/// Tests 'isPrefixOp' function, which checks if an operator is a prefix operator.
+/// </summary>
+TEST(Parser, isPrefixOp)
+{
+	const char * prefixOps = "! ~ + - ++ --";
+	const char * otherOps = ">>> >> << ** * / % & | && || ^ < > >= <= == != ";
+
+	LexToken	tok(prefixOps);
+
+	for (tok = tok.next(); !tok.eof(); tok = tok.next())
+		EXPECT_TRUE(isPrefixOp(tok));
+
+	tok = LexToken(otherOps);
+
+	for (tok = tok.next(); !tok.eof(); tok = tok.next())
+		EXPECT_FALSE(isPrefixOp(tok));
+}
+
+
+/// <summary>
+/// Tests 'isPostfixOp' function, which checks if an operator is a postfix operator.
+/// </summary>
+TEST(Parser, isPostfixOp)
+{
+	const char * postFixOps = "++ --";
+	const char * otherOps = "! | ~ >>> >> << ** * / % & | && || ^ < > >= <= == != ";
+
+	LexToken	tok(postFixOps);
+
+	for (tok = tok.next(); !tok.eof(); tok = tok.next())
+		EXPECT_TRUE(isPostfixOp(tok));
+
+	tok = LexToken(otherOps);
+
+	for (tok = tok.next(); !tok.eof(); tok = tok.next())
+		EXPECT_FALSE(isPostfixOp(tok));
 }
 
