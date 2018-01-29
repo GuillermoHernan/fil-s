@@ -813,9 +813,7 @@ ExprResult parseExpression (LexToken token)
 ExprResult parseTerm(LexToken token)
 {
 	return parseConditional(token)
-		.orElse(parseLeftExpr)
-		.orElse(parseParenthesisExpr)
-		.orElse(parseTuple);
+		.orElse(parseLeftExpr);
 }
 
 
@@ -1000,7 +998,7 @@ ExprResult parseParenthesisExpr(LexToken token)
 {
 	ExprResult r(token);
 
-	return r.requireOp("(").then(parseExpression).requireOp(")");
+	return r.requireOp("(").then(parseExpression).requireOp(")").final();
 }
 
 /// <summary>
@@ -1397,7 +1395,9 @@ ExprResult parsePrimaryExpr(LexToken token)
 	return parseIdentifier(token)
 		.orElse(parseLiteral)
 		.orElse(parseParenthesisExpr)
-		.orElse(parseBlock);
+		.orElse(parseTuple)
+		.orElse(parseBlock)
+		.final();
 }
 
 

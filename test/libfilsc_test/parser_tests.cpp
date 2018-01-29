@@ -351,3 +351,51 @@ TEST(Parser, parseExpression)
 	EXPECT_PARSE_ERROR(parseExpression_("const a = 7"));
 	EXPECT_PARSE_ERROR(parseExpression_("var a = 7"));
 }
+
+/// <summary>
+/// Tests 'parseTerm' function
+/// </summary>
+TEST(Parser, parseTerm)
+{
+	auto parseTerm_ = [](const char* code)
+	{
+		return checkAllParsed(code, parseTerm);
+	};
+
+	EXPECT_PARSE_OK(parseTerm_("a"));
+	EXPECT_PARSE_OK(parseTerm_("8"));
+	EXPECT_PARSE_OK(parseTerm_("\"test\""));
+	EXPECT_PARSE_OK(parseTerm_("a.b"));
+	EXPECT_PARSE_OK(parseTerm_("(1,2,3)"));
+	EXPECT_PARSE_OK(parseTerm_("(a-b)"));
+	EXPECT_PARSE_OK(parseTerm_("{a-b}"));
+	EXPECT_PARSE_OK(parseTerm_("if (a) b else c"));
+	EXPECT_PARSE_OK(parseTerm_("a++"));
+
+	EXPECT_PARSE_ERROR(parseTerm_("a=b"));
+	EXPECT_PARSE_ERROR(parseTerm_("a*=b"));
+	EXPECT_PARSE_ERROR(parseTerm_("a+b"));
+	EXPECT_PARSE_ERROR(parseTerm_("-a"));
+}
+
+/// <summary>
+/// Tests 'parseAssignment' function
+/// </summary>
+TEST(Parser, parseAssignment)
+{
+	auto parseAssignment_ = [](const char* code)
+	{
+		return checkAllParsed(code, parseAssignment);
+	};
+
+	EXPECT_PARSE_OK(parseAssignment_("a = b"));
+	EXPECT_PARSE_OK(parseAssignment_("x *= 9"));
+	EXPECT_PARSE_OK(parseAssignment_("r %= 9"));
+
+	EXPECT_PARSE_ERROR(parseAssignment_("r %= 9 c"));
+	EXPECT_PARSE_ERROR(parseAssignment_("x"));
+	EXPECT_PARSE_ERROR(parseAssignment_("x + y"));
+
+	auto result = parseAssignment_("a = b");
+	EXPECT_EQ(AST_ASSIGNMENT, result.result->getType());
+}
