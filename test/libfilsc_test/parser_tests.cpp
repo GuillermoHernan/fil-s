@@ -445,3 +445,45 @@ TEST(Parser, parseBinaryExpr)
 	EXPECT_EQ(ETYPE_INVALID_EXP_CHAIN, result.errorDesc.type());
 	EXPECT_EQ(7, result.errorDesc.position().column);
 }
+
+/// <summary>
+/// Tests for 'parsePrefixExpr' function
+/// </summary>
+TEST(Parser, parsePrefixExpr)
+{
+	auto parsePrefixExpr_ = [](const char* code)
+	{
+		return checkAllParsed(code, parsePrefixExpr);
+	};
+
+	EXPECT_PARSE_OK(parsePrefixExpr_("-1"));
+	EXPECT_PARSE_OK(parsePrefixExpr_("-a"));
+	EXPECT_PARSE_OK(parsePrefixExpr_("+u"));
+	EXPECT_PARSE_OK(parsePrefixExpr_("!a"));
+	EXPECT_PARSE_OK(parsePrefixExpr_("~r"));
+	EXPECT_PARSE_OK(parsePrefixExpr_("++i"));
+	EXPECT_PARSE_OK(parsePrefixExpr_("--j"));
+
+	EXPECT_PARSE_ERROR(parsePrefixExpr_("-~c"));
+	EXPECT_PARSE_ERROR(parsePrefixExpr_("r + 9"));
+	EXPECT_PARSE_ERROR(parsePrefixExpr_("i++"));
+}
+
+/// <summary>
+/// Tests for 'parsePostfixExpr' and 'parsePostfixOperator' functions
+/// </summary>
+TEST(Parser, parsePostfixExpr)
+{
+	auto parsePostfixExpr_ = [](const char* code)
+	{
+		return checkAllParsed(code, parsePostfixExpr);
+	};
+
+	EXPECT_PARSE_OK(parsePostfixExpr_("i++"));
+	EXPECT_PARSE_OK(parsePostfixExpr_("u--"));
+	EXPECT_PARSE_OK(parsePostfixExpr_("a.b"));
+	EXPECT_PARSE_OK(parsePostfixExpr_("a(3,n)"));
+
+	EXPECT_PARSE_ERROR(parsePostfixExpr_("--c"));
+	EXPECT_PARSE_ERROR(parsePostfixExpr_("c+4"));
+}
