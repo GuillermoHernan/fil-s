@@ -470,7 +470,7 @@ TEST(Parser, parsePrefixExpr)
 }
 
 /// <summary>
-/// Tests for 'parsePostfixExpr' and 'parsePostfixOperator' functions
+/// Tests for 'parsePostfixExpr', 'parsePostfixOperator' and 'parseMemberAccess' functions
 /// </summary>
 TEST(Parser, parsePostfixExpr)
 {
@@ -484,6 +484,7 @@ TEST(Parser, parsePostfixExpr)
 	EXPECT_PARSE_OK(parsePostfixExpr_("a.b"));
 	EXPECT_PARSE_OK(parsePostfixExpr_("a.b.c.d.e"));
 	EXPECT_PARSE_OK(parsePostfixExpr_("a(3,n)"));
+	EXPECT_PARSE_OK(parsePostfixExpr_("a.b(3).c.d(9,(7,a)).e"));
 
 	EXPECT_PARSE_ERROR(parsePostfixExpr_("--c"));
 	EXPECT_PARSE_ERROR(parsePostfixExpr_("i++ ++"));
