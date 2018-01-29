@@ -622,3 +622,23 @@ TEST(Parser, parseFunctionDef)
 
 	EXPECT_EQ(2, children[0]->children().size());
 }
+
+
+/// <summary>
+/// Tests for 'parsePrimaryExpr' function
+/// </summary>
+TEST(Parser, parsePrimaryExpr)
+{
+	auto parsePrimaryExpr_ = [](const char* code)
+	{
+		return checkAllParsed(code, parsePrimaryExpr);
+	};
+
+	EXPECT_PARSE_OK(parsePrimaryExpr_("0x33"));
+	EXPECT_PARSE_OK(parsePrimaryExpr_("test"));
+	EXPECT_PARSE_OK(parsePrimaryExpr_("(a+b)"));
+	EXPECT_PARSE_OK(parsePrimaryExpr_("{c=a+b; c*2;}"));
+	EXPECT_PARSE_OK(parsePrimaryExpr_("(1,2,3)"));
+
+	EXPECT_PARSE_ERROR(parsePrimaryExpr_("9+4"));
+}
