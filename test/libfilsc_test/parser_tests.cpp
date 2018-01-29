@@ -531,3 +531,24 @@ TEST(Parser, parseLiteral)
 	EXPECT_PARSE_ERROR(parseLiteral_("1 3"));
 	EXPECT_PARSE_ERROR(parseLiteral_("x"));
 }
+
+/// <summary>
+/// Tests for 'parseTuple' function
+/// </summary>
+TEST(Parser, parseTuple)
+{
+	auto parseTuple_ = [](const char* code)
+	{
+		return checkAllParsed(code, parseTuple);
+	};
+
+	EXPECT_PARSE_OK(parseTuple_("()"));
+	EXPECT_PARSE_OK(parseTuple_("(1)"));
+	EXPECT_PARSE_OK(parseTuple_("(1,2,a,c)"));
+	EXPECT_PARSE_OK(parseTuple_("(a, (b+c, fn(r)), 8.96)"));
+
+	EXPECT_PARSE_ERROR(parseTuple_("1,3"));
+	EXPECT_PARSE_ERROR(parseTuple_("(1,3"));
+	EXPECT_PARSE_ERROR(parseTuple_("a"));
+	EXPECT_PARSE_ERROR(parseTuple_("3"));
+}
