@@ -873,6 +873,9 @@ ExprResult parseBinaryExpr(LexToken token)
 			if (r.ok())
 				result = astCreateBinaryOp(opToken, result, r.result);
 		}
+
+		if (r.ok() && isBinaryOp(r.token))
+			r = r.getError(ETYPE_INVALID_EXP_CHAIN);
 	}
 
 	return r.final();

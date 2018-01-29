@@ -17,6 +17,7 @@ enum ErrorTypes
 	ETYPE_UNCLOSED_COMMENT,
 	ETYPE_NEWLINE_IN_STRING,
 	ETYPE_EOF_IN_STRING,
+	ETYPE_INVALID_EXP_CHAIN,
 
 	//Add new error types above this line.
 	//REMEMBER to add the description to 'errorTypeTemplate' function.

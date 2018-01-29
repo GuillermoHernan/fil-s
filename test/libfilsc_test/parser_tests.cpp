@@ -421,3 +421,27 @@ TEST(Parser, parseLeftExpr)
 	EXPECT_PARSE_ERROR(parseLeftExpr_("r = 9"));
 	EXPECT_PARSE_ERROR(parseLeftExpr_("3 + 3"));
 }
+
+/// <summary>
+/// Tests for 'parseBinaryExpr' function
+/// </summary>
+TEST(Parser, parseBinaryExpr)
+{
+	auto parseBinaryExpr_ = [](const char* code)
+	{
+		return checkAllParsed(code, parseBinaryExpr);
+	};
+
+	EXPECT_PARSE_OK(parseBinaryExpr_("a + 9"));
+	EXPECT_PARSE_OK(parseBinaryExpr_("a + 9 + 7"));
+	EXPECT_PARSE_OK(parseBinaryExpr_("a + b.c + 7"));
+	EXPECT_PARSE_OK(parseBinaryExpr_("a + 9 + (7-x)"));
+
+	EXPECT_PARSE_ERROR(parseBinaryExpr_("r = 9"));
+	EXPECT_PARSE_ERROR(parseBinaryExpr_("-n"));
+	EXPECT_PARSE_ERROR(parseBinaryExpr_("a + b - c"));
+
+	auto result = parseBinaryExpr_("a + b - c");
+	EXPECT_EQ(ETYPE_INVALID_EXP_CHAIN, result.errorDesc.type());
+	EXPECT_EQ(7, result.errorDesc.position().column);
+}
