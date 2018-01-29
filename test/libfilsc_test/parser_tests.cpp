@@ -552,3 +552,32 @@ TEST(Parser, parseTuple)
 	EXPECT_PARSE_ERROR(parseTuple_("a"));
 	EXPECT_PARSE_ERROR(parseTuple_("3"));
 }
+
+/// <summary>
+/// Tests for 'parseIdentifier' function
+/// </summary>
+TEST(Parser, parseIdentifier)
+{
+	auto parseIdentifier_ = [](const char* code)
+	{
+		return checkAllParsed(code, parseIdentifier);
+	};
+
+	EXPECT_PARSE_OK(parseIdentifier_("a"));
+	EXPECT_PARSE_OK(parseIdentifier_("Xe45"));
+	EXPECT_PARSE_OK(parseIdentifier_("CamelCase"));
+	EXPECT_PARSE_OK(parseIdentifier_("a2"));
+	EXPECT_PARSE_OK(parseIdentifier_("a'"));
+	EXPECT_PARSE_OK(parseIdentifier_("a''"));
+	EXPECT_PARSE_OK(parseIdentifier_("_a_"));
+
+	EXPECT_PARSE_ERROR(parseIdentifier_("1a"));
+	EXPECT_PARSE_ERROR(parseIdentifier_("for"));
+	EXPECT_PARSE_ERROR(parseIdentifier_("if"));
+	EXPECT_PARSE_ERROR(parseIdentifier_("else"));
+
+	auto r = parseIdentifier_("test1'");
+
+	EXPECT_EQ(AST_IDENTIFIER, r.result->getType());
+	EXPECT_STREQ("test1'", r.result->getName().c_str());
+}
