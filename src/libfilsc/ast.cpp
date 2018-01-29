@@ -356,7 +356,7 @@ Ref<AstLiteral> AstLiteral::create(LexToken token)
         assert(!"Invalid token for a literal");
     }
     
-	result->m_strValue = token.strValue();
+	result->m_strValue = token.text();
 	return result;
 }
 
