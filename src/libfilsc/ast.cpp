@@ -89,20 +89,6 @@ Ref<AstNode> astCreateIf (ScriptPosition pos,
     return result;
 }
 
-Ref<AstNode> astCreateConditional ( ScriptPosition pos, 
-                                    Ref<AstNode> condition,
-                                    Ref<AstNode> thenExpr,
-                                    Ref<AstNode> elseExpr)
-{    
-    auto result = refFromNew( new AstBranchNode(AST_CONDITIONAL, pos));
-    
-    result->addChild(condition);
-    result->addChild(thenExpr);
-    result->addChild(elseExpr);
-
-    return result;
-}
-
 Ref<AstNode> astCreateFor (ScriptPosition pos, 
                           Ref<AstNode> initSt,
                           Ref<AstNode> condition,

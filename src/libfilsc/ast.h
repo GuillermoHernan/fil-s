@@ -38,22 +38,15 @@ enum AstNodeTypes
 	,AST_BOOL
 	,AST_IDENTIFIER
     ,AST_ARRAY
-    ,AST_OBJECT
     ,AST_ARRAY_ACCESS
     ,AST_MEMBER_ACCESS
-    ,AST_CONDITIONAL
     ,AST_BINARYOP
     ,AST_PREFIXOP
     ,AST_POSTFIXOP
     ,AST_ACTOR
     ,AST_CONNECT
-    ,AST_INPUT
-    ,AST_OUTPUT
-    ,AST_CLASS
-    ,AST_EXTENDS
-    ,AST_EXPORT
-    ,AST_IMPORT
-    ,AST_TYPES_COUNT
+
+	,AST_TYPES_COUNT
 };
 
 class AstNode;
@@ -416,90 +409,6 @@ protected:
 
     const std::string   m_name;
 };
-
-/**
- * AST node for object literals.
- */
-class AstObject : public AstNode
-{
-public:
-    /**
-     * Object property structure
-     */
-    struct Property
-    {
-        std::string     name;
-        Ref<AstNode>    expr;
-        bool            isConst;
-    };
-    typedef std::vector<Property>   PropertyList;
-    
-    static Ref<AstObject> create(ScriptPosition pos)
-    {
-        return refFromNew (new AstObject(pos));
-    }
-    
-    void addProperty (const std::string name, Ref<AstNode> expr, bool isConst)
-    {
-        Property prop;
-        prop.name = name;
-        prop.expr = expr;
-        prop.isConst = isConst;
-        
-        m_properties.push_back(prop);
-    }
-    
-    const PropertyList & getProperties()const
-    {
-        return m_properties;
-    }
-    
-    //virtual ASValue toJS()const;
-
-protected:
-    AstObject(ScriptPosition pos) : AstNode(AST_OBJECT, pos)
-    {
-    }
-    
-    PropertyList m_properties;
-};
-
-
-/**
- * AST node for class definitions
- */
-class AstClassNode : public AstNamedBranch
-{
-public:
-    static Ref<AstClassNode> create(ScriptPosition position,
-                                   const std::string& name)
-    {
-        return refFromNew (new AstClassNode(position, name));
-    }
-
-    virtual void addParam(const std::string& paramName)
-    {
-        m_params.push_back(paramName);
-    }
-
-    virtual const Params& getParams()const
-    {
-        return m_params;
-    }
-    
-    Ref<AstNamedBranch> getExtendsNode()const;
-    
-    //virtual ASValue toJS()const;
-
-protected:
-    AstClassNode(ScriptPosition position, const std::string& name) :
-    AstNamedBranch(AST_CLASS, position, name)
-    {
-    }
-    
-    Params              m_params;
-};
-
 
 #endif	/* AST_H */
 
