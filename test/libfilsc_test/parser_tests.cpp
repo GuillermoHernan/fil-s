@@ -6,6 +6,31 @@
 #include "parser_internal.h"
 #include "compileError.h"
 
+#define EXPECT_PARSE_OK(x) EXPECT_TRUE(checkExprOk((x)))
+#define EXPECT_PARSE_ERROR(x) EXPECT_TRUE(checkExprError(x))
+
+/// <summary>
+/// Checks an expression result object, and passes the error message to 'Google test'
+/// if failed.
+/// </summary>
+/// <param name="res"></param>
+/// <returns></returns>
+::testing::AssertionResult checkExprOk(const ExprResult& res)
+{
+	if (res.ok())
+		return ::testing::AssertionSuccess();
+	else
+		return ::testing::AssertionFailure() << res.errorDesc.what();
+}
+
+::testing::AssertionResult checkExprError(const ExprResult& res)
+{
+	if (res.error())
+		return ::testing::AssertionSuccess();
+	else
+		return ::testing::AssertionFailure() << "Compilation error expected";
+}
+
 /// <summary>
 /// Tests 'parseScript' function.
 /// </summary>
@@ -107,3 +132,41 @@ TEST(Parser, isPostfixOp)
 		EXPECT_FALSE(isPostfixOp(tok));
 }
 
+/// <summary>
+/// Tests for 'parseList' function. This function is used to parse nodes which are build from 
+/// a list of other nodes.
+/// </summary>
+TEST(Parser, parseList)
+{
+	const char * fullList = "(1,2,3,4,5,6,7)";
+	const char * sepList = "1,2,3,4,5,6,7)";
+	const char * nosepList = "{1 2 3 4 5 6 7}";
+	const char * simpleList = "1 2 3 4 5 6 7)";
+
+	auto parseList_ = [](const char* code, const char* beginTok, const char* endTok, const char* separator)
+	{
+		LexToken	tok(code);
+		return parseList(tok.next(), parseLiteral, beginTok, endTok, separator);
+	};
+
+	EXPECT_PARSE_OK(parseList_(fullList, "(", ")", ","));
+	EXPECT_PARSE_ERROR(parseList_(fullList, "", ")", ","));
+	EXPECT_PARSE_ERROR(parseList_(fullList, "", ")", ""));
+	EXPECT_PARSE_ERROR(parseList_(fullList, "(", ")", ""));
+
+	EXPECT_PARSE_ERROR(parseList_(sepList, "(", ")", ","));
+	EXPECT_PARSE_OK(parseList_(sepList, "", ")", ","));
+	EXPECT_PARSE_ERROR(parseList_(sepList, "", ")", ""));
+	EXPECT_PARSE_ERROR(parseList_(sepList, "(", ")", ""));
+
+	EXPECT_PARSE_ERROR(parseList_(nosepList, "{", "}", ","));
+	EXPECT_PARSE_ERROR(parseList_(nosepList, "", "}", ","));
+	EXPECT_PARSE_ERROR(parseList_(nosepList, "", "}", ""));
+	EXPECT_PARSE_OK(parseList_(nosepList, "{", "}", ""));
+	EXPECT_PARSE_ERROR(parseList_(nosepList, "(", ")", ""));
+
+	EXPECT_PARSE_ERROR(parseList_(simpleList, "(", "#", ","));
+	EXPECT_PARSE_ERROR(parseList_(simpleList, "", ")", ","));
+	EXPECT_PARSE_OK(parseList_(simpleList, "", ")", ""));
+	EXPECT_PARSE_ERROR(parseList_(simpleList, "(", ")", ""));
+}
