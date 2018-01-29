@@ -482,8 +482,52 @@ TEST(Parser, parsePostfixExpr)
 	EXPECT_PARSE_OK(parsePostfixExpr_("i++"));
 	EXPECT_PARSE_OK(parsePostfixExpr_("u--"));
 	EXPECT_PARSE_OK(parsePostfixExpr_("a.b"));
+	EXPECT_PARSE_OK(parsePostfixExpr_("a.b.c.d.e"));
 	EXPECT_PARSE_OK(parsePostfixExpr_("a(3,n)"));
 
 	EXPECT_PARSE_ERROR(parsePostfixExpr_("--c"));
+	EXPECT_PARSE_ERROR(parsePostfixExpr_("i++ ++"));
 	EXPECT_PARSE_ERROR(parsePostfixExpr_("c+4"));
+}
+
+/// <summary>
+/// Tests for 'parseCallExpr' function
+/// </summary>
+TEST(Parser, parseCallExpr)
+{
+	auto parseCallExpr_ = [](const char* code)
+	{
+		//It does not call 'parseCallExpr' because it needs the previous expression
+		//(the expression which yields the function to be called)
+		return checkAllParsed(code, parsePostfixExpr);
+	};
+
+	EXPECT_PARSE_OK(parseCallExpr_("fn(b,c)"));
+	EXPECT_PARSE_OK(parseCallExpr_("fn(1)"));
+	EXPECT_PARSE_OK(parseCallExpr_("fn()"));
+	EXPECT_PARSE_OK(parseCallExpr_("obj.fn(1,2)"));
+	EXPECT_PARSE_OK(parseCallExpr_("obj.fn(1,2)(3)(4)"));
+
+	EXPECT_PARSE_ERROR(parseCallExpr_("fn 3"));
+	EXPECT_PARSE_ERROR(parseCallExpr_("fn (3"));
+	EXPECT_PARSE_ERROR(parseCallExpr_("fn 3)"));
+}
+
+/// <summary>
+/// Tests for 'parseLiteral' function
+/// </summary>
+TEST(Parser, parseLiteral)
+{
+	auto parseLiteral_ = [](const char* code)
+	{
+		return checkAllParsed(code, parseLiteral);
+	};
+
+	EXPECT_PARSE_OK(parseLiteral_("1"));
+	EXPECT_PARSE_OK(parseLiteral_("1000000"));
+	EXPECT_PARSE_OK(parseLiteral_("46.9"));
+	EXPECT_PARSE_OK(parseLiteral_("\"test\""));
+
+	EXPECT_PARSE_ERROR(parseLiteral_("1 3"));
+	EXPECT_PARSE_ERROR(parseLiteral_("x"));
 }

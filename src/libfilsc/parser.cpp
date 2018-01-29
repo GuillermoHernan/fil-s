@@ -907,6 +907,9 @@ ExprResult parsePostfixExpr (LexToken token)
 {
 	ExprResult	r = parsePrimaryExpr(token);
 
+	if (isPostfixOp(r.token))
+		return r.then(parsePostfixOperator).final();
+
 	while (r.ok())
 	{
 		string	opText = r.token.text();
@@ -915,8 +918,6 @@ ExprResult parsePostfixExpr (LexToken token)
 			r = r.then(parseMemberAccess);
 		else if (opText == "(")
 			r = r.then(parseCallExpr);
-		if (isPostfixOp(r.token))
-			r = r.then(parsePostfixOperator);
 		else
 			break;
 	}
