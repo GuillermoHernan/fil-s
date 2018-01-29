@@ -20,7 +20,7 @@ ExprResult parseTopLevelItem(LexToken token);
 //ExprResult parseBodyStatement(LexToken token);
 ExprResult parseBlock(LexToken token);
 ExprResult  parseDeclaration(LexToken token);
-ExprResult  parseAnyDeclaration(LexToken token);
+//ExprResult  parseAnyDeclaration(LexToken token);
 ExprResult  parseConst(LexToken token);
 ExprResult  parseVar(LexToken token);
 ExprResult  parseTypeSpecifier(LexToken token);

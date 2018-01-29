@@ -434,10 +434,10 @@ ExprResult parseDeclaration (LexToken token)
 /// </summary>
 /// <param name="token"></param>
 /// <returns></returns>
-ExprResult parseAnyDeclaration(LexToken token)
-{
-	return parseConst(token).orElse(parseVar).orElse(parseDeclaration);
-}
+//ExprResult parseAnyDeclaration(LexToken token)
+//{
+//	return parseConst(token).orElse(parseVar).orElse(parseDeclaration);
+//}
 
 /// <summary>
 /// Parses a constant definition expression
