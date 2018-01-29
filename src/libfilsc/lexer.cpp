@@ -418,6 +418,7 @@ bool LexToken::isReservedWord(const std::string& text)
 		reservedWords.insert("actor");
 		reservedWords.insert("break");
 		reservedWords.insert("const");
+		reservedWords.insert("else");
 		reservedWords.insert("for");
 		reservedWords.insert("function");
 		reservedWords.insert("if");

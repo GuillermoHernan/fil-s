@@ -304,3 +304,29 @@ TEST(Parser, parseTupleDef)
 	EXPECT_PARSE_ERROR(parseTupleDef_("u(int, int)"));
 	EXPECT_PARSE_ERROR(parseTupleDef_("(int, int; int"));
 }
+
+
+
+/// <summary>
+/// Tests 'parseIf' function
+/// </summary>
+TEST(Parser, parseIf)
+{
+	auto parseIf_ = [](const char* code)
+	{
+		return checkAllParsed(code, parseIf);
+	};
+
+	EXPECT_PARSE_OK(parseIf_("if (a) b"));
+	EXPECT_PARSE_OK(parseIf_("if (a) b;"));
+	EXPECT_PARSE_OK(parseIf_("if (a) b else c"));
+	EXPECT_PARSE_OK(parseIf_("if (a) b; else c"));
+	EXPECT_PARSE_OK(parseIf_("if (a) {b; c; d;} else x"));
+
+	EXPECT_PARSE_ERROR(parseIf_("isf (a) b"));
+	EXPECT_PARSE_ERROR(parseIf_("if a) b"));
+	EXPECT_PARSE_ERROR(parseIf_("if (a b"));
+	EXPECT_PARSE_ERROR(parseIf_("if (a b else c"));
+	EXPECT_PARSE_ERROR(parseIf_("if (a) b c"));
+	EXPECT_PARSE_ERROR(parseIf_("if (a) b;; else c"));
+}

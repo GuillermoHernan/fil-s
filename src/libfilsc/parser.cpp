@@ -537,12 +537,17 @@ ExprResult parseIf(LexToken token)
 	r = r.requireOp(")").then(parseExpression);
 
 	auto			thenExpr = r.result;
+
+	//A single semicolon may follow 'then' expression.
+	if (r.ok() && r.token.isOperator(";"))
+		r = r.skip();
+
 	Ref<AstNode>	elseExpr;
 
 	//Check for the presence of 'else'
 	if (r.ok() && r.token.text() == "else")
 	{
-		r = r.skip().then(parseExpression);
+		r = r.requireReserved("else").then(parseExpression);
 		thenExpr = r.result;
 	}
 
