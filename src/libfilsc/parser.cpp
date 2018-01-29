@@ -1367,26 +1367,6 @@ ExprResult parseFunctionDef (LexToken token)
 		r.result = astCreateFunction(token.getPosition(), name, params, returnType, r.result);
 
 	return r.final();
-
-    ////unnamed functions are legal.
-    //if (r.token.type() == LEX_ID)
-    //{
-    //    name = r.token.text();
-    //    r = r.skip();
-    //}
-    //
-    //Ref<AstFunction>    function = AstFunction::create (pos, name);
-    //r.result = function;
-    //
-    //r = r.then(parseArgumentList).then(parseBlock);
-
-    //if (r.ok())
-    //{
-    //    function->setCode (r.result);
-    //    r.result = function;
-    //}
-    //
-    //return r.final();
 }
 
 /// <summary>

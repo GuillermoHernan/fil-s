@@ -581,3 +581,44 @@ TEST(Parser, parseIdentifier)
 	EXPECT_EQ(AST_IDENTIFIER, r.result->getType());
 	EXPECT_STREQ("test1'", r.result->getName().c_str());
 }
+
+/// <summary>
+/// Tests for 'parseFunctionDef' function
+/// </summary>
+TEST(Parser, parseFunctionDef)
+{
+	auto parseFunctionDef_ = [](const char* code)
+	{
+		return checkAllParsed(code, parseFunctionDef);
+	};
+
+	EXPECT_PARSE_OK(parseFunctionDef_("function (x:int):int {x*2}"));
+	EXPECT_PARSE_OK(parseFunctionDef_("function (x:int):int x*2"));
+	EXPECT_PARSE_OK(parseFunctionDef_("function testFn(x:int):int {x*2}"));
+	EXPECT_PARSE_OK(parseFunctionDef_(
+		"function testFn(x:int)\n"
+		"{\n"
+		"  print(x);\n"
+		"}"
+	));
+	EXPECT_PARSE_OK(parseFunctionDef_(
+		"function testFn (a:float, b:float): float {(a + b) /2}"
+	));
+
+	EXPECT_PARSE_ERROR(parseFunctionDef_("(x:int):int {x*2}"));
+	EXPECT_PARSE_ERROR(parseFunctionDef_("function (x:int):int"));
+
+	auto parseR = parseFunctionDef_("function testFn (a:float, b:float): float {(a + b) /2}");
+	auto r = parseR.result;
+
+	EXPECT_EQ(AST_FUNCTION, r->getType());
+	EXPECT_STREQ("testFn", r->getName().c_str());
+	
+	auto& children = r->children();
+	ASSERT_EQ(3, children.size());
+	EXPECT_EQ(AST_TUPLE_DEF, children[0]->getType());
+	EXPECT_EQ(AST_IDENTIFIER, children[1]->getType());
+	EXPECT_EQ(AST_BLOCK, children[2]->getType());
+
+	EXPECT_EQ(2, children[0]->children().size());
+}
