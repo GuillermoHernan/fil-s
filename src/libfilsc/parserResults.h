@@ -48,6 +48,7 @@ public:
     ExprResult require(LEX_TYPES tokenType);
 	ExprResult requireId(const char* text);
 	ExprResult requireOp(const char* text);
+	ExprResult requireReserved(const char* text);
 	ExprResult requireSeparator(const char* separator, const char* ending);
 	ExprResult readId(std::string* name);
 	ExprResult skip();

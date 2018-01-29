@@ -170,3 +170,69 @@ TEST(Parser, parseList)
 	EXPECT_PARSE_OK(parseList_(simpleList, "", ")", ""));
 	EXPECT_PARSE_ERROR(parseList_(simpleList, "(", ")", ""));
 }
+
+/// <summary>
+/// Tests for 'parseBlock' function.
+/// </summary>
+/// <param name=""></param>
+/// <param name=""></param>
+/// <returns></returns>
+TEST(Parser, parseBlock)
+{
+	auto parseBlock_ = [](const char* code)
+	{
+		return parseBlock(LexToken(code).next());
+	};
+
+	const char * block1 =
+		"{\n"
+		"  const a = 7 + 6\n"
+		"  const b = 4 * 5\n"
+		"  b - a\n"
+		"}\n";
+
+	const char * withSemicolons =
+		"{\n"
+		"  const a = 7 + 6;\n"
+		"  const b = 4 * 5;;;\n"
+		"  b - a;\n"
+		"}\n";
+
+	const char * errorInExp = "{10 - 4 , 3}";
+	const char * notClosed = "{10 + 4 + 3";
+	const char * wrongCloseToken = "{10 + 4 + 3)";
+	const char * notBlock = "(10 + 4 + 3)";
+
+	EXPECT_PARSE_OK(parseBlock_(block1));
+	EXPECT_PARSE_OK(parseBlock_(withSemicolons));
+
+	EXPECT_PARSE_ERROR(parseBlock_(errorInExp));
+	EXPECT_PARSE_ERROR(parseBlock_("{%n}"));
+	EXPECT_PARSE_ERROR(parseBlock_(notClosed));
+	EXPECT_PARSE_ERROR(parseBlock_(wrongCloseToken));
+	EXPECT_PARSE_ERROR(parseBlock_(notBlock));
+}
+
+/// <summary>
+/// Tests 'parseDeclaration' function.
+/// </summary>
+TEST(Parser, parseDeclaration)
+{
+	auto parseDeclaration_ = [](const char* code)
+	{
+		auto r = parseDeclaration(LexToken(code).next());
+		if (r.ok() && !r.token.eof())
+			r = r.getError(ETYPE_UNEXPECTED_TOKEN_2, r.token.text().c_str(), "<EOF>");
+		return r;
+	};
+
+	EXPECT_PARSE_OK(parseDeclaration_("standAlone"));
+	EXPECT_PARSE_OK(parseDeclaration_("typed:int"));
+	EXPECT_PARSE_OK(parseDeclaration_("initialized = a"));
+	EXPECT_PARSE_OK(parseDeclaration_("full:int = 3"));
+
+	EXPECT_PARSE_ERROR(parseDeclaration_("var full:int = a"));
+	EXPECT_PARSE_ERROR(parseDeclaration_("if = 3"));
+	EXPECT_PARSE_ERROR(parseDeclaration_("const: int"));
+
+}

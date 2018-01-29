@@ -15,6 +15,7 @@ TEST(LexToken, tokenType2String)
 	EXPECT_STREQ("INITIAL",	tokenType2String(LEX_INITIAL).c_str());
 	EXPECT_STREQ("COMMENT", tokenType2String(LEX_COMMENT).c_str());
 	EXPECT_STREQ("ID",		tokenType2String(LEX_ID).c_str());
+	EXPECT_STREQ("RESERVED", tokenType2String(LEX_RESERVED).c_str());
 	EXPECT_STREQ("INT",		tokenType2String(LEX_INT).c_str());
 	EXPECT_STREQ("FLOAT",	tokenType2String(LEX_FLOAT).c_str());
 	EXPECT_STREQ("STRING",	tokenType2String(LEX_STR).c_str());
@@ -190,8 +191,8 @@ TEST(LexToken, parseID)
 
 	tok = tok.match(LEX_ID);
 	EXPECT_STREQ("if", tok.text().c_str());
-
-	tok = tok.match(LEX_ID);
+	
+	tok = tok.match(LEX_RESERVED);
 	EXPECT_STREQ("a'", tok.text().c_str());
 
 	tok = tok.match(LEX_ID);

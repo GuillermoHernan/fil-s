@@ -24,6 +24,7 @@ string tokenType2String(int token)
     case LEX_EOF: return "EOF";
 	case LEX_INITIAL: return "INITIAL";
 	case LEX_COMMENT: return "COMMENT";
+	case LEX_RESERVED: return "RESERVED";
 	case LEX_ID: return "ID";
 	case LEX_INT: return "INT";
     case LEX_FLOAT: return "FLOAT";
@@ -269,7 +270,9 @@ LexToken LexToken::parseId(const char * code)const
 	while (*end == '\'')
 		++end;
 
-    return buildNextToken(LEX_ID, code, end - code);
+	LEX_TYPES type = isReservedWord(string(code, end)) ? LEX_RESERVED : LEX_ID;
+
+    return buildNextToken(type, code, end - code);
 }
 
 /**
@@ -401,13 +404,33 @@ LexToken LexToken::parseOperator(const char * code)const
     return buildNextToken(LEX_OPERATOR, code, 1);
 }
 
-/**
- * Generates an error message located at the given position
- * @param code      Pointer to the code location where the error occurs. 
- * It is used to calculate line and column for the error message
- * @param msgFormat 'printf-like' format string
- * @param ...       Optional message parameters
- */
+/// <summary>
+/// Checks if a token is a reserved word.
+/// </summary>
+/// <param name="text"></param>
+/// <returns></returns>
+bool LexToken::isReservedWord(const std::string& text)
+{
+	static set<string>	reservedWords;
+
+	if (reservedWords.empty())
+	{
+		reservedWords.insert("actor");
+		reservedWords.insert("break");
+		reservedWords.insert("const");
+		reservedWords.insert("for");
+		reservedWords.insert("function");
+		reservedWords.insert("if");
+		reservedWords.insert("return");
+		reservedWords.insert("select");
+		reservedWords.insert("var");
+		reservedWords.insert("while");
+	}
+
+	return reservedWords.count(text) > 0;
+}
+
+
 /// <summary>
 /// Generates an error message located at the given position
 /// </summary>

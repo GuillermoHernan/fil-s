@@ -369,7 +369,7 @@ ExprResult parseBlock (LexToken token)
     
     while (r.ok() && !r.token.isOperator("}"))
     {
-		r = r.then(parseExpression);
+		r = r.then(parseExpression).orElse(parseVar).orElse(parseConst);
 		block->addChild(r.result);
 
 		//Skip optional ';' separators.
@@ -409,9 +409,11 @@ ExprResult parseDeclaration (LexToken token)
 		return r.final();
 
 	//Type descriptor is optional.
-	r = r.then(parseTypeSpecifier);
-	if (r.ok())
+	if (r.token.isOperator(":"))
+	{
+		r = r.then(parseTypeSpecifier);
 		typeDescriptor = r.result;
+	}
 
 	//Initialization is also optional.
 	if (r.token.isOperator("="))
@@ -446,7 +448,7 @@ ExprResult parseConst(LexToken token)
 {
 	ExprResult      r(token);
 
-	r = r.requireId("const").then(parseDeclaration);
+	r = r.requireReserved("const").then(parseDeclaration);
 
 	if (r.ok())
 		r.result->changeType(AST_CONST);
@@ -463,7 +465,7 @@ ExprResult parseVar(LexToken token)
 {
 	ExprResult      r(token);
 
-	r = r.requireId("var").then(parseDeclaration);
+	r = r.requireReserved("var").then(parseDeclaration);
 
 	if (r.ok())
 		r.result->changeType(AST_VAR);
@@ -528,7 +530,7 @@ ExprResult parseIf(LexToken token)
 {
 	ExprResult	r(token);
 
-	r = r.requireId("if").requireOp("(").then(parseExpression);
+	r = r.requireReserved("if").requireOp("(").then(parseExpression);
 
 	auto conditionExpr = r.result;
 
@@ -559,7 +561,7 @@ ExprResult parseSelect(LexToken token)
 {
 	ExprResult	r(token);
 
-	r = r.requireId("select").requireOp("(").then(parseExpression);
+	r = r.requireReserved("select").requireOp("(").then(parseExpression);
 
 	if (r.ok())
 		r = r.getError(ETYPE_NOT_IMPLEMENTED_1, "'select' parsing");
@@ -1330,7 +1332,7 @@ ExprResult parseFunctionDef (LexToken token)
     string          name;
     ExprResult      r(token);
 
-	r = r.requireId("function");
+	r = r.requireReserved("function");
 	
 	//function name is optional, since unnamed functions are legal.
 	if (r.ok() && r.token.type() == LEX_ID)
@@ -1680,7 +1682,7 @@ ExprResult parseActorExpr (LexToken token)
     ExprResult      r(token);
     Ref<AstActor>   actorNode;
 
-    r = r.requireId("actor");
+    r = r.requireReserved("actor");
     if (r.error())
         return r.final();
 

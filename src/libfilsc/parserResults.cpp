@@ -146,6 +146,24 @@ ExprResult ExprResult::requireOp(const char* text)
 		return getError(ETYPE_UNEXPECTED_TOKEN_2, token.text().c_str(), text);
 }
 
+/// <summary>
+/// Requires that the current token is the specified reserved word.
+/// </summary>
+/// <param name="text"></param>
+/// <returns></returns>
+ExprResult ExprResult::requireReserved(const char* text)
+{
+	if (error())
+		return *this;
+
+	ExprResult  r = require(LEX_RESERVED);
+
+	if (r.ok() && token.text() == text)
+		return r;
+	else
+		return getError(ETYPE_UNEXPECTED_TOKEN_2, token.text().c_str(), text);
+}
+
 /**
  * Skips next token. Forwards the previous result
  * @return 

@@ -14,6 +14,7 @@ enum LEX_TYPES
     LEX_COMMENT,
     
     LEX_ID = 256,
+	LEX_RESERVED,
     LEX_INT,
     LEX_FLOAT,
     LEX_STR,
@@ -101,6 +102,8 @@ private:
     LexToken parseNumber(const char * code)const;
     LexToken parseString(const char * code)const;
     LexToken parseOperator(const char * code)const;
+
+	static bool	isReservedWord(const std::string& text);
 
     ScriptPosition calcPosition(const char* code)const;
     LexToken errorAt(const char* charPos, ErrorTypes type, ...)const;
