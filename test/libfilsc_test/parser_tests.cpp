@@ -399,3 +399,25 @@ TEST(Parser, parseAssignment)
 	auto result = parseAssignment_("a = b");
 	EXPECT_EQ(AST_ASSIGNMENT, result.result->getType());
 }
+
+/// <summary>
+/// Tests for 'parseLeftExpr' function
+/// </summary>
+TEST(Parser, parseLeftExpr)
+{
+	auto parseLeftExpr_ = [](const char* code)
+	{
+		return checkAllParsed(code, parseLeftExpr);
+	};
+
+	EXPECT_PARSE_OK(parseLeftExpr_("a++"));
+	EXPECT_PARSE_OK(parseLeftExpr_("a.c"));
+	//EXPECT_PARSE_OK(parseLeftExpr_("a.c(1,2)"));
+	EXPECT_PARSE_OK(parseLeftExpr_("fn(7)"));
+	EXPECT_PARSE_OK(parseLeftExpr_("x"));
+	EXPECT_PARSE_OK(parseLeftExpr_("2"));
+	EXPECT_PARSE_OK(parseLeftExpr_("(x+6)"));
+
+	EXPECT_PARSE_ERROR(parseLeftExpr_("r = 9"));
+	EXPECT_PARSE_ERROR(parseLeftExpr_("3 + 3"));
+}
