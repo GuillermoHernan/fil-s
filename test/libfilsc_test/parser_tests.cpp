@@ -9,6 +9,8 @@
 #define EXPECT_PARSE_OK(x) EXPECT_TRUE(checkExprOk((x)))
 #define EXPECT_PARSE_ERROR(x) EXPECT_TRUE(checkExprError(x))
 
+typedef ExprResult::ParseFunction ParseFunction;
+
 /// <summary>
 /// Checks an expression result object, and passes the error message to 'Google test'
 /// if failed.
@@ -22,6 +24,22 @@
 	else
 		return ::testing::AssertionFailure() << res.errorDesc.what();
 }
+
+/// <summary>
+/// Checks that a parsing function consumes all input.
+/// </summary>
+/// <param name="code"></param>
+/// <param name="parseFn"></param>
+/// <returns></returns>
+ExprResult checkAllParsed (const char* code, ParseFunction parseFn)
+{
+	auto r = parseFn(LexToken(code).next());
+
+	if (r.ok() && !r.token.eof())
+		r = r.getError(ETYPE_UNEXPECTED_TOKEN_2, r.token.text().c_str(), "<EOF>");
+	return r;
+};
+
 
 ::testing::AssertionResult checkExprError(const ExprResult& res)
 {
@@ -220,10 +238,7 @@ TEST(Parser, parseDeclaration)
 {
 	auto parseDeclaration_ = [](const char* code)
 	{
-		auto r = parseDeclaration(LexToken(code).next());
-		if (r.ok() && !r.token.eof())
-			r = r.getError(ETYPE_UNEXPECTED_TOKEN_2, r.token.text().c_str(), "<EOF>");
-		return r;
+		return checkAllParsed(code, parseDeclaration);
 	};
 
 	EXPECT_PARSE_OK(parseDeclaration_("standAlone"));
@@ -235,4 +250,32 @@ TEST(Parser, parseDeclaration)
 	EXPECT_PARSE_ERROR(parseDeclaration_("if = 3"));
 	EXPECT_PARSE_ERROR(parseDeclaration_("const: int"));
 
+}
+
+/// <summary>
+/// Tests 'parseConst' and 'parseVar' functions.
+/// </summary>
+TEST(Parser, parseVarConst)
+{
+	auto parseVar_ = [](const char* code)
+	{
+		return checkAllParsed(code, parseVar);
+	};
+	auto parseConst_ = [](const char* code)
+	{
+		return checkAllParsed(code, parseConst);
+	};
+
+	EXPECT_PARSE_OK(parseVar_("var a"));
+	EXPECT_PARSE_OK(parseVar_("var a: int = 7"));
+	EXPECT_PARSE_OK(parseConst_("const a"));
+	EXPECT_PARSE_OK(parseConst_("const a: int = 7"));
+
+	EXPECT_PARSE_ERROR(parseConst_("var a"));
+	EXPECT_PARSE_ERROR(parseConst_("var a: int = 7"));
+	EXPECT_PARSE_ERROR(parseVar_("const a"));
+	EXPECT_PARSE_ERROR(parseVar_("const a: int = 7"));
+
+	EXPECT_PARSE_ERROR(parseVar_("a: int = 7"));
+	EXPECT_PARSE_ERROR(parseConst_("a: int = 7"));
 }
