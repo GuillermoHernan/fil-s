@@ -33,6 +33,9 @@ SemanticResult scopeCreationPass(Ref<AstNode> node, SemAnalysisState& state)
 /// <param name="currentScope"></param>
 void buildScope(Ref<AstNode> node, Ref<SymbolScope> currentScope)
 {
+	if (node.isNull())
+		return;
+
 	if (needsOwnScope(node))
 	{
 		auto newScope = SymbolScope::create(currentScope);

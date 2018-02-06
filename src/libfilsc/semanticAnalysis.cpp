@@ -91,12 +91,17 @@ SemanticResult semInOrderWalk(const PassFunctionSet& fnSet, SemAnalysisState& st
 	state.pushParent(node);
 	for (size_t i = 0; i < children.size(); ++i)
 	{
-		auto result = semInOrderWalk(fnSet, state, children[i]);
+		auto child = children[i];
 
-		if (!result.ok())
-			errors.insert(errors.end(), result.errors.begin(), result.errors.end());
-		else
-			node->setChild(i, result.ast);
+		if (child.notNull())
+		{
+			auto result = semInOrderWalk(fnSet, state, child);
+
+			if (!result.ok())
+				errors.insert(errors.end(), result.errors.begin(), result.errors.end());
+			else
+				node->setChild(i, result.ast);
+		}
 	}
 	state.popParent();
 
@@ -134,12 +139,17 @@ SemanticResult semPreOrderWalk(const PassFunctionSet& fnSet, SemAnalysisState& s
 	//Walk children after root
 	for (size_t i = 0; i < children.size(); ++i)
 	{
-		auto childResult = semPreOrderWalk(fnSet, state, children[i]);
+		auto child = children[i];
 
-		if (!childResult.ok())
-			errors.insert(errors.end(), childResult.errors.begin(), childResult.errors.end());
-		else
-			node->setChild(i, childResult.ast);
+		if (child.notNull())
+		{
+			auto childResult = semPreOrderWalk(fnSet, state, child);
+
+			if (!childResult.ok())
+				errors.insert(errors.end(), childResult.errors.begin(), childResult.errors.end());
+			else
+				node->setChild(i, childResult.ast);
+		}
 	}
 	state.popParent();
 
