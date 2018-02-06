@@ -37,6 +37,8 @@ public:
 		return errors.empty();
 	}
 
+	SemanticResult combineWith(const SemanticResult& r2)const;
+
 	Ref<AstNode>				ast;
 	std::vector<CompileError>	errors;
 };

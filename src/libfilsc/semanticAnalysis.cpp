@@ -249,3 +249,23 @@ SemanticResult PassFunctionSet::processNode(Ref<AstNode> node, SemAnalysisState&
 
 	return SemanticResult(node);
 }
+
+/// <summary>Combines two semantic results. </summary>
+/// <remarks>
+/// * If any of the two result contains errors, it yields a result which combines both error lists.
+/// * If both are ok, the resulting AST node is from result 'r2'
+/// </remarks>
+/// <param name="r2"></param>
+/// <returns></returns>
+SemanticResult SemanticResult::combineWith(const SemanticResult& r2)const
+{
+	if (!this->ok())
+	{
+		std::vector<CompileError>	newErrList = this->errors;
+
+		newErrList.insert(newErrList.end(), r2.errors.begin(), r2.errors.end());
+		return SemanticResult(newErrList);
+	}
+	else
+		return r2;
+}

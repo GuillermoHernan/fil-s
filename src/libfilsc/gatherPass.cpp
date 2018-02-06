@@ -14,22 +14,26 @@ using namespace std;
 /// <returns></returns>
 SemanticResult symbolGatherPass(Ref<AstNode> node, SemAnalysisState& state)
 {
-	static PassFunctionSet	functions;
+	static PassFunctionSet	symbolFunctions;
+	static PassFunctionSet	paramsFunctions;
 
-	if (functions.empty())
+	if (symbolFunctions.empty())
 	{
-		functions.add(AST_FUNCTION, gatherSymbol);
-		functions.add(AST_DECLARATION, gatherSymbol);
-		functions.add(AST_CONST, gatherSymbol);
-		functions.add(AST_VAR, gatherSymbol);
-		functions.add(AST_TYPEDEF, gatherSymbol);
-		functions.add(AST_ACTOR, gatherSymbol);
+		symbolFunctions.add(AST_FUNCTION, gatherSymbol);
+		symbolFunctions.add(AST_DECLARATION, gatherSymbol);
+		symbolFunctions.add(AST_CONST, gatherSymbol);
+		symbolFunctions.add(AST_VAR, gatherSymbol);
+		symbolFunctions.add(AST_TYPEDEF, gatherSymbol);
+		symbolFunctions.add(AST_ACTOR, gatherSymbol);
 
-		functions.add(AST_TUPLE_DEF, gatherParameters);
+		paramsFunctions.add(AST_TUPLE_DEF, gatherParameters);
 	}
 	addDefaultTypes(state);
 
-	return semPreOrderWalk(functions, state, node);
+	auto r1 = semPreOrderWalk(symbolFunctions, state, node);
+	auto r2 = semPreOrderWalk(paramsFunctions, state, node);
+
+	return r1.combineWith(r2);
 }
 
 /// <summary>
