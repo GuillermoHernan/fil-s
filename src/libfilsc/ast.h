@@ -49,6 +49,7 @@ enum AstNodeTypes
     ,AST_ACTOR
     ,AST_CONNECT
 	,AST_DEFAULT_TYPE
+	,AST_TYPE_NAME
 
 	,AST_TYPES_COUNT
 };

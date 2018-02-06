@@ -378,7 +378,12 @@ ExprResult parseTypeSpecifier(LexToken token)
 /// <returns></returns>
 ExprResult parseTypeDescriptor(LexToken token)
 {
-	return parseIdentifier(token).orElse(parseTupleDef);
+	ExprResult r = parseIdentifier(token).orElse(parseTupleDef);
+
+	if (r.ok() && r.result->getType() == AST_IDENTIFIER)
+		r.result->changeType(AST_TYPE_NAME);
+
+	return r;
 }
 
 /// <summary>

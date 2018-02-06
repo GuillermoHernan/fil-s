@@ -209,6 +209,17 @@ TEST(Parser, parseDeclaration)
 	EXPECT_PARSE_ERROR(parseDeclaration_("if = 3"));
 	EXPECT_PARSE_ERROR(parseDeclaration_("const: int"));
 
+	auto r = parseDeclaration_("typed:int");
+	ASSERT_TRUE(r.ok());
+	ASSERT_EQ(2, r.result->children().size());
+	ASSERT_TRUE(r.result->children()[0].notNull());
+	EXPECT_EQ(AST_TYPE_NAME, r.result->children()[0]->getType());
+
+	r = parseDeclaration_("tuple1:(int, int, float)");
+	ASSERT_TRUE(r.ok());
+	ASSERT_EQ(2, r.result->children().size());
+	ASSERT_TRUE(r.result->children()[0].notNull());
+	EXPECT_EQ(AST_TUPLE_DEF, r.result->children()[0]->getType());
 }
 
 /// <summary>
