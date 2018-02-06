@@ -102,6 +102,7 @@ const char * errorTypeTemplate(ErrorTypes type)
 		/*ETYPE_NEWLINE_IN_STRING*/		"New line in string constant",
 		/*ETYPE_EOF_IN_STRING*/			"End of file in string constant",
 		/*ETYPE_INVALID_EXP_CHAIN*/		"Operators of different types cannot be chained. Group them using parenthesis. Example: x+(n-3)",
+		/*ETYPE_SYMBOL_ALREADY_DEFINED_1*/"Symbol '%s' is already defined",
 	};
 
 	return templates[type];

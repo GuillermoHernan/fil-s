@@ -18,6 +18,7 @@ enum ErrorTypes
 	ETYPE_NEWLINE_IN_STRING,
 	ETYPE_EOF_IN_STRING,
 	ETYPE_INVALID_EXP_CHAIN,
+	ETYPE_SYMBOL_ALREADY_DEFINED_1,
 
 	//Add new error types above this line.
 	//REMEMBER to add the description to 'errorTypeTemplate' function.
@@ -26,7 +27,6 @@ enum ErrorTypes
 	//right number of parameters.
 
 	//Errors under this line have no string assigned. They should be here temporarilly only
-	ETYPE_SYMBOL_ALREADY_DEFINED_1,
 
 	ETYPE_COUNT		//Must be always the last one.
 };
