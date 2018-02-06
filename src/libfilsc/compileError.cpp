@@ -48,6 +48,16 @@ CompileError CompileError::create(const ScriptPosition& pos, ErrorTypes type, va
 	return CompileError(text, pos, type);
 }
 
+/// <summary>
+/// Creates a non-error compile error.
+/// </summary>
+/// <returns></returns>
+CompileError CompileError::ok()
+{
+	return CompileError("", ScriptPosition(), ETYPE_OK);
+}
+
+
 
 /// <summary>
 /// Generates an error message located at the given position

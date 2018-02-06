@@ -198,8 +198,35 @@ ExprResult parseScript(LexToken token)
 /// <returns></returns>
 ExprResult parseTopLevelItem(LexToken token)
 {
-	return parseConst(token).orElse(parseActorExpr).orElse(parseFunctionDef);
+	return parseConst(token)
+		.orElse(parseActorExpr)
+		.orElse(parseFunctionDef)
+		.orElse(parseTypedef);
 }
+
+/// <summary>
+/// Parses a type definition.
+/// </summary>
+/// <param name="token"></param>
+/// <returns></returns>
+ExprResult parseTypedef(LexToken token)
+{
+	ExprResult	r(token);
+	string		name;
+
+	r = r.requireReserved("type").then(parseIdentifier);
+
+	if (r.ok())
+		name = r.result->getName();
+
+	r = r.requireId("is").then(parseTypeDescriptor);
+
+	if (r.ok())
+		r.result = astCreateTypedef(token.getPosition(), name, r.result);
+
+	return r.final();
+}
+
 
 /**
  * Parses a code block
@@ -223,7 +250,11 @@ ExprResult parseBlock (LexToken token)
     
     while (r.ok() && !r.token.isOperator("}"))
     {
-		r = r.then(parseExpression).orElse(parseVar).orElse(parseConst);
+		r = r.then(parseExpression)
+			.orElse(parseVar)
+			.orElse(parseConst)
+			.orElse(parseTypedef);
+
 		block->addChild(r.result);
 
 		//Skip optional ';' separators.

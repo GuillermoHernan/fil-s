@@ -4,11 +4,22 @@
 
 #include "pch.h"
 #include "ast.h"
+#include "SymbolScope.h"
 
 using namespace std;
 
 //Empty children list constant
 const AstNodeList AstNode::ms_noChildren;
+
+Ref<SymbolScope> AstNode::getScope()const
+{
+	return m_scope.staticCast<SymbolScope>();
+}
+
+void AstNode::setScope(Ref<SymbolScope> scope)
+{
+	m_scope = scope.staticCast<SymbolScope>();
+}
 
 //  Constructor functions.
 //
@@ -38,6 +49,24 @@ Ref<AstNode> astCreateDeclaration(LexToken token,
 	result->addChild(initExpr);
 	return result;
 }
+
+/// <summary>
+/// Creates a type definition node.
+/// </summary>
+/// <param name="pos"></param>
+/// <param name="name"></param>
+/// <param name="typeDesc"></param>
+/// <returns></returns>
+Ref<AstNode> astCreateTypedef(ScriptPosition pos, const std::string& name, Ref<AstNode> typeDesc)
+{
+	auto result = refFromNew(
+		new AstNamedBranch(AST_TYPEDEF, pos, name)
+	);
+
+	result->addChild(typeDesc);
+	return result;
+}
+
 
 /// <summary>
 /// Creates a function definition AST node.
@@ -570,3 +599,12 @@ Ref<AstLiteral> AstLiteral::createBool(ScriptPosition pos, bool value)
 //    else
 //        return "BAD_AST_TYPE";
 //}
+
+/// <summary>
+/// Creates an AST node for a default (predefined) data type.
+/// </summary>
+/// <returns></returns>
+Ref<AstNode> astCreateDefaultType()
+{
+	return refFromNew(new AstBranchNode(AST_DEFAULT_TYPE, ScriptPosition()));
+}

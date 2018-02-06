@@ -25,5 +25,8 @@ enum ErrorTypes
 	//number of arguments. This is just a remainder to the programmer to supply the 
 	//right number of parameters.
 
+	//Errors under this line have no string assigned. They should be here temporarilly only
+	ETYPE_SYMBOL_ALREADY_DEFINED_1,
+
 	ETYPE_COUNT		//Must be always the last one.
 };

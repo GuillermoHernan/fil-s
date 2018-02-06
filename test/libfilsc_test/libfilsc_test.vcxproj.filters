@@ -3,11 +3,14 @@
   <ItemGroup>
     <ClInclude Include="targetver.h" />
     <ClInclude Include="libfilsc_test_pch.h" />
+    <ClInclude Include="testUtils.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="libfilsc_test.cpp" />
     <ClCompile Include="lexer_tests.cpp" />
     <ClCompile Include="libfilsc_test_pch.cpp" />
     <ClCompile Include="parser_tests.cpp" />
+    <ClCompile Include="semAnalysis_tests.cpp" />
+    <ClCompile Include="testUtils.cpp" />
   </ItemGroup>
 </Project>

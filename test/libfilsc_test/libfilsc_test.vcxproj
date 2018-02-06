@@ -157,6 +157,7 @@
   <ItemGroup>
     <ClInclude Include="libfilsc_test_pch.h" />
     <ClInclude Include="targetver.h" />
+    <ClInclude Include="testUtils.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="lexer_tests.cpp" />
@@ -168,6 +169,8 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="parser_tests.cpp" />
+    <ClCompile Include="semAnalysis_tests.cpp" />
+    <ClCompile Include="testUtils.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\lib\googletest-release-1.8.0\googletest\msvc\gtest.vcxproj">

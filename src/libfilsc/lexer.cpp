@@ -424,6 +424,7 @@ bool LexToken::isReservedWord(const std::string& text)
 		reservedWords.insert("if");
 		reservedWords.insert("return");
 		reservedWords.insert("select");
+		reservedWords.insert("type");
 		reservedWords.insert("var");
 		reservedWords.insert("while");
 	}

@@ -19,6 +19,12 @@
     <ClInclude Include="ast.h" />
     <ClInclude Include="errorTypes.h" />
     <ClInclude Include="parser_internal.h" />
+    <ClInclude Include="semanticAnalysis.h" />
+    <ClInclude Include="semanticAnalysis_internal.h" />
+    <ClInclude Include="scopeCreationPass.h" />
+    <ClInclude Include="SymbolScope.h" />
+    <ClInclude Include="gatherPass.h" />
+    <ClInclude Include="semAnalysisState.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp" />
@@ -29,5 +35,10 @@
     <ClCompile Include="parserResults.cpp" />
     <ClCompile Include="parser.cpp" />
     <ClCompile Include="ast.cpp" />
+    <ClCompile Include="semanticAnalysis.cpp" />
+    <ClCompile Include="scopeCreationPass.cpp" />
+    <ClCompile Include="SymbolScope.cpp" />
+    <ClCompile Include="gatherPass.cpp" />
+    <ClCompile Include="semAnalysisState.cpp" />
   </ItemGroup>
 </Project>

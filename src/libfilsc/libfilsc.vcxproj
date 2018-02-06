@@ -150,19 +150,26 @@
     <ClInclude Include="ast.h" />
     <ClInclude Include="compileError.h" />
     <ClInclude Include="errorTypes.h" />
+    <ClInclude Include="gatherPass.h" />
     <ClInclude Include="lexer.h" />
     <ClInclude Include="parser.h" />
     <ClInclude Include="parserResults.h" />
     <ClInclude Include="parser_internal.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="refCountObj.h" />
+    <ClInclude Include="scopeCreationPass.h" />
     <ClInclude Include="scriptPosition.h" />
+    <ClInclude Include="semAnalysisState.h" />
+    <ClInclude Include="semanticAnalysis.h" />
+    <ClInclude Include="semanticAnalysis_internal.h" />
+    <ClInclude Include="SymbolScope.h" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="utils.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ast.cpp" />
     <ClCompile Include="compileError.cpp" />
+    <ClCompile Include="gatherPass.cpp" />
     <ClCompile Include="lexer.cpp" />
     <ClCompile Include="parser.cpp" />
     <ClCompile Include="parserResults.cpp" />
@@ -172,7 +179,11 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="scopeCreationPass.cpp" />
     <ClCompile Include="scriptPosition.cpp" />
+    <ClCompile Include="semAnalysisState.cpp" />
+    <ClCompile Include="semanticAnalysis.cpp" />
+    <ClCompile Include="SymbolScope.cpp" />
     <ClCompile Include="utils.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

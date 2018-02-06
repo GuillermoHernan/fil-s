@@ -6,49 +6,6 @@
 #include "parser_internal.h"
 #include "compileError.h"
 
-#define EXPECT_PARSE_OK(x) EXPECT_TRUE(checkExprOk((x)))
-#define EXPECT_PARSE_ERROR(x) EXPECT_TRUE(checkExprError(x))
-
-typedef ExprResult::ParseFunction ParseFunction;
-
-/// <summary>
-/// Checks an expression result object, and passes the error message to 'Google test'
-/// if failed.
-/// </summary>
-/// <param name="res"></param>
-/// <returns></returns>
-::testing::AssertionResult checkExprOk(const ExprResult& res)
-{
-	if (res.ok())
-		return ::testing::AssertionSuccess();
-	else
-		return ::testing::AssertionFailure() << res.errorDesc.what();
-}
-
-/// <summary>
-/// Checks that a parsing function consumes all input.
-/// </summary>
-/// <param name="code"></param>
-/// <param name="parseFn"></param>
-/// <returns></returns>
-ExprResult checkAllParsed (const char* code, ParseFunction parseFn)
-{
-	auto r = parseFn(LexToken(code).next());
-
-	if (r.ok() && !r.token.eof())
-		r = r.getError(ETYPE_UNEXPECTED_TOKEN_2, r.token.text().c_str(), "<EOF>");
-	return r;
-};
-
-
-::testing::AssertionResult checkExprError(const ExprResult& res)
-{
-	if (res.error())
-		return ::testing::AssertionSuccess();
-	else
-		return ::testing::AssertionFailure() << "Compilation error expected";
-}
-
 /// <summary>
 /// Tests 'parseScript' function.
 /// </summary>
@@ -642,4 +599,23 @@ TEST(Parser, parsePrimaryExpr)
 	EXPECT_PARSE_OK(parsePrimaryExpr_("(1,2,3)"));
 
 	EXPECT_PARSE_ERROR(parsePrimaryExpr_("9+4"));
+}
+
+/// <summary>
+/// Tests for 'parseTypedef' function
+/// </summary>
+TEST(Parser, parseTypedef)
+{
+	auto parseTypedef_ = [](const char* code)
+	{
+		return checkAllParsed(code, parseTypedef);
+	};
+
+	EXPECT_PARSE_OK(parseTypedef_("type integer is int"));
+	EXPECT_PARSE_OK(parseTypedef_("type vec2f is (float, float)"));
+	EXPECT_PARSE_OK(parseTypedef_("type test is (a:float, b:float=7.0, c=\"test\")"));
+
+	EXPECT_PARSE_ERROR(parseTypedef_("vec2f is (float, float)"));
+	EXPECT_PARSE_ERROR(parseTypedef_("type vec2f (float, float)"));
+	EXPECT_PARSE_ERROR(parseTypedef_("type integer is 17"));
 }

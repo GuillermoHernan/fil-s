@@ -11,12 +11,15 @@
 #include "scriptPosition.h"
 #include "lexer.h"
 
+class SymbolScope;
+
 /**
  * AST node types enumeration
  */
 enum AstNodeTypes
 {
     AST_SCRIPT
+	,AST_TYPEDEF
 	,AST_LIST
     ,AST_BLOCK
 	,AST_TUPLE
@@ -45,6 +48,7 @@ enum AstNodeTypes
     ,AST_POSTFIXOP
     ,AST_ACTOR
     ,AST_CONNECT
+	,AST_DEFAULT_TYPE
 
 	,AST_TYPES_COUNT
 };
@@ -62,6 +66,7 @@ std::string astTypeToString(AstNodeTypes type);
 
 //Constructor functions
 Ref<AstNode> astCreateScript(ScriptPosition pos);
+Ref<AstNode> astCreateTypedef(ScriptPosition pos, const std::string& name, Ref<AstNode> typeDesc);
 Ref<AstNode> astCreateDeclaration(LexToken token,
 	Ref<AstNode> typeDesc,
 	Ref<AstNode> initExpr);
@@ -130,6 +135,8 @@ Ref<AstNode> astCreateImport (ScriptPosition pos, Ref<AstNode> param);
 
 Ref<AstNode> astGetExtends(Ref<AstNode> node);
 
+Ref<AstNode> astCreateDefaultType();
+
 /**
  * Base class for AST nodes
  */
@@ -152,23 +159,15 @@ public:
     //    return jsNull();
     //}
     
-    virtual void addChild(Ref<AstNode> child)
-    {
-        assert(!"addChildren unsupported");
-    }
-    
-    virtual void addParam(const std::string& paramName)
-    {
-        assert(!"addParam unsupported");
-    }
-    
-    typedef std::vector<std::string> Params;
-    virtual const Params& getParams()const
-    {
-        static const Params noParams;
-        return noParams;
-    }
+	virtual void addChild(Ref<AstNode> child)
+	{
+		assert(!"addChildren unsupported");
+	}
 
+	virtual void setChild(unsigned index, Ref<AstNode> node)
+	{
+		assert(!"setChild unsupported");
+	}
 
     bool childExists(size_t index)const
     {
@@ -197,6 +196,9 @@ public:
 		m_type = type;
 	}
 
+	Ref<SymbolScope> getScope()const;
+	void setScope(Ref<SymbolScope> scope);
+
 protected:
     static const AstNodeList    ms_noChildren;
     
@@ -211,6 +213,9 @@ protected:
     virtual ~AstNode()
     {
     }
+
+private:
+	Ref<RefCountObj>	m_scope;
 };
 
 /**
@@ -229,6 +234,13 @@ public:
     {
         m_children.push_back(child);
     }
+
+	virtual void setChild(unsigned index, Ref<AstNode> node)
+	{
+		assert(index < m_children.size());
+		m_children[index] = node;
+	}
+
     
     AstBranchNode(AstNodeTypes type, const ScriptPosition& pos) : AstNode(type, pos)
     {
@@ -261,58 +273,6 @@ protected:
     const std::string m_name;
 };
 
-///**
-// * AST node for function definitions
-// */
-//class AstFunction : public AstNode
-//{
-//public:
-//    static Ref<AstFunction> create(ScriptPosition position,
-//                                   const std::string& name)
-//    {
-//        return refFromNew (new AstFunction(AST_FUNCTION, position, name));
-//    }
-//
-//    void setCode(Ref<AstNode> code)
-//    {
-//        m_code = code;
-//    }
-//
-//    Ref<AstNode> getCode()const
-//    {
-//        return m_code;
-//    }
-//    
-//    virtual const std::string getName()const
-//    {
-//        return m_name;
-//    }
-//
-//    virtual void addParam(const std::string& paramName)
-//    {
-//        m_params.push_back(paramName);
-//    }
-//
-//    virtual const Params& getParams()const
-//    {
-//        return m_params;
-//    }
-//    
-//    ////virtual ASValue toJS()const;
-//
-//    AstFunction(AstNodeTypes type, ScriptPosition position, const std::string& name) :
-//    AstNode(type, position),
-//    m_name(name)
-//    {
-//    }
-//    
-//protected:
-//
-//    const std::string   m_name;
-//    Params              m_params;
-//    Ref<AstNode>        m_code;
-//};
-
 /**
  * AST node for actor definitions
  */
@@ -325,25 +285,11 @@ public:
         return refFromNew (new AstActor(position, name));
     }
 
-    virtual void addParam(const std::string& paramName)
-    {
-        m_params.push_back(paramName);
-    }
-
-    virtual const Params& getParams()const
-    {
-        return m_params;
-    }
-    
-    //virtual ASValue toJS()const;
-
 protected:
     AstActor(ScriptPosition position, const std::string& name) :
     AstNamedBranch(AST_ACTOR, position, name)
     {
     }
-    
-    Params              m_params;
 };
 
 

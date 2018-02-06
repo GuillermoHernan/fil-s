@@ -22,6 +22,7 @@ public:
 	}
 
 	static CompileError create(const ScriptPosition& pos, ErrorTypes type, va_list args);
+	static CompileError ok();
 
 	const ScriptPosition& position()const
 	{
@@ -31,6 +32,11 @@ public:
 	ErrorTypes	type()const
 	{
 		return m_type;
+	}
+
+	bool isOk()const
+	{
+		return m_type == ETYPE_OK;
 	}
 
 private:
