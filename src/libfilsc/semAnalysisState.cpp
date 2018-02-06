@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "semAnalysisState.h"
+#include "symbolScope.h"
 
 Ref<AstNode> SemAnalysisState::parent()const
 {
@@ -22,4 +23,10 @@ Ref<AstNode> SemAnalysisState::popParent()
 	m_parents.pop_back();
 
 	return result;
+}
+
+
+SemAnalysisState::SemAnalysisState()
+	:rootScope (SymbolScope::create(Ref<SymbolScope>()))
+{
 }

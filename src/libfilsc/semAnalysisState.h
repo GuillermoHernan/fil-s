@@ -10,7 +10,9 @@
 class SemAnalysisState
 {
 public:
-	Ref<SymbolScope>	rootScope;
+	const Ref<SymbolScope>	rootScope;
+
+	SemAnalysisState();
 
 	Ref<AstNode>		parent()const;
 
