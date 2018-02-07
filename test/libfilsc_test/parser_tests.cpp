@@ -296,6 +296,21 @@ TEST(Parser, parseIf)
 	EXPECT_PARSE_ERROR(parseIf_("if (a b else c"));
 	EXPECT_PARSE_ERROR(parseIf_("if (a) b c"));
 	EXPECT_PARSE_ERROR(parseIf_("if (a) b;; else c"));
+
+	auto result = parseIf_("if (a>0) a else -a");
+	EXPECT_PARSE_OK(result);
+
+	auto ifNode = result.result;
+
+	EXPECT_EQ(AST_IF, ifNode->getType());
+	ASSERT_EQ(3, ifNode->children().size());
+	ASSERT_TRUE(ifNode->childExists(0));
+	ASSERT_TRUE(ifNode->childExists(1));
+	ASSERT_TRUE(ifNode->childExists(2));
+
+	EXPECT_EQ(AST_BINARYOP, ifNode->children()[0]->getType());
+	EXPECT_EQ(AST_IDENTIFIER, ifNode->children()[1]->getType());
+	EXPECT_EQ(AST_PREFIXOP, ifNode->children()[2]->getType());
 }
 
 

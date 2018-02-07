@@ -438,7 +438,7 @@ ExprResult parseIf(LexToken token)
 	if (r.ok() && r.token.text() == "else")
 	{
 		r = r.requireReserved("else").then(parseExpression);
-		thenExpr = r.result;
+		elseExpr = r.result;
 	}
 
 	if (r.ok())
