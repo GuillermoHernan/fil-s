@@ -105,7 +105,6 @@ CompileError gatherParameters(Ref<AstNode> node, SemAnalysisState& state)
 			scope->add(name, node);
 			return CompileError::ok();
 		}
-		return CompileError::ok();
 	}
 }
 
