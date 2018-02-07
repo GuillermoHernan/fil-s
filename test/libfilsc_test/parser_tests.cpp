@@ -419,6 +419,7 @@ TEST(Parser, parseBinaryExpr)
 	EXPECT_PARSE_OK(parseBinaryExpr_("a + 9 + 7"));
 	EXPECT_PARSE_OK(parseBinaryExpr_("a + b.c + 7"));
 	EXPECT_PARSE_OK(parseBinaryExpr_("a + 9 + (7-x)"));
+	EXPECT_PARSE_OK(parseBinaryExpr_("a > 0"));
 
 	EXPECT_PARSE_ERROR(parseBinaryExpr_("r = 9"));
 	EXPECT_PARSE_ERROR(parseBinaryExpr_("-n"));
@@ -427,6 +428,25 @@ TEST(Parser, parseBinaryExpr)
 	auto result = parseBinaryExpr_("a + b - c");
 	EXPECT_EQ(ETYPE_INVALID_EXP_CHAIN, result.errorDesc.type());
 	EXPECT_EQ(7, result.errorDesc.position().column);
+
+	result = parseBinaryExpr_("a > 0");
+	auto node = result.result;
+
+	ASSERT_PARSE_OK(result);
+	EXPECT_EQ(AST_BINARYOP, node->getType());
+
+	result = parseBinaryExpr_("a + 9 + 7");
+	node = result.result;
+
+	ASSERT_PARSE_OK(result);
+	EXPECT_EQ(AST_BINARYOP, node->getType());
+	ASSERT_TRUE(node->childExists(0));
+	EXPECT_TRUE(node->childExists(1));
+	EXPECT_FALSE(node->childExists(2));
+	EXPECT_EQ(AST_BINARYOP, node->children()[0]->getType());
+	EXPECT_STREQ("a", node->children()[0]->children()[0]->getName().c_str());
+	EXPECT_STREQ("9", node->children()[0]->children()[1]->getValue().c_str());
+	EXPECT_STREQ("7", node->children()[1]->getValue().c_str());
 }
 
 /// <summary>

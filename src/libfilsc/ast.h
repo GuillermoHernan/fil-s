@@ -155,10 +155,10 @@ public:
         return "";
     }
     
-    //virtual ASValue getValue()const
-    //{
-    //    return jsNull();
-    //}
+    virtual std::string getValue()const
+    {
+        return "";
+    }
     
 	virtual void addChild(Ref<AstNode> child)
 	{
@@ -321,6 +321,12 @@ public:
 	static Ref<AstLiteral> createBool(ScriptPosition pos, bool value);
 	static Ref<AstLiteral> createNull(ScriptPosition pos);
     
+
+	virtual std::string getValue()const
+	{
+		return m_strValue;
+	}
+
 protected:
     AstLiteral (ScriptPosition position, AstNodeTypes type) : 
     AstNode(type, position)
@@ -346,6 +352,11 @@ public:
     {
         return m_name;
     }
+
+	virtual std::string getValue()const
+	{
+		return m_name;
+	}
 
 protected:
     AstIdentifier (LexToken token) : 
