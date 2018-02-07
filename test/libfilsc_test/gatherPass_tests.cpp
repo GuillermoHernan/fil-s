@@ -78,7 +78,7 @@ TEST_F(GatherPassTests, gatherParameters)
 
 	//Cannot shadow the name of a previous symbol
 	r = runGatherPass("const a = 7\n function test(a: int){a * 2}");
-	EXPECT_SEM_OK(r);
+	EXPECT_SEM_ERROR(r);
 
 	//Shall not interfere with other tuple declarations
 	r = runGatherPass(
