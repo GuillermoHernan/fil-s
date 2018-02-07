@@ -61,7 +61,7 @@ SemanticResult PassOperations::processNode(Ref<AstNode> node, SemAnalysisState& 
 		{
 			auto err = checkFn(node, state);
 
-			if (err.type() != ETYPE_OK)
+			if (!err.isOk())
 				errors.push_back(err);
 		}
 	}
