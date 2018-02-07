@@ -172,6 +172,7 @@
     <ClCompile Include="parser_tests.cpp" />
     <ClCompile Include="semAnalysis_tests.cpp" />
     <ClCompile Include="testUtils.cpp" />
+    <ClCompile Include="typeCheckPass_tests.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\lib\googletest-release-1.8.0\googletest\msvc\gtest.vcxproj">

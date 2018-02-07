@@ -13,5 +13,6 @@
     <ClCompile Include="semAnalysis_tests.cpp" />
     <ClCompile Include="testUtils.cpp" />
     <ClCompile Include="gatherPass_tests.cpp" />
+    <ClCompile Include="typeCheckPass_tests.cpp" />
   </ItemGroup>
 </Project>
