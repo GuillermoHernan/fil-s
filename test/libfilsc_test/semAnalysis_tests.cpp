@@ -28,7 +28,7 @@ TEST(SemanticAnalysis, semanticAnalysis)
 TEST(SemanticAnalysis, semInOrderWalk)
 {
 	const char* testCode = "function max (a:int, b:int) {if (a>b) a else b}\n";
-	const std::vector<AstNodeTypes> expected = { 
+	const std::vector<AstNodeTypes> expected = {
 		AST_TYPE_NAME,
 		AST_DECLARATION,
 		AST_TYPE_NAME,
@@ -50,13 +50,52 @@ TEST(SemanticAnalysis, semInOrderWalk)
 
 	vector<AstNodeTypes>	nodeTypes;
 	SemAnalysisState		state;
-	
+
 	auto nodeFn = [&nodeTypes](Ref<AstNode> node, SemAnalysisState& state) {
 		nodeTypes.push_back(node->getType());
 		return SemanticResult(node);
 	};
 
 	result = semInOrderWalk(nodeFn, state, result.ast);
+	ASSERT_SEM_OK(result);
+	ASSERT_EQ(expected, nodeTypes);
+}
+
+/// <summary>
+/// Tests 'semPreOrderWalk' function.
+/// </summary>
+TEST(SemanticAnalysis, semPreOrderWalk)
+{
+	const char* testCode = "function max (a:int, b:int) {if (a>b) a else b}\n";
+	const std::vector<AstNodeTypes> expected = {
+		AST_SCRIPT,
+		AST_FUNCTION,
+		AST_TUPLE_DEF,
+		AST_DECLARATION,
+		AST_TYPE_NAME,
+		AST_DECLARATION,
+		AST_TYPE_NAME,
+		AST_BLOCK,
+		AST_IF,
+		AST_BINARYOP,
+		AST_IDENTIFIER,
+		AST_IDENTIFIER,
+		AST_IDENTIFIER,
+		AST_IDENTIFIER,
+	};
+
+	auto result = semAnalysisCheck(testCode);
+	ASSERT_SEM_OK(result);
+
+	vector<AstNodeTypes>	nodeTypes;
+	SemAnalysisState		state;
+
+	auto nodeFn = [&nodeTypes](Ref<AstNode> node, SemAnalysisState& state) {
+		nodeTypes.push_back(node->getType());
+		return SemanticResult(node);
+	};
+
+	result = semPreOrderWalk(nodeFn, state, result.ast);
 	ASSERT_SEM_OK(result);
 	ASSERT_EQ(expected, nodeTypes);
 }

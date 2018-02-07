@@ -29,7 +29,9 @@ SemanticResult modulesPass(Ref<AstNode> node, SemAnalysisState& state);
 
 SemanticResult semInOrderWalk(const PassFunctionSet& fnSet, SemAnalysisState& state, Ref<AstNode> node);
 SemanticResult semInOrderWalk(PassFunction fn, SemAnalysisState& state, Ref<AstNode> node);
+
 SemanticResult semPreOrderWalk(const PassFunctionSet& fnSet, SemAnalysisState& state, Ref<AstNode> node);
+SemanticResult semPreOrderWalk(PassFunction fn, SemAnalysisState& state, Ref<AstNode> node);
 
 CompileError semError(Ref<AstNode> node, ErrorTypes type, ...);
 

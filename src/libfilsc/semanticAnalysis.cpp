@@ -129,10 +129,24 @@ SemanticResult semInOrderWalk(PassFunction fn, SemAnalysisState& state, Ref<AstN
 /// <returns></returns>
 SemanticResult semPreOrderWalk(const PassFunctionSet& fnSet, SemAnalysisState& state, Ref<AstNode> node)
 {
+	return semPreOrderWalk([&fnSet](Ref<AstNode> node, SemAnalysisState& state) {
+		return fnSet.processNode(node, state);
+	}, state, node);
+}
+
+/// <summary>
+/// Walks AST in pre-order (root nodes first)
+/// </summary>
+/// <param name="fnSet"></param>
+/// <param name="state"></param>
+/// <param name="node"></param>
+/// <returns></returns>
+SemanticResult semPreOrderWalk(PassFunction fn, SemAnalysisState& state, Ref<AstNode> node)
+{
 	auto&						children = node->children();
 	std::vector<CompileError>	errors;
 
-	auto result = fnSet.processNode(node, state);
+	auto result = fn(node, state);
 
 	if (!result.ok())
 		errors.insert(errors.end(), result.errors.begin(), result.errors.end());
@@ -147,7 +161,7 @@ SemanticResult semPreOrderWalk(const PassFunctionSet& fnSet, SemAnalysisState& s
 
 		if (child.notNull())
 		{
-			auto childResult = semPreOrderWalk(fnSet, state, child);
+			auto childResult = semPreOrderWalk(fn, state, child);
 
 			if (!childResult.ok())
 				errors.insert(errors.end(), childResult.errors.begin(), childResult.errors.end());
