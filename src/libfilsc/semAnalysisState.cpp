@@ -2,10 +2,10 @@
 #include "semAnalysisState.h"
 #include "symbolScope.h"
 
-Ref<AstNode> SemAnalysisState::parent()const
+Ref<AstNode> SemAnalysisState::parent(unsigned index)const
 {
-	if (!m_parents.empty())
-		return m_parents.back();
+	if (index < m_parents.size())
+		return *(m_parents.rbegin()+index);
 	else
 		return Ref<AstNode>();
 }

@@ -29,12 +29,12 @@ void SymbolScope::add(const std::string& name, Ref<AstNode> node)
 /// </summary>
 /// <param name="name"></param>
 /// <returns></returns>
-bool SymbolScope::contains(const std::string& name)const
+bool SymbolScope::contains(const std::string& name, bool checkParents)const
 {
 	if (m_symbols.count(name) > 0)
 		return true;
-	else if (m_parent.notNull())
-		return m_parent->contains(name);
+	else if (checkParents && m_parent.notNull())
+		return m_parent->contains(name, true);
 	else
 		return false;
 }

@@ -15,26 +15,24 @@ using namespace std;
 /// <returns></returns>
 SemanticResult symbolGatherPass(Ref<AstNode> node, SemAnalysisState& state)
 {
-	static PassOperations	symbolFunctions;
-	static PassOperations	paramsFunctions;
+	static PassOperations	operations;
 
-	if (symbolFunctions.empty())
+	if (operations.empty())
 	{
-		symbolFunctions.add(AST_FUNCTION, gatherSymbol);
-		symbolFunctions.add(AST_DECLARATION, gatherSymbol);
-		symbolFunctions.add(AST_CONST, gatherSymbol);
-		symbolFunctions.add(AST_VAR, gatherSymbol);
-		symbolFunctions.add(AST_TYPEDEF, gatherSymbol);
-		symbolFunctions.add(AST_ACTOR, gatherSymbol);
+		operations.add(AST_FUNCTION, gatherSymbol);
+		operations.add(AST_DECLARATION, gatherSymbol);
+		operations.add(AST_CONST, gatherSymbol);
+		operations.add(AST_VAR, gatherSymbol);
+		operations.add(AST_TYPEDEF, gatherSymbol);
+		operations.add(AST_ACTOR, gatherSymbol);
 
-		paramsFunctions.add(AST_TUPLE_DEF, gatherParameters);
+		operations.add(AST_DECLARATION, gatherParameters);
+		operations.add(AST_CONST, gatherParameters);
+		operations.add(AST_VAR, gatherParameters);
 	}
 	addDefaultTypes(state);
 
-	auto r1 = semPreOrderWalk(symbolFunctions, state, node);
-	auto r2 = semPreOrderWalk(paramsFunctions, state, node);
-
-	return r1.combineWith(r2);
+	return semPreOrderWalk(operations, state, node);
 }
 
 /// <summary>
@@ -55,7 +53,10 @@ void addDefaultTypes(SemAnalysisState& state)
 /// <returns></returns>
 CompileError gatherSymbol(Ref<AstNode> node, SemAnalysisState& state)
 {
-	return gatherSymbol(node, state.parent()->getScope());
+	auto parent = state.parent();
+	const bool checkParents = parent->getType() != AST_TUPLE_DEF;
+
+	return gatherSymbol(node, parent->getScope(), checkParents);
 }
 
 /// <summary>
@@ -64,14 +65,14 @@ CompileError gatherSymbol(Ref<AstNode> node, SemAnalysisState& state)
 /// <param name="node"></param>
 /// <param name="state"></param>
 /// <returns></returns>
-CompileError gatherSymbol(Ref<AstNode> node, Ref<SymbolScope> scope)
+CompileError gatherSymbol(Ref<AstNode> node, Ref<SymbolScope> scope, bool checkParents)
 {
 	string name = node->getName();
 
 	if (name.empty())
 		return CompileError::ok();
 
-	if (scope->contains(name))
+	if (scope->contains(name, checkParents))
 		return semError(node, ETYPE_SYMBOL_ALREADY_DEFINED_1, name.c_str());
 	else
 	{
@@ -89,19 +90,39 @@ CompileError gatherSymbol(Ref<AstNode> node, Ref<SymbolScope> scope)
 /// <returns></returns>
 CompileError gatherParameters(Ref<AstNode> node, SemAnalysisState& state)
 {
-	if (state.parent()->getType() != AST_FUNCTION)
+	string name = node->getName();
+
+	if (!isParameter (state) && name != "")
 		return CompileError::ok();
 	else
 	{
-		auto scope = state.parent()->getScope();
+		auto scope = state.parent(1)->getScope();
 
-		for (auto child : node->children())
+		if (scope->contains(name, true))
+			return semError(node, ETYPE_SYMBOL_ALREADY_DEFINED_1, name.c_str());
+		else
 		{
-			auto result = gatherSymbol(child, scope);
-			if (!result.isOk())
-				return result;
+			scope->add(name, node);
+			return CompileError::ok();
 		}
-
 		return CompileError::ok();
+	}
+}
+
+/// <summary>
+/// Checks whether the current node is function parameter by examining its parents.
+/// </summary>
+/// <param name="state"></param>
+/// <returns></returns>
+bool isParameter(const SemAnalysisState& state)
+{
+	if (state.parent()->getType() != AST_TUPLE_DEF)
+		return false;
+	else
+	{
+		auto tuple = state.parent();
+		auto fnDef = state.parent(1);
+
+		return (fnDef->getType() == AST_FUNCTION && fnDef->children()[0] == tuple);
 	}
 }

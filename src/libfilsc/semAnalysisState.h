@@ -14,7 +14,7 @@ public:
 
 	SemAnalysisState();
 
-	Ref<AstNode>		parent()const;
+	Ref<AstNode>		parent(unsigned index = 0)const;
 
 	void				pushParent(Ref<AstNode> node);
 	Ref<AstNode>		popParent();

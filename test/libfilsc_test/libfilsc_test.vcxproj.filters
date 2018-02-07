@@ -12,5 +12,6 @@
     <ClCompile Include="parser_tests.cpp" />
     <ClCompile Include="semAnalysis_tests.cpp" />
     <ClCompile Include="testUtils.cpp" />
+    <ClCompile Include="gatherPass_tests.cpp" />
   </ItemGroup>
 </Project>

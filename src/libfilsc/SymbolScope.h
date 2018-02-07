@@ -16,7 +16,7 @@ public:
 
 	void add(const std::string& name, Ref<AstNode> node);
 
-	bool			contains(const std::string& name)const;
+	bool			contains(const std::string& name, bool checkParents=true)const;
 	Ref<AstNode>	get(const std::string& name, bool solveAlias = false)const;
 
 protected:
