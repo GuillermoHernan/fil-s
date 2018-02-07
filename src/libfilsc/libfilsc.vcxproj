@@ -164,6 +164,7 @@
     <ClInclude Include="semanticAnalysis_internal.h" />
     <ClInclude Include="SymbolScope.h" />
     <ClInclude Include="targetver.h" />
+    <ClInclude Include="typeCheckPass.h" />
     <ClInclude Include="utils.h" />
   </ItemGroup>
   <ItemGroup>
@@ -184,6 +185,7 @@
     <ClCompile Include="semAnalysisState.cpp" />
     <ClCompile Include="semanticAnalysis.cpp" />
     <ClCompile Include="SymbolScope.cpp" />
+    <ClCompile Include="typeCheckPass.cpp" />
     <ClCompile Include="utils.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

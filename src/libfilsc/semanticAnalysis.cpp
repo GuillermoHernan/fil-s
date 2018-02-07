@@ -1,9 +1,11 @@
 #include "pch.h"
 #include "semanticAnalysis_internal.h"
 #include "SymbolScope.h"
+#include "semAnalysisState.h"
+
 #include "scopeCreationPass.h"
 #include "gatherPass.h"
-#include "semAnalysisState.h"
+#include "typeCheckPass.h"
 
 
 using namespace std;
@@ -59,18 +61,6 @@ const PassList& getSemAnalysisPasses()
 /// <param name="state"></param>
 /// <returns></returns>
 SemanticResult modulesPass(Ref<AstNode> node, SemAnalysisState& state)
-{
-	//TODO: implement it.
-	return SemanticResult(node);
-}
-
-/// <summary>
-/// This pass checks that type references are valid.
-/// </summary>
-/// <param name="node"></param>
-/// <param name="state"></param>
-/// <returns></returns>
-SemanticResult typeCheckPass(Ref<AstNode> node, SemAnalysisState& state)
 {
 	//TODO: implement it.
 	return SemanticResult(node);

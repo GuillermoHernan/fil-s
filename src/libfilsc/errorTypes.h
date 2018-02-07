@@ -19,6 +19,8 @@ enum ErrorTypes
 	ETYPE_EOF_IN_STRING,
 	ETYPE_INVALID_EXP_CHAIN,
 	ETYPE_SYMBOL_ALREADY_DEFINED_1,
+	ETYPE_NON_EXISTENT_SYMBOL_1,
+	ETYPE_NOT_A_TYPE_1,
 
 	//Add new error types above this line.
 	//REMEMBER to add the description to 'errorTypeTemplate' function.

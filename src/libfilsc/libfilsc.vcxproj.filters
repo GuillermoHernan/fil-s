@@ -25,6 +25,7 @@
     <ClInclude Include="SymbolScope.h" />
     <ClInclude Include="gatherPass.h" />
     <ClInclude Include="semAnalysisState.h" />
+    <ClInclude Include="typeCheckPass.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp" />
@@ -40,5 +41,6 @@
     <ClCompile Include="SymbolScope.cpp" />
     <ClCompile Include="gatherPass.cpp" />
     <ClCompile Include="semAnalysisState.cpp" />
+    <ClCompile Include="typeCheckPass.cpp" />
   </ItemGroup>
 </Project>

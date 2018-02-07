@@ -22,7 +22,6 @@ typedef std::vector<TransformFunction>				TransformFnList;
 const PassList& getSemAnalysisPasses();
 
 SemanticResult modulesPass(Ref<AstNode> node, SemAnalysisState& state);
-SemanticResult typeCheckPass(Ref<AstNode> node, SemAnalysisState& state);
 
 SemanticResult semInOrderWalk(const PassFunctionSet& fnSet, SemAnalysisState& state, Ref<AstNode> node);
 SemanticResult semPreOrderWalk(const PassFunctionSet& fnSet, SemAnalysisState& state, Ref<AstNode> node);

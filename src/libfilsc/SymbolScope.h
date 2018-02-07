@@ -16,7 +16,8 @@ public:
 
 	void add(const std::string& name, Ref<AstNode> node);
 
-	bool contains(const std::string& name);
+	bool			contains(const std::string& name)const;
+	Ref<AstNode>	get(const std::string& name, bool solveAlias = false)const;
 
 protected:
 	SymbolScope(Ref<SymbolScope> parent);
