@@ -13,6 +13,9 @@
 #define EXPECT_SEM_OK(x) EXPECT_TRUE(checkSemOk((x)))
 #define EXPECT_SEM_ERROR(x) EXPECT_TRUE(checkSemError(x))
 
+#define ASSERT_SEM_OK(x) ASSERT_TRUE(checkSemOk((x)))
+#define ASSERT_SEM_ERROR(x) ASSERT_TRUE(checkSemError(x))
+
 typedef ExprResult::ParseFunction ParseFunction;
 
 class SemanticResult;

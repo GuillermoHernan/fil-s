@@ -6,12 +6,16 @@
 #pragma once
 
 #include "semanticAnalysis.h"
+#include <functional>
 
 class SemAnalysisState;
 class PassFunctionSet;
 class SymbolScope;
 
-typedef SemanticResult(*PassFunction)(Ref<AstNode> node, SemAnalysisState& state);
+typedef std::function <SemanticResult (Ref<AstNode>, SemAnalysisState&)> PassFunction;
+//typedef std::function <Ref<AstNode> (Ref<AstNode>, SemAnalysisState&)> TransformFunction;
+//typedef std::function <CompileError (Ref<AstNode>, SemAnalysisState&)> CheckFunction;
+
 typedef Ref<AstNode>(*TransformFunction)(Ref<AstNode> node, SemAnalysisState& state);
 typedef CompileError(*CheckFunction)(Ref<AstNode> node, SemAnalysisState& state);
 
@@ -24,6 +28,7 @@ const PassList& getSemAnalysisPasses();
 SemanticResult modulesPass(Ref<AstNode> node, SemAnalysisState& state);
 
 SemanticResult semInOrderWalk(const PassFunctionSet& fnSet, SemAnalysisState& state, Ref<AstNode> node);
+SemanticResult semInOrderWalk(PassFunction fn, SemAnalysisState& state, Ref<AstNode> node);
 SemanticResult semPreOrderWalk(const PassFunctionSet& fnSet, SemAnalysisState& state, Ref<AstNode> node);
 
 CompileError semError(Ref<AstNode> node, ErrorTypes type, ...);
