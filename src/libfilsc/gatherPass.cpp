@@ -3,6 +3,7 @@
 #include "semanticAnalysis_internal.h"
 #include "SymbolScope.h"
 #include "semAnalysisState.h"
+#include "passOperations.h"
 
 using namespace std;
 
@@ -14,8 +15,8 @@ using namespace std;
 /// <returns></returns>
 SemanticResult symbolGatherPass(Ref<AstNode> node, SemAnalysisState& state)
 {
-	static PassFunctionSet	symbolFunctions;
-	static PassFunctionSet	paramsFunctions;
+	static PassOperations	symbolFunctions;
+	static PassOperations	paramsFunctions;
 
 	if (symbolFunctions.empty())
 	{

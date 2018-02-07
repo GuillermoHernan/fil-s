@@ -2,6 +2,7 @@
 #include "typeCheckPass.h"
 #include "semanticAnalysis_internal.h"
 #include "symbolScope.h"
+#include "passOperations.h"
 
 using namespace std;
 
@@ -13,7 +14,7 @@ using namespace std;
 /// <returns></returns>
 SemanticResult typeCheckPass(Ref<AstNode> node, SemAnalysisState& state)
 {
-	static PassFunctionSet	functions;
+	static PassOperations	functions;
 
 	if (functions.empty())
 	{

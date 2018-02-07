@@ -26,6 +26,7 @@
     <ClInclude Include="gatherPass.h" />
     <ClInclude Include="semAnalysisState.h" />
     <ClInclude Include="typeCheckPass.h" />
+    <ClInclude Include="passOperations.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp" />
@@ -42,5 +43,6 @@
     <ClCompile Include="gatherPass.cpp" />
     <ClCompile Include="semAnalysisState.cpp" />
     <ClCompile Include="typeCheckPass.cpp" />
+    <ClCompile Include="passOperations.cpp" />
   </ItemGroup>
 </Project>

@@ -2,6 +2,7 @@
 #include "semanticAnalysis_internal.h"
 #include "SymbolScope.h"
 #include "semAnalysisState.h"
+#include "passOperations.h"
 
 #include "scopeCreationPass.h"
 #include "gatherPass.h"
@@ -73,7 +74,7 @@ SemanticResult modulesPass(Ref<AstNode> node, SemAnalysisState& state)
 /// <param name="state"></param>
 /// <param name="node"></param>
 /// <returns></returns>
-SemanticResult semInOrderWalk(const PassFunctionSet& fnSet, SemAnalysisState& state, Ref<AstNode> node)
+SemanticResult semInOrderWalk(const PassOperations& fnSet, SemAnalysisState& state, Ref<AstNode> node)
 {
 	return semInOrderWalk([&fnSet](Ref<AstNode> node, SemAnalysisState& state) {
 		return fnSet.processNode(node, state);
@@ -127,7 +128,7 @@ SemanticResult semInOrderWalk(PassFunction fn, SemAnalysisState& state, Ref<AstN
 /// <param name="state"></param>
 /// <param name="node"></param>
 /// <returns></returns>
-SemanticResult semPreOrderWalk(const PassFunctionSet& fnSet, SemAnalysisState& state, Ref<AstNode> node)
+SemanticResult semPreOrderWalk(const PassOperations& fnSet, SemAnalysisState& state, Ref<AstNode> node)
 {
 	return semPreOrderWalk([&fnSet](Ref<AstNode> node, SemAnalysisState& state) {
 		return fnSet.processNode(node, state);
@@ -193,79 +194,6 @@ CompileError semError(Ref<AstNode> node, ErrorTypes type, ...)
 	va_end(aptr);
 
 	return result;
-}
-
-
-/// <summary>
-/// Adds a 'check' function to the set.
-/// </summary>
-/// <param name="type"></param>
-/// <param name="checkFn"></param>
-void PassFunctionSet::add(AstNodeTypes type, CheckFunction checkFn)
-{
-	if (m_checkFunctions.count(type) == 0)
-		m_checkFunctions[type] = CheckFnList();
-
-	m_checkFunctions[type].push_back(checkFn);
-}
-
-/// <summary>
-/// Adds a 'transform' function to the set.
-/// </summary>
-/// <param name="type"></param>
-/// <param name="transformFn"></param>
-void PassFunctionSet::add(AstNodeTypes type, TransformFunction transformFn)
-{
-	if (m_transformFunctions.count(type) == 0)
-		m_transformFunctions[type] = TransformFnList();
-
-	m_transformFunctions[type].push_back(transformFn);
-}
-
-/// <summary>
-/// Checks if set is empty
-/// </summary>
-/// <returns></returns>
-bool PassFunctionSet::empty()const
-{
-	return m_checkFunctions.empty() && m_transformFunctions.empty();
-}
-
-/// <summary>Calls all functions on a node.</summary>
-/// <remarks>If any check is not passed, transform functions are not executed.</remarks>
-/// <param name="node"></param>
-/// <param name="state"></param>
-/// <returns></returns>
-SemanticResult PassFunctionSet::processNode(Ref<AstNode> node, SemAnalysisState& state)const
-{
-	vector<CompileError>	errors;
-	auto					itCheck = m_checkFunctions.find(node->getType());
-
-	//Perform checks
-	if (itCheck != m_checkFunctions.end())
-	{
-		for (auto checkFn : itCheck->second)
-		{
-			auto err = checkFn(node, state);
-
-			if (err.type() != ETYPE_OK)
-				errors.push_back(err);
-		}
-	}
-
-	if (!errors.empty())
-		return SemanticResult(errors);
-
-	//Perform transformations if no errors have been found.
-	auto itTransform = m_transformFunctions.find(node->getType());
-
-	if (itTransform != m_transformFunctions.end())
-	{
-		for (auto transformFn : itTransform->second)
-			node = transformFn(node, state);
-	}
-
-	return SemanticResult(node);
 }
 
 /// <summary>Combines two semantic results. </summary>

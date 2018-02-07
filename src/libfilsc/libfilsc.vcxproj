@@ -155,6 +155,7 @@
     <ClInclude Include="parser.h" />
     <ClInclude Include="parserResults.h" />
     <ClInclude Include="parser_internal.h" />
+    <ClInclude Include="passOperations.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="refCountObj.h" />
     <ClInclude Include="scopeCreationPass.h" />
@@ -174,6 +175,7 @@
     <ClCompile Include="lexer.cpp" />
     <ClCompile Include="parser.cpp" />
     <ClCompile Include="parserResults.cpp" />
+    <ClCompile Include="passOperations.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
