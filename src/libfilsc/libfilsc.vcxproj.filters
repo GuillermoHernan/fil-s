@@ -27,6 +27,9 @@
     <ClInclude Include="semAnalysisState.h" />
     <ClInclude Include="typeCheckPass.h" />
     <ClInclude Include="passOperations.h" />
+    <ClInclude Include="c_codeGenerator.h" />
+    <ClInclude Include="c_codeGenerator_internal.h" />
+    <ClInclude Include="codeGeneratorState.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp" />
@@ -44,5 +47,7 @@
     <ClCompile Include="semAnalysisState.cpp" />
     <ClCompile Include="typeCheckPass.cpp" />
     <ClCompile Include="passOperations.cpp" />
+    <ClCompile Include="c_codeGenerator.cpp" />
+    <ClCompile Include="codeGeneratorState.cpp" />
   </ItemGroup>
 </Project>

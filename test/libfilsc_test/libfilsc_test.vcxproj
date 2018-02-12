@@ -160,6 +160,7 @@
     <ClInclude Include="testUtils.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="c_codegen_tests.cpp" />
     <ClCompile Include="gatherPass_tests.cpp" />
     <ClCompile Include="lexer_tests.cpp" />
     <ClCompile Include="libfilsc_test.cpp" />

@@ -21,6 +21,7 @@ enum ErrorTypes
 	ETYPE_SYMBOL_ALREADY_DEFINED_1,
 	ETYPE_NON_EXISTENT_SYMBOL_1,
 	ETYPE_NOT_A_TYPE_1,
+	ETYPE_INVALID_CODEGEN_NODE_1,
 
 	//Add new error types above this line.
 	//REMEMBER to add the description to 'errorTypeTemplate' function.

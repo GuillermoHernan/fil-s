@@ -105,6 +105,7 @@ const char * errorTypeTemplate(ErrorTypes type)
 		/*ETYPE_SYMBOL_ALREADY_DEFINED_1*/"Symbol '%s' is already defined",
 		/*ETYPE_NON_EXISTENT_SYMBOL_1*/	"Symbol '%s' does not exist",
 		/*ETYPE_NOT_A_TYPE_1*/			"Symbol '%s' is not a data type",
+		/*ETYPE_INVALID_CODEGEN_NODE_1*/"Code generation for nodes of type '%s' is not valid or not implemented",
 	};
 
 	return templates[type];

@@ -136,7 +136,7 @@ Ref<AstNode> astCreateImport (ScriptPosition pos, Ref<AstNode> param);
 
 Ref<AstNode> astGetExtends(Ref<AstNode> node);
 
-Ref<AstNode> astCreateDefaultType();
+Ref<AstNode> astCreateDefaultType(const std::string& name);
 
 /**
  * Base class for AST nodes
@@ -180,6 +180,21 @@ public:
             return false;
     }
 
+	Ref<AstNode> child(size_t index)const
+	{
+		const AstNodeList&  c = children();
+
+		if (index < c.size())
+			return c[index];
+		else
+			return Ref<AstNode>();
+	}
+
+	size_t childCount()const
+	{
+		return children().size();
+	}
+
     const ScriptPosition& position()const
     {
         return m_position;
@@ -200,6 +215,11 @@ public:
 	Ref<SymbolScope> getScope()const;
 	void setScope(Ref<SymbolScope> scope);
 
+	Ref<AstNode> getDataType()const
+	{
+		return m_dataType;
+	}
+
 protected:
     static const AstNodeList    ms_noChildren;
     
@@ -217,6 +237,7 @@ protected:
 
 private:
 	Ref<RefCountObj>	m_scope;
+	Ref<AstNode>		m_dataType;
 };
 
 /**

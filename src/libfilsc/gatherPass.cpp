@@ -41,8 +41,8 @@ SemanticResult symbolGatherPass(Ref<AstNode> node, SemAnalysisState& state)
 /// <param name="state"></param>
 void addDefaultTypes(SemAnalysisState& state)
 {
-	state.rootScope->add("int", astCreateDefaultType());
-	state.rootScope->add("bool", astCreateDefaultType());
+	state.rootScope->add("int", astCreateDefaultType("int"));
+	state.rootScope->add("bool", astCreateDefaultType("bool"));
 }
 
 /// <summary>

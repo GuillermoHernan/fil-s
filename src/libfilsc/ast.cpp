@@ -548,63 +548,68 @@ Ref<AstLiteral> AstLiteral::createBool(ScriptPosition pos, bool value)
 //    return result;
 //}
 //
-///**
-// * Gets the string representation of an AST type
-// * @param type
-// * @return 
-// */
-//std::string astTypeToString(AstNodeTypes type)
-//{
-//    typedef map<AstNodeTypes, string>   TypesMap;
-//    static TypesMap types;
-//    
-//    if (types.empty())
-//    {
-//        types[AST_SCRIPT] = "AST_SCRIPT";
-//        types[AST_BLOCK] = "AST_BLOCK";
-//        types[AST_VAR] = "AST_VAR";
-//        types[AST_CONST] = "AST_CONST";
-//        types[AST_IF] = "AST_IF";
-//        types[AST_FOR] = "AST_FOR";
-//        types[AST_FOR_EACH] = "AST_FOR_EACH";
-//        types[AST_RETURN] = "AST_RETURN";
-//        types[AST_FUNCTION] = "AST_FUNCTION";
-//        types[AST_ASSIGNMENT] = "AST_ASSIGNMENT";
-//        types[AST_FNCALL] = "AST_FNCALL";
-//        types[AST_LITERAL] = "AST_LITERAL";
-//        types[AST_IDENTIFIER] = "AST_IDENTIFIER";
-//        types[AST_ARRAY] = "AST_ARRAY";
-//        types[AST_OBJECT] = "AST_OBJECT";
-//        types[AST_ARRAY_ACCESS] = "AST_ARRAY_ACCESS";
-//        types[AST_MEMBER_ACCESS] = "AST_MEMBER_ACCESS";
-//        types[AST_CONDITIONAL] = "AST_CONDITIONAL";
-//        types[AST_BINARYOP] = "AST_BINARYOP";
-//        types[AST_PREFIXOP] = "AST_PREFIXOP";
-//        types[AST_POSTFIXOP] = "AST_POSTFIXOP";
-//        types[AST_ACTOR] = "AST_ACTOR";
-//        types[AST_CONNECT] = "AST_CONNECT";
-//        types[AST_INPUT] = "AST_INPUT";
-//        types[AST_OUTPUT] = "AST_OUTPUT";
-//        types[AST_CLASS] = "AST_CLASS";
-//        types[AST_EXTENDS] = "AST_EXTENDS";
-//        types[AST_EXPORT] = "AST_EXPORT";
-//        types[AST_IMPORT] = "AST_IMPORT";
-//        //types[AST_TYPES_COUNT] = "AST_TYPES_COUNT";
-//    }
-//    
-//    TypesMap::const_iterator it = types.find(type);
-//    
-//    if (it != types.end())
-//        return it->second;
-//    else
-//        return "BAD_AST_TYPE";
-//}
+
+/// <summary>
+/// Gets the string representation of an AST type
+/// </summary>
+/// <param name="type"></param>
+/// <returns></returns>
+std::string astTypeToString(AstNodeTypes type)
+{
+    typedef map<AstNodeTypes, string>   TypesMap;
+    static TypesMap types;
+    
+    if (types.empty())
+    {
+		types[AST_SCRIPT] = "AST_SCRIPT";
+		types[AST_TYPEDEF] = "AST_TYPEDEF";
+		types[AST_LIST] = "AST_LIST";
+		types[AST_BLOCK] = "AST_BLOCK";
+		types[AST_TUPLE] = "AST_TUPLE";
+		types[AST_DECLARATION] = "AST_DECLARATION";
+		types[AST_VAR] = "AST_VAR";
+		types[AST_CONST] = "AST_CONST";
+		types[AST_TUPLE_DEF] = "AST_TUPLE_DEF";
+		types[AST_IF] = "AST_IF";
+		types[AST_FOR] = "AST_FOR";
+		types[AST_FOR_EACH] = "AST_FOR_EACH";
+		types[AST_RETURN] = "AST_RETURN";
+		types[AST_FUNCTION] = "AST_FUNCTION";
+		types[AST_ASSIGNMENT] = "AST_ASSIGNMENT";
+		types[AST_FNCALL] = "AST_FNCALL";
+		types[AST_INTEGER] = "AST_INTEGER";
+		types[AST_FLOAT] = "AST_FLOAT";
+		types[AST_STRING] = "AST_STRING";
+		types[AST_BOOL] = "AST_BOOL";
+		types[AST_IDENTIFIER] = "AST_IDENTIFIER";
+		types[AST_ARRAY] = "AST_ARRAY";
+		types[AST_ARRAY_ACCESS] = "AST_ARRAY_ACCESS";
+		types[AST_MEMBER_ACCESS] = "AST_MEMBER_ACCESS";
+		types[AST_BINARYOP] = "AST_BINARYOP";
+		types[AST_PREFIXOP] = "AST_PREFIXOP";
+		types[AST_POSTFIXOP] = "AST_POSTFIXOP";
+		types[AST_ACTOR] = "AST_ACTOR";
+		types[AST_CONNECT] = "AST_CONNECT";
+		types[AST_DEFAULT_TYPE] = "AST_DEFAULT_TYPE";
+		types[AST_TYPE_NAME] = "AST_TYPE_NAME";
+		//types[AST_TYPES_COUNT] = "AST_TYPES_COUNT";
+    }
+    
+    TypesMap::const_iterator it = types.find(type);
+    
+	if (it != types.end())
+		return it->second;
+	else if (type > AST_TYPES_COUNT)
+		return "BAD_AST_TYPE";
+	else
+		return "AST type number: " + to_string(type);
+}
 
 /// <summary>
 /// Creates an AST node for a default (predefined) data type.
 /// </summary>
 /// <returns></returns>
-Ref<AstNode> astCreateDefaultType()
+Ref<AstNode> astCreateDefaultType(const std::string& name)
 {
-	return refFromNew(new AstBranchNode(AST_DEFAULT_TYPE, ScriptPosition()));
+	return refFromNew(new AstNamedBranch(AST_DEFAULT_TYPE, ScriptPosition(), name));
 }

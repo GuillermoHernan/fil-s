@@ -148,7 +148,10 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="ast.h" />
+    <ClInclude Include="codeGeneratorState.h" />
     <ClInclude Include="compileError.h" />
+    <ClInclude Include="c_codeGenerator.h" />
+    <ClInclude Include="c_codeGenerator_internal.h" />
     <ClInclude Include="errorTypes.h" />
     <ClInclude Include="gatherPass.h" />
     <ClInclude Include="lexer.h" />
@@ -170,7 +173,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ast.cpp" />
+    <ClCompile Include="codeGeneratorState.cpp" />
     <ClCompile Include="compileError.cpp" />
+    <ClCompile Include="c_codeGenerator.cpp" />
     <ClCompile Include="gatherPass.cpp" />
     <ClCompile Include="lexer.cpp" />
     <ClCompile Include="parser.cpp" />
