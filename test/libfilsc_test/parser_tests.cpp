@@ -665,3 +665,31 @@ TEST(Parser, parseTypedef)
 	EXPECT_PARSE_ERROR(parseTypedef_("type vec2f (float, float)"));
 	EXPECT_PARSE_ERROR(parseTypedef_("type integer is 17"));
 }
+
+/// <summary>
+/// Tests for 'markAsParameters' function
+/// </summary>
+TEST(Parser, markAsParameters)
+{
+	auto parseFunctionDef_ = [](const char* code)
+	{
+		return checkAllParsed(code, parseFunctionDef);
+	};
+
+	auto r = parseFunctionDef_("function (x:int, y:int):int {\n"
+		"const z = (x*y) + 3;\n"
+		"z + (y / 2);\n"
+		"}");
+
+	ASSERT_PARSE_OK(r);
+
+	auto nodes = findNodes(r.result, [](Ref<AstNode> node) {
+		return node->getType() == AST_DECLARATION;
+	});
+
+	ASSERT_EQ(3, nodes.size());
+	EXPECT_TRUE(nodes[0]->hasFlag(ASTF_FUNCTION_PARAMETER));
+	EXPECT_TRUE(nodes[1]->hasFlag(ASTF_FUNCTION_PARAMETER));
+	EXPECT_FALSE(nodes[2]->hasFlag(ASTF_FUNCTION_PARAMETER));
+	EXPECT_STREQ("z", nodes[2]->getName().c_str());
+}
