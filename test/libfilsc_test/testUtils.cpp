@@ -91,3 +91,35 @@ SemanticResult semAnalysisCheck(const char* code)
 	else
 		return semanticAnalysis(parseRes.result);
 }
+
+/// <summary>
+/// Finds the nodes in the tree for which the predicate is true.
+/// </summary>
+/// <param name="root"></param>
+/// <param name="predicate"></param>
+/// <param name="result">The nodes found are appened to this vector</param>
+void findNodes(Ref<AstNode> root, std::function<bool(Ref<AstNode>)> predicate, AstNodeList& result)
+{
+	if (predicate(root))
+		result.push_back(root);
+
+	for (auto child : root->children())
+	{
+		if (child.notNull())
+			findNodes(child, predicate, result);
+	}
+}
+
+/// <summary>
+/// Finds the nodes in the tree for which the predicate is true
+/// </summary>
+/// <param name="root"></param>
+/// <param name="predicate"></param>
+/// <returns>Nodes are returned as a flat vector</returns>
+AstNodeList findNodes(Ref<AstNode> root, std::function<bool(Ref<AstNode>)> predicate)
+{
+	AstNodeList result;
+
+	findNodes(root, predicate, result);
+	return result;
+}

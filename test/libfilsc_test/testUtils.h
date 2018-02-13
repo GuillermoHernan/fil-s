@@ -6,6 +6,7 @@
 
 #include "gtest/gtest.h"
 #include "parser.h"
+#include <functional>
 
 #define EXPECT_PARSE_OK(x) EXPECT_TRUE(checkExprOk((x)))
 #define EXPECT_PARSE_ERROR(x) EXPECT_TRUE(checkExprError(x))
@@ -29,3 +30,6 @@ class SemanticResult;
 
 ExprResult checkAllParsed(const char* code, ParseFunction parseFn);
 SemanticResult semAnalysisCheck(const char* code);
+
+void findNodes(Ref<AstNode> root, std::function<bool(Ref<AstNode>)> predicate, AstNodeList& result);
+AstNodeList findNodes(Ref<AstNode> root, std::function<bool(Ref<AstNode>)> predicate);

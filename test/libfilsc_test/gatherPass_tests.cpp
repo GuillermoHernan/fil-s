@@ -89,3 +89,28 @@ TEST_F(GatherPassTests, gatherParameters)
 	);
 	EXPECT_SEM_OK(r);
 }
+
+
+/// <summary>
+/// Tests 'defaultToConst' function.
+/// </summary>
+TEST_F(GatherPassTests, defaultToConst)
+{
+	auto r = runGatherPass("function test(a: int, var b:int, const c:int){a*b*c}");
+	ASSERT_SEM_OK(r);
+
+	auto nodes = findNodes(r.ast, [](Ref<AstNode> node) {
+		return node->getType() == AST_DECLARATION;
+	});
+
+	ASSERT_EQ(3, nodes.size());
+
+	EXPECT_TRUE(nodes[0]->hasFlag(ASTF_CONST));
+	EXPECT_FALSE(nodes[0]->hasFlag(ASTF_VAR));
+
+	EXPECT_FALSE(nodes[1]->hasFlag(ASTF_CONST));
+	EXPECT_TRUE(nodes[1]->hasFlag(ASTF_VAR));
+
+	EXPECT_TRUE(nodes[2]->hasFlag(ASTF_CONST));
+	EXPECT_FALSE(nodes[2]->hasFlag(ASTF_VAR));
+}

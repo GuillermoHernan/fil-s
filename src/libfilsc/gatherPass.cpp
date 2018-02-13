@@ -25,6 +25,7 @@ SemanticResult symbolGatherPass(Ref<AstNode> node, SemAnalysisState& state)
 		operations.add(AST_ACTOR, gatherSymbol);
 
 		operations.add(AST_DECLARATION, gatherParameters);
+		operations.add(AST_DECLARATION, defaultToConst);
 	}
 	addDefaultTypes(state);
 
@@ -102,4 +103,18 @@ CompileError gatherParameters(Ref<AstNode> node, SemAnalysisState& state)
 			return CompileError::ok();
 		}
 	}
+}
+
+/// <summary>
+/// Defaults to 'const' any declaration for has no access specifier (var/const)
+/// </summary>
+/// <param name="node"></param>
+/// <param name="state"></param>
+/// <returns></returns>
+Ref<AstNode> defaultToConst(Ref<AstNode> node, SemAnalysisState& state)
+{
+	if (!node->hasFlag(ASTF_VAR))
+		node->addFlag(ASTF_CONST);
+
+	return node;
 }
