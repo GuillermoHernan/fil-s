@@ -336,7 +336,7 @@ ExprResult parseConst(LexToken token)
 	r = r.requireReserved("const").then(parseDeclaration);
 
 	if (r.ok())
-		r.result->changeType(AST_CONST);
+		r.result->addFlag(ASTF_CONST);
 
 	return r.final();
 }
@@ -353,7 +353,7 @@ ExprResult parseVar(LexToken token)
 	r = r.requireReserved("var").then(parseDeclaration);
 
 	if (r.ok())
-		r.result->changeType(AST_VAR);
+		r.result->addFlag(ASTF_VAR);
 
 	return r.final();
 }
@@ -918,6 +918,9 @@ ExprResult parseFunctionDef (LexToken token)
 	r = r.then(parseTupleDef);
 	auto params = r.result;
 
+	if (r.ok())
+		markAsParameters(params);
+
 	//return type (optional)
 	Ref<AstNode>	returnType;
 
@@ -1142,3 +1145,13 @@ ExprResult parseActorExpr (LexToken token)
 //    return r.final();
 //}
 //
+
+/// <summary>
+/// Marks all children of 'node' as function parameters.
+/// </summary>
+/// <param name="paramsNode"></param>
+void markAsParameters(Ref<AstNode> node)
+{
+	for (auto child : node->children())
+		child->addFlag(ASTF_FUNCTION_PARAMETER);
+}

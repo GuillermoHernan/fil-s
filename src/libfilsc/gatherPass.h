@@ -16,4 +16,3 @@ CompileError gatherSymbol(Ref<AstNode> node, SemAnalysisState& state);
 CompileError gatherSymbol(Ref<AstNode> node, Ref<SymbolScope> scope, bool checkParents);
 CompileError gatherParameters(Ref<AstNode> node, SemAnalysisState& state);
 
-bool isParameter(const SemAnalysisState& state);

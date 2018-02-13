@@ -21,14 +21,10 @@ SemanticResult symbolGatherPass(Ref<AstNode> node, SemAnalysisState& state)
 	{
 		operations.add(AST_FUNCTION, gatherSymbol);
 		operations.add(AST_DECLARATION, gatherSymbol);
-		operations.add(AST_CONST, gatherSymbol);
-		operations.add(AST_VAR, gatherSymbol);
 		operations.add(AST_TYPEDEF, gatherSymbol);
 		operations.add(AST_ACTOR, gatherSymbol);
 
 		operations.add(AST_DECLARATION, gatherParameters);
-		operations.add(AST_CONST, gatherParameters);
-		operations.add(AST_VAR, gatherParameters);
 	}
 	addDefaultTypes(state);
 
@@ -92,7 +88,7 @@ CompileError gatherParameters(Ref<AstNode> node, SemAnalysisState& state)
 {
 	string name = node->getName();
 
-	if (!isParameter (state) && name != "")
+	if (!node->hasFlag(ASTF_FUNCTION_PARAMETER) || name == "")
 		return CompileError::ok();
 	else
 	{
@@ -105,23 +101,5 @@ CompileError gatherParameters(Ref<AstNode> node, SemAnalysisState& state)
 			scope->add(name, node);
 			return CompileError::ok();
 		}
-	}
-}
-
-/// <summary>
-/// Checks whether the current node is function parameter by examining its parents.
-/// </summary>
-/// <param name="state"></param>
-/// <returns></returns>
-bool isParameter(const SemAnalysisState& state)
-{
-	if (state.parent()->getType() != AST_TUPLE_DEF)
-		return false;
-	else
-	{
-		auto tuple = state.parent();
-		auto fnDef = state.parent(1);
-
-		return (fnDef->getType() == AST_FUNCTION && fnDef->children()[0] == tuple);
 	}
 }

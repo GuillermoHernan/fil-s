@@ -98,6 +98,7 @@ ExprResult parseActorExpr(LexToken token);
 //ExprResult parseExport(LexToken token);
 //ExprResult parseImport(LexToken token);
 
+void markAsParameters(Ref<AstNode> node);
 
 bool isAssignment(LexToken token);
 bool isBinaryOp(LexToken token);

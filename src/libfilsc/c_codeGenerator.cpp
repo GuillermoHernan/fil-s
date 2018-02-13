@@ -58,9 +58,7 @@ void codegen(Ref<AstNode> node, ostream& output, CodeGeneratorState& state, cons
 		types[AST_LIST]			= invalidNodeCodegen;
 		types[AST_BLOCK]		= blockCodegen;
 		types[AST_TUPLE]		= tupleCodegen;
-		types[AST_DECLARATION]	= invalidNodeCodegen;
-		types[AST_VAR]			= varCodegen;
-		types[AST_CONST]		= varCodegen;
+		types[AST_DECLARATION]	= varCodegen;
 		types[AST_TUPLE_DEF]	= tupleDefCodegen;
 		types[AST_IF]			= ifCodegen;
 		types[AST_FOR]			= invalidNodeCodegen;

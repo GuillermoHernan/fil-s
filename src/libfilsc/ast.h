@@ -24,8 +24,6 @@ enum AstNodeTypes
     ,AST_BLOCK
 	,AST_TUPLE
 	,AST_DECLARATION
-    ,AST_VAR
-    ,AST_CONST
 	,AST_TUPLE_DEF
     ,AST_IF
     ,AST_FOR
@@ -52,6 +50,17 @@ enum AstNodeTypes
 	,AST_TYPE_NAME
 
 	,AST_TYPES_COUNT
+};
+
+/// <summary>
+/// Enumeration with all possible AST node flags
+/// </summary>
+enum AstFlags
+{
+	ASTF_NONE = 0,
+	ASTF_FUNCTION_PARAMETER = 1,
+	ASTF_CONST = 2,
+	ASTF_VAR = 4,
 };
 
 class AstNode;
@@ -115,10 +124,6 @@ Ref<AstNode> astCreateArrayAccess(ScriptPosition pos,
 Ref<AstNode> astCreateMemberAccess(ScriptPosition pos,
                                   Ref<AstNode> objExpr, 
                                   Ref<AstNode> identifier);
-Ref<AstNode> astCreateVar (const ScriptPosition& pos, 
-                           const std::string& name, 
-                           Ref<AstNode> expr,
-                           bool isConst);
 
 Ref<AstFunction> astCreateInputMessage(ScriptPosition pos, const std::string& name);
 Ref<AstFunction> astCreateOutputMessage(ScriptPosition pos, const std::string& name);
@@ -220,6 +225,17 @@ public:
 		return m_dataType;
 	}
 
+	int addFlag(AstFlags flag)
+	{
+		m_flags |= flag;
+		return m_flags;
+	}
+
+	bool hasFlag(AstFlags flag)const
+	{
+		return (m_flags & flag) != 0;
+	}
+
 protected:
     static const AstNodeList    ms_noChildren;
     
@@ -238,6 +254,7 @@ protected:
 private:
 	Ref<RefCountObj>	m_scope;
 	Ref<AstNode>		m_dataType;
+	int					m_flags = 0;
 };
 
 /**
