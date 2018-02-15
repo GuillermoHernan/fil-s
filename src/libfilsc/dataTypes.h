@@ -5,6 +5,7 @@
 #pragma once
 
 #include "refCountObj.h"
+#include "ast.h"
 
 /// <summary>
 /// Describes the possible data types.
@@ -26,7 +27,16 @@ class BaseType : public RefCountObj
 public:
 	virtual ~BaseType() {}
 
-	virtual EDataType type()const = 0;
+	virtual EDataType	type()const=0;
+	virtual std::string	toString()const
+	{
+		return m_name;
+	}
+
+	const std::string& getName()const
+	{
+		return m_name;
+	}
 
 protected:
 	BaseType(const std::string & name) : m_name(name) {}
@@ -52,7 +62,7 @@ public:
 	}
 
 protected:
-	DefaultType(EDataType type) : m_type(type) {}
+	DefaultType(const std::string& name, EDataType type) : BaseType (name), m_type(type) {}
 
 private:
 	EDataType m_type;
@@ -64,28 +74,63 @@ private:
 class TupleType : public BaseType
 {
 public:
+	static Ref<TupleType> create(const std::string& name = "");
 
-	virtual EDataType type()const
+	virtual EDataType	type()const;
+	virtual std::string	toString()const;
+
+	int memberCount()const
 	{
-		return DT_TUPLE;
+		return (int)m_members.size();
 	}
 
+	int				findMemberByName(const std::string& name)const;
+
+	Ref<AstNode>	getMemberNode(int index)const;
+	Ref<BaseType>	getMemberType(int index)const;
+
+	void			addMember(Ref<AstNode> node);
+
+protected:
+	TupleType(const std::string& name):BaseType(name) {}
+
 private:
-	std::vector<Ref<BaseType>>	m_members;
+	std::vector<Ref<AstNode>>	m_members;
 	std::map<std::string, int>	m_names;
 };
 
 /// <summary>
 /// Class for function types
 /// </summary>
-class FunctionType
+class FunctionType : public BaseType
 {
 public:
+	static Ref<FunctionType> create(Ref<AstNode> node);
 
 	virtual EDataType type()const
 	{
 		return DT_FUNCTION;
 	}
+
+	virtual std::string	toString()const;
+
+	Ref<TupleType> getParameters()const
+	{
+		return m_parameters;
+	}
+
+	Ref<BaseType> getReturnType()const
+	{
+		return m_returnType;
+	}
+
+	void setReturnType(Ref<BaseType> type)
+	{
+		m_returnType = type;
+	}
+
+protected:
+	FunctionType(const std::string& name) : BaseType(name) {}
 
 private:
 	Ref<TupleType>	m_parameters;

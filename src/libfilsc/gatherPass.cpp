@@ -4,6 +4,7 @@
 #include "SymbolScope.h"
 #include "semAnalysisState.h"
 #include "passOperations.h"
+#include "dataTypes.h"
 
 using namespace std;
 
@@ -38,8 +39,8 @@ SemanticResult symbolGatherPass(Ref<AstNode> node, SemAnalysisState& state)
 /// <param name="state"></param>
 void addDefaultTypes(SemAnalysisState& state)
 {
-	state.rootScope->add("int", astCreateDefaultType("int"));
-	state.rootScope->add("bool", astCreateDefaultType("bool"));
+	state.rootScope->add("int", astCreateDefaultType ( DefaultType::createInt()));
+	state.rootScope->add("bool", astCreateDefaultType ( DefaultType::createBool()));
 }
 
 /// <summary>

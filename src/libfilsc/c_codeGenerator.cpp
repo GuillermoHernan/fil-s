@@ -135,7 +135,7 @@ void functionCodegen(Ref<AstNode> node, ostream& output, CodeGeneratorState& sta
 	output << genFunctionHeader(node, state);
 	output << "{\n";
 
-	codegen(node, output, state, "");
+	codegen(fnCode, output, state, "");
 
 	output << "}\n\n";
 }
@@ -216,12 +216,13 @@ void tupleCodegen(Ref<AstNode> node, std::ostream& output, CodeGeneratorState& s
 	if (resultDest == "")
 		return;
 
-	auto	dataType = node->getDataType();
+	auto	dataType = node->getDataType().staticCast<TupleType>();
 	auto&	expressions = node->children();
 
 	for (size_t i = 0; i < expressions.size(); ++i)
 	{
-		string fieldName = state.cname(types[i]);
+		auto childNode = dataType->getMemberNode((unsigned)i);
+		string fieldName = state.cname(childNode);
 		string childDest = resultDest + "." + fieldName;
 
 		codegen(expressions[i], output, state, resultDest);

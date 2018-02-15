@@ -36,10 +36,9 @@ private:
 		std::vector<TempVarInfo>	tempVars;
 	};
 
-	std::vector<BlockInfo>					m_blockStack;
-	std::map< Ref<AstNode>, std::string>	m_nodeCNames;
-	std::map< Ref<BaseType>, std::string>	m_typesCNames;
-	int										m_nextSymbolId = 0;
+	std::vector<BlockInfo>						m_blockStack;
+	std::map< Ref<RefCountObj>, std::string>	m_objNames;
+	int											m_nextSymbolId = 0;
 
 	std::string		allocCName(const std::string& base);
 	TempVarInfo*	findTemporary(std::function<bool(const TempVarInfo&)> predicate);

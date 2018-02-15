@@ -621,7 +621,7 @@ TEST(Parser, parseFunctionDef)
 	auto& children = r->children();
 	ASSERT_EQ(3, children.size());
 	EXPECT_EQ(AST_TUPLE_DEF, children[0]->getType());
-	EXPECT_EQ(AST_IDENTIFIER, children[1]->getType());
+	EXPECT_EQ(AST_TYPE_NAME, children[1]->getType());
 	EXPECT_EQ(AST_BLOCK, children[2]->getType());
 
 	EXPECT_EQ(2, children[0]->children().size());

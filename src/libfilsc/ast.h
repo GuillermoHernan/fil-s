@@ -13,6 +13,7 @@
 
 class SymbolScope;
 class BaseType;
+class DefaultType;
 
 /**
  * AST node types enumeration
@@ -81,6 +82,10 @@ Ref<AstNode> astCreateTypedef(ScriptPosition pos, const std::string& name, Ref<A
 Ref<AstNode> astCreateDeclaration(LexToken token,
 	Ref<AstNode> typeDesc,
 	Ref<AstNode> initExpr);
+Ref<AstNode> astCreateDeclaration(ScriptPosition pos, 
+	const std::string& name,
+	Ref<AstNode> typeDesc,
+	Ref<AstNode> initExpr);
 
 Ref<AstNode> astCreateFunction(ScriptPosition pos, 
 	const std::string& name, 
@@ -142,7 +147,7 @@ Ref<AstNode> astCreateImport (ScriptPosition pos, Ref<AstNode> param);
 
 Ref<AstNode> astGetExtends(Ref<AstNode> node);
 
-Ref<AstNode> astCreateDefaultType(const std::string& name);
+Ref<AstNode> astCreateDefaultType(Ref<DefaultType> type);
 
 /**
  * Base class for AST nodes
@@ -235,7 +240,7 @@ public:
 		return (m_flags & flag) != 0;
 	}
 
-	Ref<AstNode> findChildByName(const std::string& name);
+	//Ref<AstNode> findChildByName(const std::string& name);
 
 protected:
     static const AstNodeList    ms_noChildren;
@@ -243,10 +248,7 @@ protected:
     const ScriptPosition m_position;
     AstNodeTypes m_type;
 
-    AstNode(AstNodeTypes type, const ScriptPosition& pos) :
-    m_position(pos), m_type(type)
-    {
-    }
+	AstNode(AstNodeTypes type, const ScriptPosition& pos);
 
     virtual ~AstNode()
     {

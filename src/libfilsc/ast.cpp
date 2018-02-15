@@ -5,11 +5,19 @@
 #include "pch.h"
 #include "ast.h"
 #include "SymbolScope.h"
+#include "dataTypes.h"
 
 using namespace std;
 
 //Empty children list constant
 const AstNodeList AstNode::ms_noChildren;
+
+AstNode::AstNode(AstNodeTypes type, const ScriptPosition& pos) :
+	m_position(pos), m_type(type)
+{
+	m_dataType = DefaultType::createVoid();
+}
+
 
 Ref<SymbolScope> AstNode::getScope()const
 {
@@ -20,6 +28,18 @@ void AstNode::setScope(Ref<SymbolScope> scope)
 {
 	m_scope = scope.staticCast<SymbolScope>();
 }
+
+
+Ref<BaseType> AstNode::getDataType()const
+{
+	return m_dataType.staticCast<BaseType>();
+}
+
+void AstNode::setDataType(Ref<BaseType> dataType)
+{
+	m_dataType = dataType;
+}
+
 
 //  Constructor functions.
 //
@@ -41,14 +61,31 @@ Ref<AstNode> astCreateDeclaration(LexToken token,
 	Ref<AstNode> typeDesc,
 	Ref<AstNode> initExpr)
 {
+	return astCreateDeclaration(token.getPosition(), token.text(), typeDesc, initExpr);
+}
+
+/// <summary>
+/// Creates a generic variable declaration node.
+/// Access type (var, const) is not specified.
+/// </summary>
+/// <param name="token"></param>
+/// <param name="typeDesc"></param>
+/// <param name="initExpr"></param>
+/// <returns></returns>
+Ref<AstNode> astCreateDeclaration(ScriptPosition pos,
+	const std::string& name,
+	Ref<AstNode> typeDesc,
+	Ref<AstNode> initExpr)
+{
 	auto result = refFromNew(
-		new AstNamedBranch(AST_DECLARATION, token.getPosition(), token.text())
+		new AstNamedBranch(AST_DECLARATION, pos, name)
 	);
 
 	result->addChild(typeDesc);
 	result->addChild(initExpr);
 	return result;
 }
+
 
 /// <summary>
 /// Creates a type definition node.
@@ -596,7 +633,9 @@ std::string astTypeToString(AstNodeTypes type)
 /// Creates an AST node for a default (predefined) data type.
 /// </summary>
 /// <returns></returns>
-Ref<AstNode> astCreateDefaultType(const std::string& name)
+Ref<AstNode> astCreateDefaultType(Ref<DefaultType> type)
 {
-	return refFromNew(new AstNamedBranch(AST_DEFAULT_TYPE, ScriptPosition(), name));
+	auto node = refFromNew(new AstNamedBranch(AST_DEFAULT_TYPE, ScriptPosition(), type->getName()));
+	node->setDataType(type);
+	return node;
 }

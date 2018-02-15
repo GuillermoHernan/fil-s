@@ -10,33 +10,59 @@ using namespace std;
 /// <returns></returns>
 std::string CodeGeneratorState::cname(Ref<AstNode> node)
 {
-	auto it = m_nodeCNames.find(node);
+	//This 'switch' handles special cases.
+	switch (node->getType())
+	{
+	case AST_TYPEDEF:
+		return cname(node->child(0));
+	
+	case AST_TUPLE_DEF:
+	case AST_FUNCTION:
+	case AST_ACTOR:
+		return cname(node->getDataType());
 
-	if (it != m_nodeCNames.end())
+	default:
+		break;
+	}
+
+	auto it = m_objNames.find(node);
+
+	if (it != m_objNames.end())
+		return it->second;
+	else
+	{
+		string name = allocCName(node->getName());
+
+		m_objNames[node] = name;
+		return name;
+	}
+}
+
+/// <summary>
+/// Gets the name in 'C' source for the given data type.
+/// </summary>
+/// <param name="type"></param>
+/// <returns></returns>
+std::string CodeGeneratorState::cname(Ref<BaseType> type)
+{
+	auto it = m_objNames.find(type);
+
+	if (it != m_objNames.end())
 		return it->second;
 	else
 	{
 		string name;
 
-		if (node->getType() == AST_DEFAULT_TYPE)
-		{
-			//TODO: This is just valid for the current, limited datatypes.
-			name = node->getName();
-		}
+		if (type->type() == DT_BOOL || type->type() == DT_INT)
+			name = type->getName();
 		else
-		{
-			string base = node->getName();
+			name = allocCName(type->getName());
 
-			if (base == "")
-				base = "_unnamed";
-
-			name = allocCName(name);
-		}
-
-		m_nodeCNames[node] = name;
+		m_objNames[type] = name;
 		return name;
 	}
 }
+
 
 
 /// <summary>
@@ -133,8 +159,12 @@ std::string	CodeGeneratorState::allocCName(const std::string& base)
 {
 	const size_t	bufSize = base.size() + 32;
 	char *			buffer = new char[bufSize];
+	const char*		base2 = base.c_str();
 
-	sprintf_s(buffer, bufSize, "%s_%04X",base.c_str(), m_nextSymbolId++);
+	if (base != "")
+		base2 = "_unnamed";
+
+	sprintf_s(buffer, bufSize, "%s_%04X", base2, m_nextSymbolId++);
 
 	string result = buffer;
 	delete[]buffer;

@@ -926,7 +926,7 @@ ExprResult parseFunctionDef (LexToken token)
 
 	if (r.ok() && r.token.isOperator(":"))
 	{
-		r = r.skip().then(parseIdentifier).orElse(parseTupleDef);
+		r = r.skip().then(parseTypeDescriptor);
 		returnType = r.result;
 	}
 

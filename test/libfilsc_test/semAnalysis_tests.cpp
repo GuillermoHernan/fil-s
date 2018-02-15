@@ -27,7 +27,13 @@ TEST(SemanticAnalysis, semanticAnalysis)
 /// </summary>
 TEST(SemanticAnalysis, semInOrderWalk)
 {
-	const char* testCode = "function max (a:int, b:int) {if (a>b) a else b}\n";
+	const char* testCode = 
+		"function max (a:int, b:int) {\n"
+		"if (a>b)\n"
+		"  a\n"
+		"else\n"
+		"  b\n"
+		"}\n";
 	const std::vector<AstNodeTypes> expected = {
 		AST_TYPE_NAME,
 		AST_DECLARATION,

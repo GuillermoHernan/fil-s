@@ -7,10 +7,13 @@
 class SemanticResult;
 class SemAnalysisState;
 class CompileError;
+class BaseType;
+class TupleType;
 
 SemanticResult typeCheckPass(Ref<AstNode> node, SemAnalysisState& state);
 
 CompileError typeExistsCheck(Ref<AstNode> node, SemAnalysisState& state);
+CompileError tupleDefTypeCheck(Ref<AstNode> node, SemAnalysisState& state);
 
 CompileError blockTypeCheck(Ref<AstNode> node, SemAnalysisState& state);
 CompileError tupleTypeCheck(Ref<AstNode> node, SemAnalysisState& state);
@@ -37,13 +40,14 @@ CompileError defaultTypeAssign(Ref<AstNode> node, SemAnalysisState& state);
 
 CompileError setVoidType(Ref<AstNode> node, SemAnalysisState& state);
 
-CompileError areTypesCompatible(Ref<AstNode> typeA, Ref<AstNode> typeB, Ref<AstNode> opNode);
-Ref<AstNode> getCommonType(Ref<AstNode> typeA, Ref<AstNode> typeB, SemAnalysisState& state);
+CompileError	areTypesCompatible(Ref<BaseType> typeA, Ref<BaseType> typeB, Ref<AstNode> opNode);
+bool			areTypesCompatible(Ref<BaseType> typeA, Ref<BaseType> typeB);
+bool			areTuplesCompatible(Ref<TupleType> tupleA, Ref<TupleType> tupleB);
+Ref<BaseType>	getCommonType(Ref<BaseType> typeA, Ref<BaseType> typeB, SemAnalysisState& state);
 
-bool isBoolType(Ref<AstNode> node);
-bool isIntType(Ref<AstNode> node);
-bool isVoidType(Ref<AstNode> node);
-std::string getTypeText(Ref<AstNode> node);
+bool isBoolType(Ref<BaseType> type);
+bool isIntType(Ref<BaseType> type);
+bool isVoidType(Ref<BaseType> type);
 
 
 bool isType(Ref<AstNode> node);

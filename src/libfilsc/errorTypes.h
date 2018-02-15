@@ -26,6 +26,7 @@ enum ErrorTypes
 	ETYPE_WRONG_IF_CONDITION_TYPE_1,
 	ETYPE_MEMBER_NOT_FOUND_2, 
 	ETYPE_WRONG_TYPE_2,
+	ETYPE_INCOMPATIBLE_TYPES_2,
 
 	//Add new error types above this line.
 	//REMEMBER to add the description to 'errorTypeTemplate' function.
