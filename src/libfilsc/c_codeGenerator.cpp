@@ -216,9 +216,8 @@ void tupleCodegen(Ref<AstNode> node, std::ostream& output, CodeGeneratorState& s
 	if (resultDest == "")
 		return;
 
-	auto	typeNode = node->getDataType();
+	auto	dataType = node->getDataType();
 	auto&	expressions = node->children();
-	auto&	types = typeNode->children();
 
 	for (size_t i = 0; i < expressions.size(); ++i)
 	{

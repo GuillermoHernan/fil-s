@@ -106,6 +106,10 @@ const char * errorTypeTemplate(ErrorTypes type)
 		/*ETYPE_NON_EXISTENT_SYMBOL_1*/	"Symbol '%s' does not exist",
 		/*ETYPE_NOT_A_TYPE_1*/			"Symbol '%s' is not a data type",
 		/*ETYPE_INVALID_CODEGEN_NODE_1*/"Code generation for nodes of type '%s' is not valid or not implemented",
+		/*ETYPE_DECLARATION_WITHOUT_TYPE*/"Variable declaration must have a type or an initialization expression",
+		/*ETYPE_WRONG_IF_CONDITION_TYPE_1*/"'if' conditions must be of type 'bool', not '%s'",
+		/*ETYPE_MEMBER_NOT_FOUND_2,*/	"Member '%s' not found in type '%s'",
+		/*ETYPE_WRONG_TYPE_2*/			"wrong type '%s' in expression. '%s' was expected."
 	};
 
 	return templates[type];

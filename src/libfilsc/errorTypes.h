@@ -22,6 +22,10 @@ enum ErrorTypes
 	ETYPE_NON_EXISTENT_SYMBOL_1,
 	ETYPE_NOT_A_TYPE_1,
 	ETYPE_INVALID_CODEGEN_NODE_1,
+	ETYPE_DECLARATION_WITHOUT_TYPE,
+	ETYPE_WRONG_IF_CONDITION_TYPE_1,
+	ETYPE_MEMBER_NOT_FOUND_2, 
+	ETYPE_WRONG_TYPE_2,
 
 	//Add new error types above this line.
 	//REMEMBER to add the description to 'errorTypeTemplate' function.

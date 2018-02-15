@@ -30,6 +30,7 @@
     <ClInclude Include="c_codeGenerator.h" />
     <ClInclude Include="c_codeGenerator_internal.h" />
     <ClInclude Include="codeGeneratorState.h" />
+    <ClInclude Include="dataTypes.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp" />
@@ -49,5 +50,6 @@
     <ClCompile Include="passOperations.cpp" />
     <ClCompile Include="c_codeGenerator.cpp" />
     <ClCompile Include="codeGeneratorState.cpp" />
+    <ClCompile Include="dataTypes.cpp" />
   </ItemGroup>
 </Project>

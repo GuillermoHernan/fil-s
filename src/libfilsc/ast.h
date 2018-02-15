@@ -12,6 +12,7 @@
 #include "lexer.h"
 
 class SymbolScope;
+class BaseType;
 
 /**
  * AST node types enumeration
@@ -220,10 +221,8 @@ public:
 	Ref<SymbolScope> getScope()const;
 	void setScope(Ref<SymbolScope> scope);
 
-	Ref<AstNode> getDataType()const
-	{
-		return m_dataType;
-	}
+	Ref<BaseType> getDataType()const;
+	void setDataType(Ref<BaseType> dataType);
 
 	int addFlag(AstFlags flag)
 	{
@@ -235,6 +234,8 @@ public:
 	{
 		return (m_flags & flag) != 0;
 	}
+
+	Ref<AstNode> findChildByName(const std::string& name);
 
 protected:
     static const AstNodeList    ms_noChildren;
@@ -253,7 +254,7 @@ protected:
 
 private:
 	Ref<RefCountObj>	m_scope;
-	Ref<AstNode>		m_dataType;
+	Ref<RefCountObj>	m_dataType;
 	int					m_flags = 0;
 };
 

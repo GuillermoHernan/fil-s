@@ -152,6 +152,7 @@
     <ClInclude Include="compileError.h" />
     <ClInclude Include="c_codeGenerator.h" />
     <ClInclude Include="c_codeGenerator_internal.h" />
+    <ClInclude Include="dataTypes.h" />
     <ClInclude Include="errorTypes.h" />
     <ClInclude Include="gatherPass.h" />
     <ClInclude Include="lexer.h" />
@@ -176,6 +177,7 @@
     <ClCompile Include="codeGeneratorState.cpp" />
     <ClCompile Include="compileError.cpp" />
     <ClCompile Include="c_codeGenerator.cpp" />
+    <ClCompile Include="dataTypes.cpp" />
     <ClCompile Include="gatherPass.cpp" />
     <ClCompile Include="lexer.cpp" />
     <ClCompile Include="parser.cpp" />

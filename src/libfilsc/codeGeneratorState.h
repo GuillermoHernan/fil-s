@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ast.h"
+#include "dataTypes.h"
 
 /// <summary>Stores code generator state</summary>
 /// <remarks>Most code generator state has to do with assigning names in 'C' source
@@ -12,6 +13,7 @@ public:
 	~CodeGeneratorState();
 
 	std::string cname(Ref<AstNode> node);
+	std::string cname(Ref<BaseType> type);
 
 	void enterBlock();
 	void exitBlock();
@@ -36,6 +38,7 @@ private:
 
 	std::vector<BlockInfo>					m_blockStack;
 	std::map< Ref<AstNode>, std::string>	m_nodeCNames;
+	std::map< Ref<BaseType>, std::string>	m_typesCNames;
 	int										m_nextSymbolId = 0;
 
 	std::string		allocCName(const std::string& base);
