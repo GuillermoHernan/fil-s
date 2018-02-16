@@ -6,6 +6,8 @@
 #include "testUtils.h"
 #include "semanticAnalysis.h"
 
+using namespace std;
+
 /// <summary>
 /// Checks an expression result object, and passes the error message to 'Google test'
 /// if failed.
@@ -122,4 +124,63 @@ AstNodeList findNodes(Ref<AstNode> root, std::function<bool(Ref<AstNode>)> predi
 
 	findNodes(root, predicate, result);
 	return result;
+}
+
+/// <summary>
+/// Returns the first node which complies with the predicate.
+/// </summary>
+/// <param name="root"></param>
+/// <param name="predicate"></param>
+/// <returns></returns>
+Ref<AstNode> findNode(Ref<AstNode> root, std::function<bool(Ref<AstNode>)> predicate)
+{
+	AstNodeList result;
+
+	findNodes(root, predicate, result);
+	if (result.empty())
+		return Ref<AstNode>();
+	else
+		return result.front();
+}
+
+EDataType getDataType(Ref<AstNode> node)
+{
+	return node->getDataType()->type();
+}
+
+EDataType getDataType(Ref<BaseType> type)
+{
+	return type->type();
+}
+
+/// <summary>Prints an AST tree.</summary>
+/// <param name="node"></param>
+/// <returns></returns>
+std::string printAST(Ref<AstNode> node, int indentLevel)
+{
+	ostringstream	output;
+
+	printAST(node, output, indentLevel);
+	return output.str();
+}
+
+/// <summary>Prints out an AST tree to a stream</summary>
+/// <param name="node"></param>
+/// <param name="output"></param>
+/// <param name="indentLevel"></param>
+void printAST(Ref<AstNode> node, std::ostream& output, int indentLevel)
+{
+	cout << string(indentLevel * 2, ' ');
+	if (node.isNull())
+		cout << "[NULL]\n";
+	else
+	{
+		cout << astTypeToString(node->getType()) << "(";
+		cout << node->getName() << "," << node->getValue() << "): ";
+		cout << node->getDataType()->toString() << "\n";
+
+		++indentLevel;
+		for (auto child : node->children())
+			printAST(child, output, indentLevel);
+	}
 }

@@ -344,6 +344,12 @@ public:
     const std::string operation;
     
     //virtual ASValue toJS()const;
+
+	virtual std::string getValue()const
+	{
+		return operation;
+	}
+
     
     AstOperator (AstNodeTypes type, ScriptPosition position, const std::string& opText) : 
     AstBranchNode (type, position), operation(opText)

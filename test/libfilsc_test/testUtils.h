@@ -7,6 +7,7 @@
 #include "gtest/gtest.h"
 #include "parser.h"
 #include <functional>
+#include "dataTypes.h"
 
 #define EXPECT_PARSE_OK(x) EXPECT_TRUE(checkExprOk((x)))
 #define EXPECT_PARSE_ERROR(x) EXPECT_TRUE(checkExprError(x))
@@ -33,3 +34,13 @@ SemanticResult semAnalysisCheck(const char* code);
 
 void findNodes(Ref<AstNode> root, std::function<bool(Ref<AstNode>)> predicate, AstNodeList& result);
 AstNodeList findNodes(Ref<AstNode> root, std::function<bool(Ref<AstNode>)> predicate);
+Ref<AstNode> findNode(Ref<AstNode> root, std::function<bool(Ref<AstNode>)> predicate);
+
+#define EXPECT_DATATYPE(x,y) EXPECT_EQ(x, getDataType((y)))
+#define ASSERT_DATATYPE(x,y) ASSERT_EQ(x, getDataType((y)))
+
+EDataType getDataType(Ref<AstNode> node);
+EDataType getDataType(Ref<BaseType> type);
+
+std::string printAST(Ref<AstNode> node, int indentLevel = 0);
+void printAST(Ref<AstNode> node, std::ostream& output, int indentLevel = 0);
