@@ -703,6 +703,28 @@ TEST(Parser, parseStatementSeparator)
 	EXPECT_TRUE(pos1 == pos2);
 }
 
+/// <summary>
+/// Tests for 'parseReturn' function.
+/// </summary>
+/// <param name=""></param>
+/// <param name=""></param>
+/// <returns></returns>
+TEST(Parser, parseReturn)
+{
+	auto parseReturn_ = [](const char* code)
+	{
+		return checkAllParsed(code, parseReturn);
+	};
+
+	EXPECT_PARSE_OK(parseReturn_("return a+5"));
+	EXPECT_PARSE_OK(parseReturn_("return\n"));
+	EXPECT_PARSE_OK(parseReturn_("(9*n) + (x*y*z)"));
+
+	EXPECT_PARSE_ERROR(parseReturn_("const a = 6"));
+	EXPECT_PARSE_ERROR(parseReturn_("return const a = 6"));
+	EXPECT_PARSE_ERROR(parseReturn("return const a = 6"));
+}
+
 
 /// <summary>
 /// Tests for 'markAsParameters' function
