@@ -31,6 +31,18 @@ Ref<DefaultType> DefaultType::createVoid()
 }
 
 /// <summary>
+/// 'toString' function is overloaded to print void type as an empty tuple.
+/// </summary>
+std::string	DefaultType::toString()const
+{
+	if (m_type == DT_VOID)
+		return "()";
+	else
+		return BaseType::toString();
+}
+
+
+/// <summary>
 /// Creates a tuple datatype
 /// </summary>
 /// <returns></returns>
@@ -124,6 +136,8 @@ Ref<FunctionType> FunctionType::create(Ref<AstNode> node)
 
 	if (node->childExists(1))
 		fnType->m_returnType = node->child(1)->getDataType();
+	else
+		fnType->m_returnType = DefaultType::createVoid();
 
 	return fnType;
 }

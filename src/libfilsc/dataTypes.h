@@ -61,6 +61,8 @@ public:
 		return m_type;
 	}
 
+	virtual std::string	toString()const;
+
 protected:
 	DefaultType(const std::string& name, EDataType type) : BaseType (name), m_type(type) {}
 

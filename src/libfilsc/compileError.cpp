@@ -110,7 +110,7 @@ const char * errorTypeTemplate(ErrorTypes type)
 		/*ETYPE_WRONG_IF_CONDITION_TYPE_1*/"'if' conditions must be of type 'bool', not '%s'",
 		/*ETYPE_MEMBER_NOT_FOUND_2,*/	"Member '%s' not found in type '%s'",
 		/*ETYPE_WRONG_TYPE_2*/			"wrong type '%s' in expression. '%s' was expected.",
-		/*ETYPE_INCOMPATIBLE_TYPES_2*/	"Type '%s' is incomatible and cannot be assigned to type '%s'",
+		/*ETYPE_INCOMPATIBLE_TYPES_2*/	"Type '%s' is incompatible and cannot be assigned to type '%s'",
 	};
 
 	return templates[type];
