@@ -12,6 +12,7 @@ enum LEX_TYPES
     LEX_EOF = 0,
     LEX_INITIAL,
     LEX_COMMENT,
+	LEX_NEWLINE,
     
     LEX_ID = 256,
 	LEX_RESERVED,
@@ -41,6 +42,14 @@ std::string tokenType2String(int token);
 class LexToken
 {
 public:
+	/// <summary>Flags used to control the behaviour of 'next' function.</summary>
+	enum NextFlags
+	{
+		NONE = 0,
+		COMMENTS = 1,
+		NEWLINE = 2,
+		ALL = COMMENTS | NEWLINE
+	};
 
     /// <summary>Constructor which receives a source code string.</summary>
     /// <remarks>
@@ -55,11 +64,11 @@ public:
     LexToken(LEX_TYPES lexType, const char* code, const ScriptPosition& position, int length);
 
     /// Reads next token from input, and returns it.
-    LexToken next(bool skipComments = true)const;
+    LexToken next(int flags = NONE)const;
 
     /// Checks that the current token matches the expected, and returns next
-	LexToken match(int expected_tk)const;
-	LexToken match(int expected_tk, const char* expected_text)const;
+	LexToken match(int expected_tk, int flags = NONE)const;
+	LexToken match(int expected_tk, const char* expected_text, int flags = NONE)const;
 
     ///Return a string representing the position in lines and columns of the token
 

@@ -24,6 +24,7 @@ string tokenType2String(int token)
     case LEX_EOF: return "EOF";
 	case LEX_INITIAL: return "INITIAL";
 	case LEX_COMMENT: return "COMMENT";
+	case LEX_NEWLINE: return "NEWLINE";
 	case LEX_RESERVED: return "RESERVED";
 	case LEX_ID: return "ID";
 	case LEX_INT: return "INT";
@@ -165,14 +166,26 @@ LexToken LexToken::buildNextToken(LEX_TYPES lexType, const char* code, int lengt
  * @param skipComments  To indicate if 'comment' tokens must be skipped
  * @return Next token
  */
-LexToken LexToken::next(bool skipComments)const
-{
-    LexToken result = nextDispatch();
 
-    if (skipComments && result.type() == LEX_COMMENT)
-        return result.next(true);
-    else
-        return result;
+/// <summary>
+/// Reads next token from input, and returns it.
+/// </summary>
+/// <param name="flags">Controls which (extra) tokens are returned.
+/// By default, all extra tokens are skipped. By passing one or more
+/// of the flags defined in 'LexToken::NextFlags', the function would also
+/// return 'comment' or 'new line' tokens.</param>
+/// <returns></returns>
+LexToken LexToken::next(int flags)const
+{
+    LexToken	result = nextDispatch();
+	auto		type = result.type();
+
+	if (type == LEX_COMMENT && (flags & COMMENTS) == 0)
+		return result.next(flags);
+	else if (type == LEX_NEWLINE && (flags & NEWLINE) == 0)
+		return result.next(flags);
+	else
+		return result;
 }
 
 /// Reads next token from input, and returns it.
@@ -189,6 +202,8 @@ LexToken LexToken::nextDispatch()const
         else
             return comment;
     }
+	else if (*currCh == '\n')
+		return buildNextToken(LEX_NEWLINE, currCh, 1);
     else if (isAlpha(*currCh))
         return parseId(currCh);
     else if (isNumeric(*currCh))
@@ -201,12 +216,12 @@ LexToken LexToken::nextDispatch()const
         return buildNextToken(LEX_EOF, currCh, 0);
 }
 
-LexToken LexToken::match(int expected_tk)const
+LexToken LexToken::match(int expected_tk, int flags)const
 {
     if (type() != expected_tk)
-		return errorAt(m_code, ETYPE_UNEXPECTED_TOKEN_2, text().c_str(), tokenType2String(expected_tk));
+		return errorAt(m_code, ETYPE_UNEXPECTED_TOKEN_2, text().c_str(), tokenType2String(expected_tk).c_str());
 	else
-		return next();
+		return next(flags);
 }
 
 /// <summary>
@@ -214,14 +229,14 @@ LexToken LexToken::match(int expected_tk)const
 /// </summary>
 /// <param name="expected_tk">Expected token type</param>
 /// <param name="expected_text">EXpected token text</param>
+/// <param name="flags">Flags used to read the next token.</param>
 /// <returns>Next token</returns>
-LexToken LexToken::match(int expected_tk, const char* expected_text)const
+LexToken LexToken::match(int expected_tk, const char* expected_text, int flags)const
 {
 	if (type() != expected_tk || text() != expected_text)
 		return errorAt(m_code, ETYPE_UNEXPECTED_TOKEN_2, text().c_str(), expected_text);
 	else
-		return next();
-
+		return next(flags);
 }
 
 

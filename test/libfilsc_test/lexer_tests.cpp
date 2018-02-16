@@ -14,6 +14,7 @@ TEST(LexToken, tokenType2String)
 	EXPECT_STREQ("EOF",		tokenType2String(LEX_EOF).c_str());
 	EXPECT_STREQ("INITIAL",	tokenType2String(LEX_INITIAL).c_str());
 	EXPECT_STREQ("COMMENT", tokenType2String(LEX_COMMENT).c_str());
+	EXPECT_STREQ("NEWLINE", tokenType2String(LEX_NEWLINE).c_str());
 	EXPECT_STREQ("ID",		tokenType2String(LEX_ID).c_str());
 	EXPECT_STREQ("RESERVED", tokenType2String(LEX_RESERVED).c_str());
 	EXPECT_STREQ("INT",		tokenType2String(LEX_INT).c_str());
@@ -72,14 +73,18 @@ TEST(LexToken, next)
 		"x = 10;";
 
 	LexToken tok(code);
-	LexToken next = tok.next(true);
+	LexToken next = tok.next(LexToken::NONE);
 
 	EXPECT_EQ(LEX_ID, next.type());
 	EXPECT_STREQ("x", next.text().c_str());
 
-	next = tok.next(false);
+	next = tok.next(LexToken::COMMENTS);
 	EXPECT_EQ(LEX_COMMENT, next.type());
 	EXPECT_STREQ("//This is a comment", next.text().c_str());
+
+	next = tok.next(LexToken::NEWLINE);
+	EXPECT_EQ(LEX_NEWLINE, next.type());
+	EXPECT_STREQ("\n", next.text().c_str());
 }
 
 /// <summary>
@@ -94,18 +99,19 @@ TEST(LexToken, nextDispatch)
 
 	LexToken	tok(code);
 
-	tok = tok.next(false);
-
 	//'match' would throw and exception if the appropriate token type is not found.
-	tok = tok.match(LEX_COMMENT);
-	tok = tok.match(LEX_ID);
-	tok = tok.match(LEX_OPERATOR);
-	tok = tok.match(LEX_INT);
-	tok = tok.match(LEX_OPERATOR);
-	tok = tok.match(LEX_INT);
-	tok = tok.match(LEX_ID);
-	tok = tok.match(LEX_OPERATOR);
-	tok = tok.match(LEX_STR);
+	tok = tok.match(LEX_INITIAL, LexToken::ALL);
+	tok = tok.match(LEX_COMMENT, LexToken::ALL);
+	tok = tok.match(LEX_NEWLINE, LexToken::ALL);
+	tok = tok.match(LEX_ID, LexToken::ALL);
+	tok = tok.match(LEX_OPERATOR, LexToken::ALL);
+	tok = tok.match(LEX_INT, LexToken::ALL);
+	tok = tok.match(LEX_OPERATOR, LexToken::ALL);
+	tok = tok.match(LEX_INT, LexToken::ALL);
+	tok = tok.match(LEX_NEWLINE, LexToken::ALL);
+	tok = tok.match(LEX_ID, LexToken::ALL);
+	tok = tok.match(LEX_OPERATOR, LexToken::ALL);
+	tok = tok.match(LEX_STR, LexToken::ALL);
 
 	EXPECT_EQ(LEX_EOF, tok.type());
 }
@@ -143,19 +149,19 @@ TEST(LexToken, parseComment)
 
 	LexToken	tok(code);
 
-	tok = tok.next(false);
+	tok = tok.next(LexToken::COMMENTS);
 	EXPECT_EQ(LEX_COMMENT, tok.type());
 	EXPECT_STREQ("//Comment A", tok.text().c_str());
 
-	tok = tok.next(false);
+	tok = tok.next(LexToken::COMMENTS);
 	EXPECT_EQ(LEX_COMMENT, tok.type());
 	EXPECT_STREQ("/*\n\tComment B*/", tok.text().c_str());
 
-	tok = tok.next(false);
+	tok = tok.next(LexToken::COMMENTS);
 	EXPECT_EQ(LEX_COMMENT, tok.type());
 	EXPECT_STREQ("//Comment C", tok.text().c_str());
 
-	tok = tok.next(false);
+	tok = tok.next(LexToken::COMMENTS);
 	EXPECT_EQ(LEX_EOF, tok.type());
 
 	// Unclosed multi line comment

@@ -15,7 +15,7 @@ using namespace std;
 
 bool isWhitespace(char ch)
 {
-    return (ch == ' ') || (ch == '\t') || (ch == '\n') || (ch == '\r');
+    return (ch == ' ') || (ch == '\t') || (ch == '\r');
 }
 
 bool isNumeric(char ch)
