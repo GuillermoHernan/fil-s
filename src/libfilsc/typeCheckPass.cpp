@@ -104,6 +104,7 @@ CompileError tupleTypeCheck(Ref<AstNode> node, SemAnalysisState& state)
 	for (auto child : node->children())
 	{
 		auto newDeclNode = astCreateDeclaration(child->position(), "", Ref<AstNode>(), child);
+		newDeclNode->setDataType(child->getDataType());
 		tupleDataType->addMember(newDeclNode);
 	}
 
