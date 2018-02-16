@@ -42,5 +42,11 @@ Ref<AstNode> findNode(Ref<AstNode> root, std::function<bool(Ref<AstNode>)> predi
 EDataType getDataType(Ref<AstNode> node);
 EDataType getDataType(Ref<BaseType> type);
 
+#define EXPECT_DATATYPE_STR(x,y) EXPECT_STREQ(x, getDataTypeStr((y)).c_str())
+#define ASSERT_DATATYPE_STR(x,y) ASSERT_STREQ(x, getDataTypeStr((y)).c_str())
+
+std::string getDataTypeStr(Ref<AstNode> node);
+std::string getDataTypeStr(Ref<BaseType> type);
+
 std::string printAST(Ref<AstNode> node, int indentLevel = 0);
 void printAST(Ref<AstNode> node, std::ostream& output, int indentLevel = 0);

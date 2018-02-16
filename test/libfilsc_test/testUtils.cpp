@@ -153,6 +153,16 @@ EDataType getDataType(Ref<BaseType> type)
 	return type->type();
 }
 
+std::string getDataTypeStr(Ref<AstNode> node)
+{
+	return node->getDataType()->toString();
+}
+
+std::string getDataTypeStr(Ref<BaseType> type)
+{
+	return type->toString();
+}
+
 /// <summary>Prints an AST tree.</summary>
 /// <param name="node"></param>
 /// <returns></returns>
