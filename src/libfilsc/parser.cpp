@@ -797,7 +797,7 @@ ExprResult parseLiteral(LexToken token)
 
 	switch ((int)token.type())
 	{
-	case LEX_ID:
+	case LEX_RESERVED:
 		if (token.text() == "true")
 			value = AstLiteral::createBool(token.getPosition(), true);
 		else if (token.text() == "false")
