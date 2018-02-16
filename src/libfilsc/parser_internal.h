@@ -34,7 +34,7 @@ ExprResult parseSelect(LexToken token);
 //ExprResult parseWhile(LexToken token);
 //ExprResult parseFor(LexToken token);
 //ExprResult parseForEach(LexToken token);
-//ExprResult parseReturn(LexToken token);
+ExprResult parseReturn(LexToken token);
 //ExprResult parseArgumentList(LexToken token, Ref<AstNode> function);
 //ExprResult parseStructDef(LexToken token);
 

@@ -168,3 +168,19 @@ TEST(TypeCheck, ifTypeCheck)
 	ASSERT_SEM_ERROR(r);
 	EXPECT_EQ(ETYPE_WRONG_IF_CONDITION_TYPE_1, r.errors[0].type());
 }
+
+/// <summary>Tests 'returnTypeAssign' function.</summary>
+TEST(TypeCheck, returnTypeAssign)
+{
+	auto r = semAnalysisCheck("function f() {return (9,4);}");
+
+	ASSERT_SEM_OK(r);
+	auto node = findNode(r.ast, AST_RETURN);
+	EXPECT_DATATYPE_STR("(int,int)", node);
+
+	r = semAnalysisCheck("function f() {return;}");
+
+	ASSERT_SEM_OK(r);
+	node = findNode(r.ast, AST_RETURN);
+	EXPECT_DATATYPE_STR("()", node);
+}

@@ -261,7 +261,7 @@ ExprResult parseBlock (LexToken token)
     
     while (r.ok() && r.nextText() != "}")
     {
-		r = r.then(parseExpression)
+		r = r.then(parseReturn)
 			.orElse(parseVar)
 			.orElse(parseConst)
 			.orElse(parseTypedef);
@@ -431,7 +431,7 @@ ExprResult parseIf(LexToken token)
 
 	auto conditionExpr = r.result;
 
-	r = r.requireOp(")").then(parseExpression);
+	r = r.requireOp(")").then(parseReturn);
 
 	auto			thenExpr = r.result;
 
@@ -444,7 +444,7 @@ ExprResult parseIf(LexToken token)
 	//Check for the presence of 'else'
 	if (r.ok() && r.nextText() == "else")
 	{
-		r = r.requireReserved("else").then(parseExpression);
+		r = r.requireReserved("else").then(parseReturn);
 		elseExpr = r.result;
 	}
 
@@ -594,29 +594,39 @@ ExprResult parseSelect(LexToken token)
  * @param token
  * @return 
  */
-//ExprResult parseReturn (LexToken token)
-//{
-//    ScriptPosition      pos = token.getPosition();
-//    Ref<AstNode>  result;
-//
-//    token = token.match(LEX_R_RETURN);
-//    
-//    if (token.type() == ';')
-//        token = token.next();
-//    else
-//    {
-//        ExprResult r = parseExpression(token);
-//        r.throwIfError();
-//        
-//        token = r.token;
-//        result = r.result;
-//        if (token.type() == ';')
-//            token = token.next();
-//    }
-//    
-//    auto  ret = astCreateReturn(pos, result);
-//    return ExprResult(token, ret);    
-//}
+
+/// <summary>
+///  Parses a return statement
+/// </summary>
+/// <param name="token"></param>
+/// <returns></returns>
+ExprResult parseReturn (LexToken token)
+{
+	auto r = ExprResult::requireReserved("return", token);
+
+	//If it is not a return, fallback to parse an expression.
+	if (!r.ok())
+		return parseExpression(token);
+	else
+	{
+		//To check if it just ends here.
+		auto r2 = parseStatementSeparator(r);
+
+		if (r2.ok())
+		{
+			r.result = astCreateReturn(token.getPosition(), Ref<AstNode>());
+			return r;
+		}
+		else
+		{
+			r = r.then(parseExpression);
+			if (r.ok())
+				r.result = astCreateReturn(token.getPosition(), r.result);
+		}
+	}
+
+	return r.final();
+}
 
 /// <summary>
 /// Parses any valid expression.
