@@ -752,11 +752,18 @@ ExprResult parsePostfixExpr (LexToken token)
 
 	while (r.ok())
 	{
-		string	opText = r.nextText();
+		string	opText = r.nextText(LexToken::NEWLINE);
+		bool	newLine = false;
+
+		if (opText == "\n")
+		{
+			newLine = true;
+			opText = r.nextText();
+		}
 
 		if (opText == ".")
 			r = r.then(parseMemberAccess);
-		else if (opText == "(")
+		else if (opText == "(" && !newLine)
 			r = r.then(parseCallExpr);
 		else
 			break;

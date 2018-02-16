@@ -515,6 +515,7 @@ TEST(Parser, parseCallExpr)
 	};
 
 	EXPECT_PARSE_OK(parseCallExpr_("fn(b,c)"));
+	EXPECT_PARSE_OK(parseCallExpr_("fn(\nb,c)"));
 	EXPECT_PARSE_OK(parseCallExpr_("fn(1)"));
 	EXPECT_PARSE_OK(parseCallExpr_("fn()"));
 	EXPECT_PARSE_OK(parseCallExpr_("obj.fn(1,2)"));
@@ -523,6 +524,7 @@ TEST(Parser, parseCallExpr)
 	EXPECT_PARSE_ERROR(parseCallExpr_("fn 3"));
 	EXPECT_PARSE_ERROR(parseCallExpr_("fn (3"));
 	EXPECT_PARSE_ERROR(parseCallExpr_("fn 3)"));
+	EXPECT_PARSE_ERROR(parseCallExpr_("fn\n(b,c)"));
 }
 
 /// <summary>

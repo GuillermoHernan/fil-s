@@ -184,3 +184,36 @@ TEST(TypeCheck, returnTypeAssign)
 	node = findNode(r.ast, AST_RETURN);
 	EXPECT_DATATYPE_STR("()", node);
 }
+
+/// <summary>Tests 'functionDefTypeCheck' function.</summary>
+TEST(TypeCheck, functionDefTypeCheck)
+{
+	//Function with declared type and matching body type.
+	auto r = semAnalysisCheck("function div(a: int, b: int):(int, int){\n"
+		"const x = a/b\n"
+		"const r = a - (r*b)\n"
+		"(x,r)}");
+
+	ASSERT_SEM_OK(r);
+	auto node = findNode(r.ast, AST_FUNCTION);
+	EXPECT_DATATYPE_STR("(int,int)", node);
+
+	//Function with declared type and mismatching body type.
+	r = semAnalysisCheck("function div(a: int, b: int):int {\n"
+		"const x = a/b\n"
+		"const r = a - (r*b)\n"
+		"(x,r)}");
+
+	ASSERT_SEM_ERROR(r);
+	EXPECT_EQ(ETYPE_WRONG_TYPE_2, r.errors[0].type());
+
+	//Return value inference.
+	r = semAnalysisCheck("function div(a: int, b: int){\n"
+		"const x = a/b\n"
+		"const r = a - (r*b)\n"
+		"(x,r)}");
+
+	ASSERT_SEM_OK(r);
+	node = findNode(r.ast, AST_FUNCTION);
+	EXPECT_DATATYPE_STR("(int,int)", node);
+}
