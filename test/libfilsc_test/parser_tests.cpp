@@ -271,6 +271,14 @@ TEST(Parser, parseTupleDef)
 	EXPECT_PARSE_ERROR(parseTupleDef_("(int, int"));
 	EXPECT_PARSE_ERROR(parseTupleDef_("u(int, int)"));
 	EXPECT_PARSE_ERROR(parseTupleDef_("(int, int; int"));
+
+	auto r = parseTupleDef_("(int, bool)");
+	auto node = r.result;
+
+	ASSERT_PARSE_OK(r);
+	ASSERT_EQ(2, node->childCount());
+	ASSERT_EQ(AST_TYPE_NAME, node->child(0)->getType());
+	ASSERT_EQ(AST_TYPE_NAME, node->child(1)->getType());
 }
 
 

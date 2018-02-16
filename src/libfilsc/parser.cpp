@@ -408,7 +408,17 @@ ExprResult parseTupleDef(LexToken token)
 /// <returns></returns>
 ExprResult parseTupleDefItem(LexToken token)
 {
-	return parseAnyDeclaration(token).orElse(parseTypeDescriptor);
+	if (token.type() == LEX_ID)
+	{
+		LexToken next = token.next();
+
+		if (next.type() == LEX_OPERATOR && (next.text() == ":" || next.text() == "="))
+			return parseAnyDeclaration(token);
+		else
+			return parseTypeDescriptor(token);
+	}
+	else
+		return parseAnyDeclaration(token).orElse(parseTypeDescriptor);
 }
 
 /// <summary>
