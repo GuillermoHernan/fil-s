@@ -77,6 +77,7 @@ ExprResult ExprResult::require(TokenCheck checkFn)
 
 	auto r = require(checkFn, nextToken());
 	r.m_initialToken = m_initialToken;
+	r.result = this->result;
 	return r;
 }
 
@@ -109,6 +110,7 @@ ExprResult ExprResult::require(LEX_TYPES tokenType)
 
 	auto r = require(tokenType, nextToken());
 	r.m_initialToken = m_initialToken;
+	r.result = this->result;
 	return r;
 }
 
@@ -186,6 +188,7 @@ ExprResult ExprResult::requireReserved(const char* text)
 
 	auto r = requireReserved(text, nextToken());
 	r.m_initialToken = m_initialToken;
+	r.result = this->result;
 	return r;
 }
 
