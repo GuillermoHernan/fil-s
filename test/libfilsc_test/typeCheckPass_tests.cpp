@@ -112,3 +112,33 @@ TEST(TypeCheck, tupleTypeCheck)
 
 	//printAST(r.ast, cout);
 }
+
+/// <summary>Tests 'declarationTypeCheck' function.</summary>
+TEST(TypeCheck, declarationTypeCheck)
+{
+	auto findDeclaration = [](Ref<AstNode> root){
+		return findNode(root, [](auto node) {
+			return node->getType() == AST_DECLARATION;
+		});
+	};
+
+	auto r = semAnalysisCheck("const a:int;");
+
+	ASSERT_SEM_OK(r);
+	auto decl = findDeclaration(r.ast);
+	EXPECT_DATATYPE_STR("int", decl);
+
+	EXPECT_SEM_OK(semAnalysisCheck("const a:int = 5;"));
+	EXPECT_SEM_ERROR(semAnalysisCheck("const a:int = true;"));
+
+	//Inferred type
+	r = semAnalysisCheck("const a = (true, 4);");
+
+	ASSERT_SEM_OK(r);
+	decl = findDeclaration(r.ast);
+	EXPECT_DATATYPE_STR("(bool,int)", decl);
+
+	r = semAnalysisCheck("const a;");
+	ASSERT_SEM_ERROR(r);
+	EXPECT_EQ (ETYPE_DECLARATION_WITHOUT_TYPE, r.errors[0].type());
+}
