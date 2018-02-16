@@ -11,7 +11,7 @@
 /// </summary>
 TEST(Parser, parseScript)
 {
-	const char* goodCode = "function add (a:int, b:int) {a+b}\n";
+	const char* goodCode = "function add (a:int, b:int) {a+b};;\n;\n;\n;\n";
 
 	const char* badCode = "funcion add (a:int, b:int) {a+b}\n";
 

@@ -191,8 +191,12 @@ ExprResult parseScript(LexToken token)
 
     while (r.ok() && r.nextType() != LEX_EOF)
     {
-		r = parseStatementSeparator(r).then(parseTopLevelItem);
-		script->addChild(r.result);
+		r = parseStatementSeparator(r);
+		if (r.ok() && r.nextType() != LEX_EOF)
+		{
+			r = r.then(parseTopLevelItem);
+			script->addChild(r.result);
+		}
     }
 
 	if (r.ok())
