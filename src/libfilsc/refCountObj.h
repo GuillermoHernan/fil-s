@@ -129,12 +129,18 @@ public:
         return m_ptr;
     }
 
-    template <class DestType>
-    Ref<DestType> staticCast()const
-    {
-        return Ref<DestType> (static_cast<DestType*> (m_ptr));
-    }
-    
+	template <class DestType>
+	Ref<DestType> staticCast()const
+	{
+		return Ref<DestType>(static_cast<DestType*> (m_ptr));
+	}
+
+	template <class DestType>
+	Ref<DestType> dynamicCast()const
+	{
+		return Ref<DestType>(dynamic_cast<DestType*> (m_ptr));
+	}
+
     template <class DestType>
     bool operator == (const Ref<DestType>& x)const
     {

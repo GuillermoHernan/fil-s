@@ -130,9 +130,10 @@ Ref<FunctionType> FunctionType::create(Ref<AstNode> node)
 	assert(node->getType() == AST_FUNCTION);
 
 	auto fnType = refFromNew(new FunctionType(node->getName()));
+	auto paramsType = node->child(0)->getDataType().dynamicCast<TupleType>();
 
-	assert(node->child(0)->getDataType()->type() == DT_TUPLE);
-	fnType->m_parameters = node->child(0)->getDataType().staticCast<TupleType>();
+	assert(paramsType.notNull());
+	fnType->m_parameters = paramsType;
 
 	if (node->childExists(1))
 		fnType->m_returnType = node->child(1)->getDataType();
