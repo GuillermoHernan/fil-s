@@ -72,8 +72,8 @@ ExprResult checkAllParsed(const char* code, ParseFunction parseFn)
 {
 	auto r = parseFn(LexToken(code).next());
 
-	if (r.ok() && !r.token.eof())
-		r = r.getError(ETYPE_UNEXPECTED_TOKEN_2, r.token.text().c_str(), "<EOF>");
+	if (r.ok() && !r.nextToken().eof())
+		r = r.skip().getError(ETYPE_UNEXPECTED_TOKEN_2, r.nextText().c_str(), "<EOF>");
 	return r;
 };
 

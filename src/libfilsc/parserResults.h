@@ -16,26 +16,8 @@
 class ExprResult
 {
 public:
-    LexToken token;
-    Ref<AstNode> result;
+	Ref<AstNode> result;
     CompileError errorDesc;
-
-    ExprResult(const LexToken &nextToken,
-                    const Ref<AstNode> expr)
-    : token(nextToken), result(expr), m_initialToken(token)
-    {
-    }
-
-    ExprResult(const LexToken &initialToken,
-                    const CompileError& err)
-    : token(initialToken), errorDesc(err), m_initialToken(initialToken)
-    {
-    }
-
-    ExprResult(const LexToken &initialToken)
-    : token(initialToken), m_initialToken(token)
-    {
-    }
 
     typedef ExprResult(*ParseFunction)(LexToken token);
     typedef ExprResult(*ChainParseFunction)(LexToken token, Ref<AstNode> prev);
@@ -44,15 +26,26 @@ public:
     ExprResult orElse(ParseFunction parseFn);
     ExprResult then(ParseFunction parseFn);
     ExprResult then(ChainParseFunction parseFn);
-    ExprResult require(TokenCheck checkFn);
-    ExprResult require(LEX_TYPES tokenType);
+
+	ExprResult require(TokenCheck checkFn);
+	ExprResult require(LEX_TYPES tokenType);
 	ExprResult requireId(const char* text);
 	ExprResult requireOp(const char* text);
 	ExprResult requireReserved(const char* text);
-	ExprResult requireSeparator(const char* separator, const char* ending);
-	ExprResult readId(std::string* name);
+
+	static ExprResult require(TokenCheck checkFn, LexToken token);
+	static ExprResult require(LEX_TYPES tokenType, LexToken token);
+	static ExprResult require(const char* text, LexToken token);
+	static ExprResult requireReserved(const char* text, LexToken token);
+	static ExprResult ok(LexToken token, Ref<AstNode> result);
+
 	ExprResult skip();
-    ExprResult getError(ErrorTypes type, ...);
+	ExprResult getError(ErrorTypes type, ...);
+	static ExprResult getError(LexToken token, ErrorTypes type, ...);
+
+	std::string	nextText(int flags = LexToken::NONE)const;
+	LexToken	nextToken(int flags = LexToken::NONE)const;
+	LEX_TYPES	nextType(int flags = LexToken::NONE)const;
 
     bool error()const
     {
@@ -67,7 +60,20 @@ public:
     void throwIfError()const;
     
     ExprResult final()const;
-    
+
 private:
-    LexToken    m_initialToken;
+	ExprResult(const LexToken &token, const Ref<AstNode> expr, const LexToken &initialToken)
+		: m_token(token), result(expr), m_initialToken(initialToken)
+	{
+	}
+
+	ExprResult(const LexToken &initialToken,
+		const CompileError& err)
+		: m_token(initialToken), errorDesc(err), m_initialToken(initialToken)
+	{
+	}
+
+private:
+	LexToken	m_token;
+	LexToken    m_initialToken;
 };

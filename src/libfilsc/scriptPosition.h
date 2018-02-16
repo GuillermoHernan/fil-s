@@ -38,7 +38,7 @@ struct ScriptPosition
     
     bool operator == (const ScriptPosition& b)const
     {
-        return (line < b.line && column == b.column);
+        return (line == b.line && column == b.column);
     }
     
     bool operator > (const ScriptPosition& b)const
@@ -55,4 +55,8 @@ struct ScriptPosition
     {
         return !(*this < b);
     }
+	bool operator != (const ScriptPosition& b)const
+	{
+		return !(*this == b);
+	}
 };//struct ScriptPosition

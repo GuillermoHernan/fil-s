@@ -675,6 +675,36 @@ TEST(Parser, parseTypedef)
 }
 
 /// <summary>
+/// Tests for 'parseStatementSeparator' function.
+/// </summary>
+/// <param name=""></param>
+/// <param name=""></param>
+/// <returns></returns>
+TEST(Parser, parseStatementSeparator)
+{
+	const char* goodCode =
+		"const a = 5\n"
+		"const b = 6; const c = 7\n";
+
+	const char* badCode = 
+		"const a = 5\n"
+		"const b = 6  const c = 7\n";
+
+	EXPECT_PARSE_OK(parseScript(goodCode));
+	
+	auto r = parseScript(badCode);
+	ASSERT_PARSE_ERROR(r);
+
+	auto r2 = parseStatementSeparator(r);
+	ASSERT_PARSE_ERROR(r2);
+
+	auto pos1 = r.errorDesc.position();
+	auto pos2 = r2.errorDesc.position();
+	EXPECT_TRUE(pos1 == pos2);
+}
+
+
+/// <summary>
 /// Tests for 'markAsParameters' function
 /// </summary>
 TEST(Parser, markAsParameters)

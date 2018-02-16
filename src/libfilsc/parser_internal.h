@@ -98,6 +98,8 @@ ExprResult parseActorExpr(LexToken token);
 //ExprResult parseExport(LexToken token);
 //ExprResult parseImport(LexToken token);
 
+ExprResult parseStatementSeparator(ExprResult prevResult);
+
 void markAsParameters(Ref<AstNode> node);
 
 bool isAssignment(LexToken token);
