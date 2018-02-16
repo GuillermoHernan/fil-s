@@ -117,9 +117,7 @@ TEST(TypeCheck, tupleTypeCheck)
 TEST(TypeCheck, declarationTypeCheck)
 {
 	auto findDeclaration = [](Ref<AstNode> root){
-		return findNode(root, [](auto node) {
-			return node->getType() == AST_DECLARATION;
-		});
+		return findNode(root, AST_DECLARATION); 
 	};
 
 	auto r = semAnalysisCheck("const a:int;");
@@ -141,4 +139,32 @@ TEST(TypeCheck, declarationTypeCheck)
 	r = semAnalysisCheck("const a;");
 	ASSERT_SEM_ERROR(r);
 	EXPECT_EQ (ETYPE_DECLARATION_WITHOUT_TYPE, r.errors[0].type());
+}
+
+
+/// <summary>Tests 'ifTypeCheck' function.</summary>
+TEST(TypeCheck, ifTypeCheck)
+{
+	auto r = semAnalysisCheck("const a = if (1>7) (4,5) else (6,7);");
+
+	ASSERT_SEM_OK(r);
+	auto node = findNode(r.ast, AST_IF);
+	EXPECT_DATATYPE_STR("(int,int)", node);
+
+	r = semAnalysisCheck("const a = if (false) (4,5) else (false,7);");
+
+	ASSERT_SEM_OK(r);
+	node = findNode(r.ast, AST_IF);
+	EXPECT_DATATYPE_STR("()", node);
+
+	r = semAnalysisCheck("const a = if (true) 4;");
+
+	ASSERT_SEM_OK(r);
+	node = findNode(r.ast, AST_IF);
+	EXPECT_DATATYPE_STR("()", node);
+
+	r = semAnalysisCheck("const a = if (0) 3 else 5;");
+
+	ASSERT_SEM_ERROR(r);
+	EXPECT_EQ(ETYPE_WRONG_IF_CONDITION_TYPE_1, r.errors[0].type());
 }
