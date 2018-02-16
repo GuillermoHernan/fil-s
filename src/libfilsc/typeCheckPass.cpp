@@ -153,7 +153,7 @@ CompileError ifTypeCheck(Ref<AstNode> node, SemAnalysisState& state)
 	auto thenType = node->child(1)->getDataType();
 
 	if (!node->childExists(2))
-		node->setDataType(thenType);
+		setVoidType(node, state);
 	else
 	{
 		auto elseType = node->child(2)->getDataType();
