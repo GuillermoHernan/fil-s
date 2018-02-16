@@ -35,6 +35,7 @@ SemanticResult semAnalysisCheck(const char* code);
 void findNodes(Ref<AstNode> root, std::function<bool(Ref<AstNode>)> predicate, AstNodeList& result);
 AstNodeList findNodes(Ref<AstNode> root, std::function<bool(Ref<AstNode>)> predicate);
 Ref<AstNode> findNode(Ref<AstNode> root, std::function<bool(Ref<AstNode>)> predicate);
+Ref<AstNode> findNode(Ref<AstNode> root, AstNodeTypes nodeType);
 
 #define EXPECT_DATATYPE(x,y) EXPECT_EQ(x, getDataType((y)))
 #define ASSERT_DATATYPE(x,y) ASSERT_EQ(x, getDataType((y)))

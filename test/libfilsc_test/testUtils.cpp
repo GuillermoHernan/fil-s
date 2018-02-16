@@ -143,6 +143,14 @@ Ref<AstNode> findNode(Ref<AstNode> root, std::function<bool(Ref<AstNode>)> predi
 		return result.front();
 }
 
+Ref<AstNode> findNode(Ref<AstNode> root, AstNodeTypes nodeType)
+{
+	return findNode(root, [nodeType](auto node) {
+		return node->getType() == nodeType;
+	});
+}
+
+
 EDataType getDataType(Ref<AstNode> node)
 {
 	return node->getDataType()->type();
