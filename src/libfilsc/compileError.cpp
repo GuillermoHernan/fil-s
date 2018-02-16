@@ -111,6 +111,7 @@ const char * errorTypeTemplate(ErrorTypes type)
 		/*ETYPE_MEMBER_NOT_FOUND_2,*/	"Member '%s' not found in type '%s'",
 		/*ETYPE_WRONG_TYPE_2*/			"wrong type '%s' in expression. '%s' was expected.",
 		/*ETYPE_INCOMPATIBLE_TYPES_2*/	"Type '%s' is incompatible and cannot be assigned to type '%s'",
+		/*ETYPE_RECURSIVE_SYMBOL_REFERENCE_1*/ "Symbol '%s' is referenced in its initialization expression",
 	};
 
 	return templates[type];

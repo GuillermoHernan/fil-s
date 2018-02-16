@@ -113,7 +113,8 @@ TEST(TypeCheck, tupleTypeCheck)
 	//printAST(r.ast, cout);
 }
 
-/// <summary>Tests 'declarationTypeCheck' function.</summary>
+/// <summary>Tests 'declarationTypeCheck' function.
+/// Also tests 'recursiveSymbolReferenceCheck' function.</summary>
 TEST(TypeCheck, declarationTypeCheck)
 {
 	auto findDeclaration = [](Ref<AstNode> root){
@@ -139,6 +140,11 @@ TEST(TypeCheck, declarationTypeCheck)
 	r = semAnalysisCheck("const a;");
 	ASSERT_SEM_ERROR(r);
 	EXPECT_EQ (ETYPE_DECLARATION_WITHOUT_TYPE, r.errors[0].type());
+
+	r = semAnalysisCheck("const a = a + 1");
+
+	ASSERT_SEM_ERROR(r);
+	EXPECT_EQ(ETYPE_RECURSIVE_SYMBOL_REFERENCE_1, r.errors[0].type());
 }
 
 
@@ -191,29 +197,30 @@ TEST(TypeCheck, functionDefTypeCheck)
 	//Function with declared type and matching body type.
 	auto r = semAnalysisCheck("function div(a: int, b: int):(int, int){\n"
 		"const x = a/b\n"
-		"const r = a - (r*b)\n"
+		"const r = a - (x*b)\n"
 		"(x,r)}");
 
+	//printAST(r.ast, cout, 0);
 	ASSERT_SEM_OK(r);
 	auto node = findNode(r.ast, AST_FUNCTION);
-	EXPECT_DATATYPE_STR("(int,int)", node);
+	EXPECT_DATATYPE_STR("function(int,int):(int,int)", node);
 
 	//Function with declared type and mismatching body type.
 	r = semAnalysisCheck("function div(a: int, b: int):int {\n"
 		"const x = a/b\n"
-		"const r = a - (r*b)\n"
+		"const r = a - (x*b)\n"
 		"(x,r)}");
 
 	ASSERT_SEM_ERROR(r);
-	EXPECT_EQ(ETYPE_WRONG_TYPE_2, r.errors[0].type());
+	EXPECT_EQ(ETYPE_INCOMPATIBLE_TYPES_2, r.errors[0].type());
 
 	//Return value inference.
 	r = semAnalysisCheck("function div(a: int, b: int){\n"
 		"const x = a/b\n"
-		"const r = a - (r*b)\n"
-		"(x,r)}");
+		"const r = a - (x*b)\n"
+		"(x,r,r<0)}");
 
 	ASSERT_SEM_OK(r);
 	node = findNode(r.ast, AST_FUNCTION);
-	EXPECT_DATATYPE_STR("(int,int)", node);
+	EXPECT_DATATYPE_STR("function(int,int):(int,int,bool)", node);
 }

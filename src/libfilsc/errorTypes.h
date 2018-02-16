@@ -27,6 +27,7 @@ enum ErrorTypes
 	ETYPE_MEMBER_NOT_FOUND_2, 
 	ETYPE_WRONG_TYPE_2,
 	ETYPE_INCOMPATIBLE_TYPES_2,
+	ETYPE_RECURSIVE_SYMBOL_REFERENCE_1,
 
 	//Add new error types above this line.
 	//REMEMBER to add the description to 'errorTypeTemplate' function.

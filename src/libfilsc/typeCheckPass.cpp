@@ -4,6 +4,7 @@
 #include "symbolScope.h"
 #include "passOperations.h"
 #include "dataTypes.h"
+#include "semAnalysisState.h"
 
 using namespace std;
 
@@ -19,6 +20,8 @@ SemanticResult typeCheckPass(Ref<AstNode> node, SemAnalysisState& state)
 
 	if (functions.empty())
 	{
+		functions.add(AST_IDENTIFIER, recursiveSymbolReferenceCheck);
+
 		functions.add(AST_TYPE_NAME, typeExistsCheck);
 		functions.add(AST_TUPLE_DEF, tupleDefTypeCheck);
 
@@ -44,6 +47,24 @@ SemanticResult typeCheckPass(Ref<AstNode> node, SemAnalysisState& state)
 
 	return semInOrderWalk(functions, state, node);
 }
+
+/// <summary>
+/// Checks that the referenced symbol si not referenced in its initialization expression
+/// </summary>
+CompileError recursiveSymbolReferenceCheck(Ref<AstNode> node, SemAnalysisState& state)
+{
+	auto referenced = node->getScope()->get(node->getName(), false);
+	int i = 0;
+
+	for (; state.parent(i).notNull(); ++i)
+	{
+		if (referenced == state.parent(i))
+			return semError(node, ETYPE_RECURSIVE_SYMBOL_REFERENCE_1, node->getName().c_str());
+	}
+
+	return CompileError::ok();
+}
+
 
 /// <summary>
 /// Checks that the referenced type exists, and assign the type to the node.

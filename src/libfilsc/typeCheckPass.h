@@ -12,6 +12,8 @@ class TupleType;
 
 SemanticResult typeCheckPass(Ref<AstNode> node, SemAnalysisState& state);
 
+CompileError recursiveSymbolReferenceCheck(Ref<AstNode> node, SemAnalysisState& state);
+
 CompileError typeExistsCheck(Ref<AstNode> node, SemAnalysisState& state);
 CompileError tupleDefTypeCheck(Ref<AstNode> node, SemAnalysisState& state);
 
