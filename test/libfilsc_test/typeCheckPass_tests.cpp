@@ -251,3 +251,32 @@ TEST(TypeCheck, callTypeCheck)
 	ASSERT_TRUE(node.notNull());
 	EXPECT_DATATYPE_STR("int", node);
 }
+
+/// <summary>Tests 'memberAccessTypeCheck' function.</summary>
+TEST(TypeCheck, memberAccessTypeCheck)
+{
+	auto r = semAnalysisCheck(
+		"type TestTuple is (a:int, b:int)\n"
+		"function test():int {\n"
+		"  const x:TestTuple = (9,5)\n"
+		"  return x.a + x.b\n"
+		"}"
+	);
+	//printAST(r.ast, cout);
+	ASSERT_SEM_OK(r);
+
+	auto node = findNode(r.ast, AST_MEMBER_ACCESS);
+	ASSERT_TRUE(node.notNull());
+	EXPECT_DATATYPE_STR("int", node);
+	EXPECT_DATATYPE_STR("(int,int)", node->child(0));
+
+	r = semAnalysisCheck(
+		"type TestTuple is (a:int, n:int)\n"
+		"function test():int {\n"
+		"  const x:TestTuple = (9,5)\n"
+		"  return x.a + x.b\n"
+		"}"
+	);
+	ASSERT_SEM_ERROR(r);
+	EXPECT_EQ(ETYPE_MEMBER_NOT_FOUND_2, r.errors[0].type());
+}
