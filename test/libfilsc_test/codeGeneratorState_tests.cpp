@@ -23,7 +23,7 @@ TEST(CodeGeneratorState, cname)
 	);
 	ASSERT_SEM_OK(r);
 
-	printAST(r.ast);
+	//printAST(r.ast);
 
 	auto intType = DefaultType::createInt().staticCast<BaseType>();	//I don't know why the compiler says the
 																	//call is ambigous if I do not cast it to BaseType...
@@ -49,4 +49,30 @@ TEST(CodeGeneratorState, cname)
 	cname = state.cname(node);
 	EXPECT_TRUE(cname.find("TestTuple") != string::npos);
 	//cout << cname << "\n";
+}
+
+/// <summary>
+/// Tests the temporaries / blocks functionallity of 'CodeGeneratorState' class
+/// </summary>
+TEST(CodeGeneratorState, temporaries)
+{
+	CodeGeneratorState	state;
+	string				name1, name2, name3;
+
+	state.enterBlock();
+	
+	EXPECT_TRUE(state.allocTemp("int", name1));
+	EXPECT_TRUE(state.allocTemp("int", name2));
+	EXPECT_TRUE(state.releaseTemp(name1));
+	EXPECT_FALSE(state.allocTemp("int", name3));
+	EXPECT_STREQ(name1.c_str(), name3.c_str());
+
+	state.enterBlock();
+	EXPECT_FALSE(state.releaseTemp(name3));
+	state.exitBlock();
+
+	EXPECT_TRUE(state.releaseTemp(name2));
+	EXPECT_TRUE(state.releaseTemp(name3));
+
+	state.exitBlock();
 }
