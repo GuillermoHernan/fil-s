@@ -225,7 +225,7 @@ TEST(TypeCheck, functionDefTypeCheck)
 	EXPECT_DATATYPE_STR("function(int,int):(int,int,bool)", node);
 }
 
-/// /// <summary>Tests 'assignmentTypeCheck' function.</summary>
+/// <summary>Tests 'assignmentTypeCheck' function.</summary>
 TEST(TypeCheck, assignmentTypeCheck)
 {
 	auto r = semAnalysisCheck("function f() {var a:int; a = 7;}");
@@ -236,4 +236,18 @@ TEST(TypeCheck, assignmentTypeCheck)
 	EXPECT_DATATYPE_STR("int", node);
 
 	ASSERT_SEM_ERROR ( semAnalysisCheck("function f() {var a:bool; a = 7;}"));
+}
+
+/// <summary>Tests 'callTypeCheck' function.</summary>
+TEST(TypeCheck, callTypeCheck)
+{
+	auto r = semAnalysisCheck("function add(a:int, b:int):int {a+b}\n"
+		"function test():() {const x = add(5,7);}");
+	ASSERT_SEM_OK(r);
+
+	//printAST(r.ast, cout);
+
+	auto node = findNode(r.ast, AST_FNCALL);
+	ASSERT_TRUE(node.notNull());
+	EXPECT_DATATYPE_STR("int", node);
 }
