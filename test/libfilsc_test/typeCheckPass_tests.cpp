@@ -224,3 +224,16 @@ TEST(TypeCheck, functionDefTypeCheck)
 	node = findNode(r.ast, AST_FUNCTION);
 	EXPECT_DATATYPE_STR("function(int,int):(int,int,bool)", node);
 }
+
+/// /// <summary>Tests 'assignmentTypeCheck' function.</summary>
+TEST(TypeCheck, assignmentTypeCheck)
+{
+	auto r = semAnalysisCheck("function f() {var a:int; a = 7;}");
+	ASSERT_SEM_OK(r);
+
+	auto node = findNode(r.ast, AST_ASSIGNMENT);
+	ASSERT_TRUE(node.notNull());
+	EXPECT_DATATYPE_STR("int", node);
+
+	ASSERT_SEM_ERROR ( semAnalysisCheck("function f() {var a:bool; a = 7;}"));
+}
