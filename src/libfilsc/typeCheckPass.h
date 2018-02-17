@@ -33,6 +33,7 @@ CompileError postfixOpTypeCheck(Ref<AstNode> node, SemAnalysisState& state);
 CompileError mathOperatorTypeCheck(Ref<AstNode> node, SemAnalysisState& state);
 CompileError bitwiseOperatorTypeCheck(Ref<AstNode> node, SemAnalysisState& state);
 CompileError comparisionOperatorTypeCheck(Ref<AstNode> node, SemAnalysisState& state);
+CompileError equalityOperatorTypeCheck(Ref<AstNode> node, SemAnalysisState& state);
 CompileError logicalOperatorTypeCheck(Ref<AstNode> node, SemAnalysisState& state);
 
 

@@ -316,8 +316,10 @@ CompileError binaryOpTypeCheck(Ref<AstNode> node, SemAnalysisState& state)
 		return mathOperatorTypeCheck(node, state);
 	else if (op == ">>" || op == "<<" || op == "&" || op == "|" || op == "^")
 		return bitwiseOperatorTypeCheck(node, state);
-	else if (op == "<" || op == ">" || op == "==" || op == "!=" || op == ">=" || op == "<=")
+	else if (op == "<" || op == ">" || op == ">=" || op == "<=")
 		return comparisionOperatorTypeCheck(node, state);
+	else if (op == "==" || op == "!=")
+		return equalityOperatorTypeCheck(node, state);
 	else
 		return logicalOperatorTypeCheck(node, state);
 }
@@ -383,6 +385,32 @@ CompileError comparisionOperatorTypeCheck(Ref<AstNode> node, SemAnalysisState& s
 
 	node->setDataType(DefaultType::createBool());
 	return result;
+}
+
+/// <summary>Type check for equality and inequality operators</summary>
+CompileError equalityOperatorTypeCheck(Ref<AstNode> node, SemAnalysisState& state)
+{
+	//TODO: Support other types different from integers and booleans.
+	auto lexpr = node->child(0);
+	auto rexpr = node->child(1);
+
+	node->setDataType(DefaultType::createBool());
+
+	if (isIntType(lexpr->getDataType()))
+	{
+		if (!isIntType(rexpr->getDataType()))
+			return semError(rexpr, ETYPE_WRONG_TYPE_2, rexpr->getDataType()->toString().c_str(), "int");
+	}
+	else if (isBoolType(lexpr->getDataType()))
+	{
+		if (!isBoolType(rexpr->getDataType()))
+			return semError(rexpr, ETYPE_WRONG_TYPE_2, rexpr->getDataType()->toString().c_str(), "bool");
+	}
+	else
+		return semError(lexpr, ETYPE_WRONG_TYPE_2, rexpr->getDataType()->toString().c_str(), "int or bool");
+
+	//If ir reach here, check is ok.
+	return CompileError::ok();
 }
 
 /// <summary>Type check for logical operators</summary>

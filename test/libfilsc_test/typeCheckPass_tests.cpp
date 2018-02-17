@@ -280,3 +280,46 @@ TEST(TypeCheck, memberAccessTypeCheck)
 	ASSERT_SEM_ERROR(r);
 	EXPECT_EQ(ETYPE_MEMBER_NOT_FOUND_2, r.errors[0].type());
 }
+
+
+/// <summary>Tests binary operations type checking</summary>
+TEST(TypeCheck, binaryOpTypeCheck)
+{
+	auto check = [](const string& codeFragment) {
+		return semAnalysisCheck(("function test():() {\n" + codeFragment + "\n};\n").c_str());
+	};
+
+	EXPECT_SEM_OK(check("3+3; 3-1; 4*5; 12/4; 17 % 5;"));
+	EXPECT_SEM_ERROR(check("3+true"));
+	EXPECT_SEM_ERROR(check("false/true"));
+	EXPECT_SEM_ERROR(check("false-4"));
+
+	EXPECT_SEM_OK(check(
+		"var a:int\n"
+		"a = 6<<1; a = 32>>3; a = 0xf & 4; a = 1 | 2; a = 0xff ^ 0xaa;"
+	));
+
+	EXPECT_SEM_ERROR(check("3|true"));
+	EXPECT_SEM_ERROR(check("false&true"));
+	EXPECT_SEM_ERROR(check("false >> 4"));
+
+	EXPECT_SEM_OK(check(
+		"var a:bool\n"
+		"a = 6<1; a = 7>3; a = 5 == 5; a = 6 != 7; a = 5>=7; a = 6 <= 6;\n"
+		"a = true == true; a = false != true;"
+	));
+
+	EXPECT_SEM_ERROR(check("const a:int = 9 != 4"));
+	EXPECT_SEM_ERROR(check("1 != true"));
+	EXPECT_SEM_ERROR(check("false >= true"));
+	EXPECT_SEM_ERROR(check("false == 0"));
+
+	EXPECT_SEM_OK(check(
+		"var a:bool\n"
+		"a = (6>5) || (7<9); a = true && false"
+	));
+
+	EXPECT_SEM_ERROR(check("false || 7"));
+	EXPECT_SEM_ERROR(check("9 && 9"));
+	EXPECT_SEM_ERROR(check("14 || true"));
+}
