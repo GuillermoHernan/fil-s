@@ -127,11 +127,18 @@ void functionCodegen(Ref<AstNode> node, ostream& output, CodeGeneratorState& sta
 	auto fnCode = node->child(2);
 
 	if (params->childCount() > 0)
+	{
+		output << "//Parameters for '" << node->getName() << "' function\n";
 		codegen(params, output, state, "");
+	}
 
 	if (retTuple.notNull() && retTuple->childCount() > 0)
+	{
+		output << "//Return value for '" << node->getName() << "' function\n";
 		codegen(params, output, state, "");
+	}
 
+	output << "//Code for '" << node->getName() << "' function\n";
 	output << genFunctionHeader(node, state);
 	output << "{\n";
 
@@ -146,7 +153,8 @@ void functionCodegen(Ref<AstNode> node, ostream& output, CodeGeneratorState& sta
 string genFunctionHeader(Ref<AstNode> node, CodeGeneratorState& state)
 {
 	auto	params = node->child(0);
-	auto	retType = node->child(1);
+	auto	type = node->getDataType().staticCast<FunctionType>();
+	auto	retType = type->getReturnType();
 	string	result;
 
 	result.reserve(128);
@@ -154,21 +162,10 @@ string genFunctionHeader(Ref<AstNode> node, CodeGeneratorState& state)
 	result = "static ";
 
 	//Return type.
-	if (retType.isNull())
+	if (retType->type() == DT_VOID)
 		result += "void ";
-	else if (retType->getType() == AST_TUPLE_DEF)
-	{
-		if (retType->childCount() == 0)
-			result += "void ";
-		else
-			result += state.cname(retType) + " ";
-	}
-	else
-	{
-		assert(retType->getType() == AST_TYPE_NAME);
-		auto typeNode = node->getScope()->get(retType->getName(), true);
-		result += state.cname(typeNode) + " ";
-	}
+	else 
+		result += state.cname(retType) + " ";
 
 	//Function name
 	result += state.cname(node);
