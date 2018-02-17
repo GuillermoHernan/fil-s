@@ -17,7 +17,8 @@ std::string CodeGeneratorState::cname(Ref<AstNode> node)
 		return cname(node->child(0));
 	
 	case AST_TUPLE_DEF:
-	case AST_FUNCTION:
+	case AST_DEFAULT_TYPE:
+	case AST_TYPE_NAME:
 	case AST_ACTOR:
 		return cname(node->getDataType());
 
@@ -161,7 +162,7 @@ std::string	CodeGeneratorState::allocCName(const std::string& base)
 	char *			buffer = new char[bufSize];
 	const char*		base2 = base.c_str();
 
-	if (base != "")
+	if (base == "")
 		base2 = "_unnamed";
 
 	sprintf_s(buffer, bufSize, "%s_%04X", base2, m_nextSymbolId++);

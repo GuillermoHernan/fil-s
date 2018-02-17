@@ -161,12 +161,17 @@ public:
     {
         return ms_noChildren;
     }
-    
-    virtual const std::string getName()const
-    {
-        return "";
-    }
-    
+
+	virtual const std::string getName()const
+	{
+		return "";
+	}
+
+	virtual void setName(const std::string& name)
+	{
+		assert(!"setName unsupported");
+	}
+
     virtual std::string getValue()const
     {
         return "";
@@ -315,6 +320,11 @@ public:
         return m_name;
     }
 
+	virtual void setName(const std::string& name)
+	{
+		m_name = name;
+	}
+
     AstNamedBranch(AstNodeTypes type, const ScriptPosition& pos, const std::string& _name)
     : AstBranchNode(type, pos), m_name(_name)
     {
@@ -322,7 +332,7 @@ public:
     
 protected:
 
-    const std::string m_name;
+    std::string m_name;
 };
 
 /**
@@ -410,6 +420,11 @@ public:
         return m_name;
     }
 
+	virtual void setName(const std::string& name)
+	{
+		m_name = name;
+	}
+
 	virtual std::string getValue()const
 	{
 		return m_name;
@@ -422,7 +437,7 @@ protected:
     {        
     }
 
-    const std::string   m_name;
+    std::string   m_name;
 };
 
 #endif	/* AST_H */

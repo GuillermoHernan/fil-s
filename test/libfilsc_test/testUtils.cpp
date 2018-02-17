@@ -150,6 +150,13 @@ Ref<AstNode> findNode(Ref<AstNode> root, AstNodeTypes nodeType)
 	});
 }
 
+Ref<AstNode> findNode(Ref<AstNode> root, const std::string& name)
+{
+	return findNode(root, [&name](auto node) {
+		return node->getName() == name;
+	});
+}
+
 
 EDataType getDataType(Ref<AstNode> node)
 {

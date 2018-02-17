@@ -51,4 +51,5 @@ TEST_F(C_CodegenTests, generateCode)
 
 	//TODO: this is a very basic check. Add more checks.
 	ASSERT_TRUE(!res.empty());
+	//cout << res;
 }

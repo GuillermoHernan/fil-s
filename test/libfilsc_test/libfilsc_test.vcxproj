@@ -160,6 +160,7 @@
     <ClInclude Include="testUtils.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="codeGeneratorState_tests.cpp" />
     <ClCompile Include="c_codegen_tests.cpp" />
     <ClCompile Include="dataTypes_tests.cpp" />
     <ClCompile Include="gatherPass_tests.cpp" />

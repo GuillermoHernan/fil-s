@@ -79,7 +79,7 @@ TEST(TupleType, toString)
 
 	ASSERT_SEM_OK(r);
 
-	auto tupleNode = r.ast->child(0)->child(0);
+	auto tupleNode = r.ast->child(0);
 
 	ASSERT_EQ(AST_TUPLE_DEF, tupleNode->getType());
 

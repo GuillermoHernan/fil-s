@@ -20,12 +20,11 @@ SemanticResult typeCheckPass(Ref<AstNode> node, SemAnalysisState& state)
 
 	if (functions.empty())
 	{
-		functions.add(AST_IDENTIFIER, recursiveSymbolReferenceCheck);
-
 		functions.add(AST_TYPE_NAME, typeExistsCheck);
 		functions.add(AST_TUPLE_DEF, tupleDefTypeCheck);
 
 		functions.add(AST_BLOCK, blockTypeCheck);
+		functions.add(AST_TYPEDEF, typedefTypeCheck);
 		functions.add(AST_TUPLE, tupleTypeCheck);
 		functions.add(AST_DECLARATION, declarationTypeCheck);
 		functions.add(AST_IF, ifTypeCheck);
@@ -45,11 +44,45 @@ SemanticResult typeCheckPass(Ref<AstNode> node, SemAnalysisState& state)
 		functions.add(AST_DEFAULT_TYPE, defaultTypeAssign);
 	}
 
-	return semInOrderWalk(functions, state, node);
+	auto preResult = preTypeCheckPass(node, state);
+
+	if (preResult.ok())
+		node = preResult.ast;
+
+	auto result = semInOrderWalk(functions, state, node);
+
+	if (!preResult.ok())
+	{
+		preResult.errors.insert(preResult.errors.end(), result.errors.begin(), result.errors.end());
+		return preResult;
+	}
+	else
+		return result;
 }
 
 /// <summary>
-/// Checks that the referenced symbol si not referenced in its initialization expression
+/// Performs the operations that are needed prior to type check
+/// </summary>
+/// <param name="node"></param>
+/// <param name="state"></param>
+/// <returns></returns>
+SemanticResult preTypeCheckPass(Ref<AstNode> node, SemAnalysisState& state)
+{
+	static PassOperations	functions;
+
+	if (functions.empty())
+	{
+		functions.add(AST_IDENTIFIER, recursiveSymbolReferenceCheck);
+
+		functions.add(AST_TYPEDEF, tupleRemoveTypedef);
+	}
+
+	return semInOrderWalk(functions, state, node);
+}
+
+
+/// <summary>
+/// Checks that the referenced symbol is not referenced in its initialization expression
 /// </summary>
 CompileError recursiveSymbolReferenceCheck(Ref<AstNode> node, SemAnalysisState& state)
 {
@@ -113,6 +146,16 @@ CompileError blockTypeCheck(Ref<AstNode> node, SemAnalysisState& state)
 		node->setDataType(node->children().back()->getDataType());
 		return CompileError::ok();
 	}
+}
+
+/// <summary>
+/// Type check for a 'typedef' declaration.
+/// Just propagates the refenced type. 
+/// </summary>
+CompileError typedefTypeCheck(Ref<AstNode> node, SemAnalysisState& state)
+{
+	node->setDataType(node->child(0)->getDataType());
+	return CompileError::ok();
 }
 
 /// <summary>
@@ -470,6 +513,23 @@ CompileError defaultTypeAssign(Ref<AstNode> node, SemAnalysisState& state)
 
 	return CompileError::ok();
 }
+
+/// <summary>
+/// Removes 'typedef' intermediate nodes for named tuple definitions.
+/// </summary>
+Ref<AstNode> tupleRemoveTypedef(Ref<AstNode> node, SemAnalysisState& state)
+{
+	auto child = node->child(0);
+
+	if (child->getType() != AST_TUPLE_DEF)
+		return node;		//Nothing to do.
+	else
+	{
+		child->setName(node->getName());
+		return child;
+	}
+}
+
 
 /// <summary>Utility function to assign void type to a node.</summary>
 /// <returns>Always 'ok'</returns>

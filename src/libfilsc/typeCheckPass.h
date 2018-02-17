@@ -11,6 +11,7 @@ class BaseType;
 class TupleType;
 
 SemanticResult typeCheckPass(Ref<AstNode> node, SemAnalysisState& state);
+SemanticResult preTypeCheckPass(Ref<AstNode> node, SemAnalysisState& state);
 
 CompileError recursiveSymbolReferenceCheck(Ref<AstNode> node, SemAnalysisState& state);
 
@@ -18,6 +19,7 @@ CompileError typeExistsCheck(Ref<AstNode> node, SemAnalysisState& state);
 CompileError tupleDefTypeCheck(Ref<AstNode> node, SemAnalysisState& state);
 
 CompileError blockTypeCheck(Ref<AstNode> node, SemAnalysisState& state);
+CompileError typedefTypeCheck(Ref<AstNode> node, SemAnalysisState& state);
 CompileError tupleTypeCheck(Ref<AstNode> node, SemAnalysisState& state);
 CompileError declarationTypeCheck(Ref<AstNode> node, SemAnalysisState& state);
 CompileError ifTypeCheck(Ref<AstNode> node, SemAnalysisState& state);
@@ -40,6 +42,8 @@ CompileError logicalOperatorTypeCheck(Ref<AstNode> node, SemAnalysisState& state
 CompileError returnTypeAssign(Ref<AstNode> node, SemAnalysisState& state);
 CompileError literalTypeAssign(Ref<AstNode> node, SemAnalysisState& state);
 CompileError defaultTypeAssign(Ref<AstNode> node, SemAnalysisState& state);
+
+Ref<AstNode> tupleRemoveTypedef(Ref<AstNode> node, SemAnalysisState& state);
 
 CompileError setVoidType(Ref<AstNode> node, SemAnalysisState& state);
 

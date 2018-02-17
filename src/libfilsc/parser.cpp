@@ -128,7 +128,7 @@ bool isPostfixOp(LexToken token)
 ExprResult parseList(LexToken token, ExprResult::ParseFunction itemParseFn,
 	const char* beginTok, const char* endTok, const char* separator)
 {
-	auto		result = refFromNew(new AstBranchNode(AST_LIST, token.getPosition()));
+	auto		result = refFromNew(new AstNamedBranch(AST_LIST, token.getPosition(), ""));
 	ExprResult	r = ExprResult::ok(token, result);
 
 	if (*beginTok)

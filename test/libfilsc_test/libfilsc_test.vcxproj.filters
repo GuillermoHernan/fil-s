@@ -16,5 +16,6 @@
     <ClCompile Include="typeCheckPass_tests.cpp" />
     <ClCompile Include="c_codegen_tests.cpp" />
     <ClCompile Include="dataTypes_tests.cpp" />
+    <ClCompile Include="codeGeneratorState_tests.cpp" />
   </ItemGroup>
 </Project>
