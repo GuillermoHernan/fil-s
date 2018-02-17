@@ -34,5 +34,3 @@ void prefixOpCodegen (Ref<AstNode> node, std::ostream& output, CodeGeneratorStat
 void postfixOpCodegen (Ref<AstNode> node, std::ostream& output, CodeGeneratorState& state, const std::string& resultDest);
 
 std::string genFunctionHeader(Ref<AstNode> node, CodeGeneratorState& state);
-
-std::string encodeCString(const std::string& str);

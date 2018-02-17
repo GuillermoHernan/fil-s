@@ -379,7 +379,7 @@ void literalCodegen(Ref<AstNode> node, std::ostream& output, CodeGeneratorState&
 		break;
 
 	case AST_STRING:
-		output << resultDest << " = \"" << encodeCString (node->getValue()) << "\";\n";
+		output << resultDest << " = " << escapeString (node->getValue(), true) << ";\n";
 		break;
 
 	default:
@@ -526,45 +526,4 @@ void postfixOpCodegen(Ref<AstNode> node, std::ostream& output, CodeGeneratorStat
 
 	if (resultDest != "")
 		output << resultDest << " = " << temp.cname() << ";\n";
-}
-
-/// <summary>Encodes a character string to be able to use it in a 'C' source file</summary>
-/// <remarks>It does not enclose the string in quotes</remarks>
-/// <param name="str"></param>
-/// <returns></returns>
-string encodeCString(const std::string& str)
-{
-	string	result;
-	char	tmpStr[8];
-
-	result.reserve(str.size() + (str.size() / 8));
-
-	for (char c : str)
-	{
-		if (c >= 32)
-		{
-			if (c == '\\' || c == '\"')
-				result.push_back('\\');
-			result.push_back(c);
-		}
-		else
-		{
-			//Encode well-known escape sequences for better readability.
-			switch (c)
-			{
-			case '\b': result += "\\b"; break;
-			case '\f': result += "\\f"; break;
-			case '\n': result += "\\n"; break;
-			case '\r': result += "\\r"; break;
-			case '\t': result += "\\t"; break;
-			case '\v': result += "\\v"; break;
-			default:
-				sprintf_s(tmpStr, "\\x%02X", (unsigned)c);
-				result += tmpStr;
-				break;
-			}
-		}//else
-	}//for
-
-	return result;
 }
