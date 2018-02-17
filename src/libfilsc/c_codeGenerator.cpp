@@ -245,7 +245,7 @@ void varCodegen(Ref<AstNode> node, std::ostream& output, CodeGeneratorState& sta
 /// </summary>
 void tupleDefCodegen(Ref<AstNode> node, std::ostream& output, CodeGeneratorState& state, const std::string& resultDest)
 {
-	output << "struct " << state.cname(node) << "{";
+	output << "struct " << state.cname(node) << "{\n";
 
 	nodeListCodegen(node, output, state, "");
 
