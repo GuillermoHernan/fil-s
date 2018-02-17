@@ -182,6 +182,8 @@ public:
 		assert(!"setChild unsupported");
 	}
 
+	virtual void destroy();
+
     bool childExists(size_t index)const
     {
         const AstNodeList&  c = children();
@@ -242,6 +244,10 @@ public:
 	}
 
 	//Ref<AstNode> findChildByName(const std::string& name);
+	static int nodeCount()
+	{
+		return ms_nodeCount;
+	}
 
 protected:
     static const AstNodeList    ms_noChildren;
@@ -253,12 +259,15 @@ protected:
 
     virtual ~AstNode()
     {
+		--ms_nodeCount;
     }
 
 private:
 	Ref<RefCountObj>	m_scope;
 	Ref<RefCountObj>	m_dataType;
 	int					m_flags = 0;
+
+	static int ms_nodeCount;
 };
 
 /**

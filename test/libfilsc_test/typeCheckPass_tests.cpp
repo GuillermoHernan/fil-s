@@ -322,4 +322,10 @@ TEST(TypeCheck, binaryOpTypeCheck)
 	EXPECT_SEM_ERROR(check("false || 7"));
 	EXPECT_SEM_ERROR(check("9 && 9"));
 	EXPECT_SEM_ERROR(check("14 || true"));
+
+	//TODO: Enable leak checking. I know that the AST leaks (a lot of) memory,
+	//due to the circular references created by the scope links and type anotations.
+	//But I do not see it as a major problem at this moment.
+	//Check node leaks
+	//EXPECT_EQ(0, AstNode::nodeCount());
 }

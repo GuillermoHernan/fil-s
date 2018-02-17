@@ -12,12 +12,32 @@ using namespace std;
 //Empty children list constant
 const AstNodeList AstNode::ms_noChildren;
 
+//Global AST node count.
+int AstNode::ms_nodeCount = 0;
+
+
 AstNode::AstNode(AstNodeTypes type, const ScriptPosition& pos) :
 	m_position(pos), m_type(type)
 {
 	m_dataType = DefaultType::createVoid();
+	++ms_nodeCount;
 }
 
+/// <summary>
+/// Removes the references to the objects which may create circular refrences to the AST 
+/// tree. Basically, the scope and the DataType.
+/// </summary>
+void AstNode::destroy()
+{
+	m_dataType.reset();
+	m_scope.reset();
+
+	for (auto child : children())
+	{
+		if (child.notNull())
+			child->destroy();
+	}
+}
 
 Ref<SymbolScope> AstNode::getScope()const
 {

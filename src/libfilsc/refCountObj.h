@@ -129,6 +129,15 @@ public:
         return m_ptr;
     }
 
+	void reset()
+	{
+		if (m_ptr != NULL)
+		{
+			m_ptr->release();
+			m_ptr = NULL;
+		}
+	}
+
 	template <class DestType>
 	Ref<DestType> staticCast()const
 	{
