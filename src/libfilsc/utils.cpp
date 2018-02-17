@@ -207,8 +207,11 @@ std::string escapeString(const std::string &str, bool quote)
         case '\n': result += "\\n";     break;
         case '\r': result += "\\r";     break;
         case '\t': result += "\\t";     break;
-        case '\a': result += "\\a";     break;
-        case '\"': result += "\\\"";    break;
+		case '\a': result += "\\a";     break;
+		case '\b': result += "\\b";     break;
+		case '\f': result += "\\f";     break;
+		case '\v': result += "\\v";     break;
+		case '\"': result += "\\\"";    break;
         default:
             if (c >0 && (c < 32 || c > 127))
             {
