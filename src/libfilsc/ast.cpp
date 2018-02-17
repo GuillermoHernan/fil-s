@@ -609,6 +609,7 @@ std::string astTypeToString(AstNodeTypes type)
 		types[AST_ARRAY] = "AST_ARRAY";
 		types[AST_ARRAY_ACCESS] = "AST_ARRAY_ACCESS";
 		types[AST_MEMBER_ACCESS] = "AST_MEMBER_ACCESS";
+		types[AST_MEMBER_NAME] = "AST_MEMBER_NAME";
 		types[AST_BINARYOP] = "AST_BINARYOP";
 		types[AST_PREFIXOP] = "AST_PREFIXOP";
 		types[AST_POSTFIXOP] = "AST_POSTFIXOP";

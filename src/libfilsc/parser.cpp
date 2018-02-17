@@ -996,8 +996,13 @@ ExprResult parseMemberAccess (LexToken token, Ref<AstNode> objExpr)
 {
     auto r = ExprResult::require(".", token).then(parseIdentifier);
     
-    if (r.ok())
-        r.result = astCreateMemberAccess(token.getPosition(), objExpr, r.result);
+	if (r.ok())
+	{
+		auto memberNameNode = r.result;
+
+		memberNameNode->changeType(AST_MEMBER_NAME);
+		r.result = astCreateMemberAccess(token.getPosition(), objExpr, memberNameNode);
+	}
     
     return r.final();
 }
