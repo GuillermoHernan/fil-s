@@ -15,6 +15,8 @@ public:
 	std::string cname(Ref<AstNode> node);
 	std::string cname(Ref<BaseType> type);
 
+	void setCname(Ref<AstNode> node, const std::string& name);
+
 	void enterBlock();
 	void exitBlock();
 

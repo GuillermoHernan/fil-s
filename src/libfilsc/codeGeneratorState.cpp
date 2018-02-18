@@ -64,7 +64,14 @@ std::string CodeGeneratorState::cname(Ref<BaseType> type)
 	}
 }
 
-
+/// <summary>Forces to use a given name in the 'C' source for a given node.</summary>
+/// <remarks>It is used to identify the entry point.</remarks>
+/// <param name="node"></param>
+/// <param name="name"></param>
+void CodeGeneratorState::setCname(Ref<AstNode> node, const std::string& name)
+{
+	m_objNames[node] = name;
+}
 
 /// <summary>
 /// Constructor of CodeGeneratorState
@@ -123,7 +130,7 @@ bool CodeGeneratorState::allocTemp(const std::string& cTypeName, std::string& ou
 	}
 	else
 	{
-		outputName = allocCName("temp_");
+		outputName = allocCName("temp");
 		m_blockStack.back().tempVars.push_back(TempVarInfo{ cTypeName, outputName });
 
 		return true;

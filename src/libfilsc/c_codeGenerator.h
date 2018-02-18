@@ -9,5 +9,7 @@
 
 #include "ast.h"
 #include <string>
+#include <functional>
 
 std::string generateCode(Ref<AstNode> node);
+std::string generateCode(Ref<AstNode> node, std::function<bool(Ref<AstNode>)> entryPointFn);

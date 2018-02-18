@@ -446,7 +446,11 @@ std::string normalizePath (const std::string& path)
         first = false;
     }
     
-    return join(filteredComp, "/");
+#ifdef _WIN32
+	return join(filteredComp, "\\");
+#else
+	return join(filteredComp, "/");
+#endif
 }
 
 /**

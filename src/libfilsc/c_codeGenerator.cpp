@@ -22,8 +22,27 @@ using namespace std;
 /// <returns>A string containing 'C' source code.</returns>
 string generateCode(Ref<AstNode> node)
 {
+	return generateCode(node, [](auto node) {return false; });
+}
+
+/// <summary>
+/// 'C' code generation entry point. Generates 'C' source from the AST.
+/// It allows to specify the entry point.
+/// </summary>
+/// <param name="node">AST root</param>
+/// <param name="entryPointFn">Function to look for the entry point. The entry point
+/// has the same name in 'FIL-S' and 'C' sources.</param>
+/// <returns></returns>
+string generateCode(Ref<AstNode> node, std::function<bool(Ref<AstNode>)> entryPointFn)
+{
 	CodeGeneratorState	state;
 	ostringstream		output;
+
+	auto &topLevelItems = node->children();
+	auto it = find_if(topLevelItems.begin(), topLevelItems.end(), entryPointFn);
+
+	if (it != topLevelItems.end())
+		state.setCname(*it, (*it)->getName());
 
 	codegen(node, output, state, "");
 
@@ -125,6 +144,7 @@ void functionCodegen(Ref<AstNode> node, ostream& output, CodeGeneratorState& sta
 	auto params = node->child(0);
 	auto retTuple = node->child(1);
 	auto fnCode = node->child(2);
+	auto returnType = node->getDataType().staticCast<FunctionType>()->getReturnType();
 
 	if (params->childCount() > 0)
 	{
@@ -132,7 +152,7 @@ void functionCodegen(Ref<AstNode> node, ostream& output, CodeGeneratorState& sta
 		codegen(params, output, state, "");
 	}
 
-	if (retTuple.notNull() && retTuple->childCount() > 0)
+	if (returnType->type() == DT_TUPLE)
 	{
 		output << "//Return value for '" << node->getName() << "' function\n";
 		codegen(params, output, state, "");
@@ -142,7 +162,15 @@ void functionCodegen(Ref<AstNode> node, ostream& output, CodeGeneratorState& sta
 	output << genFunctionHeader(node, state);
 	output << "{\n";
 
-	codegen(fnCode, output, state, "");
+	if(returnType->type() == DT_VOID)
+		codegen(fnCode, output, state, "");
+	else
+	{
+		TempVariable	tmpReturn(fnCode, output, state);
+		codegen(fnCode, output, state, tmpReturn.cname());
+
+		output << "return " << tmpReturn.cname() << ";\n";
+	}
 
 	output << "}\n\n";
 }

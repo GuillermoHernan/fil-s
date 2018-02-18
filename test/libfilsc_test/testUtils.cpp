@@ -195,14 +195,14 @@ std::string printAST(Ref<AstNode> node, int indentLevel)
 /// <param name="indentLevel"></param>
 void printAST(Ref<AstNode> node, std::ostream& output, int indentLevel)
 {
-	cout << string(indentLevel * 2, ' ');
+	output << string(indentLevel * 2, ' ');
 	if (node.isNull())
-		cout << "[NULL]\n";
+		output << "[NULL]\n";
 	else
 	{
-		cout << astTypeToString(node->getType()) << "(";
-		cout << node->getName() << "," << node->getValue() << "): ";
-		cout << node->getDataType()->toString() << "\n";
+		output << astTypeToString(node->getType()) << "(";
+		output << node->getName() << "," << node->getValue() << "): ";
+		output << node->getDataType()->toString() << "\n";
 
 		++indentLevel;
 		for (auto child : node->children())
