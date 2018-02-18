@@ -171,7 +171,7 @@ private:
 			"call \"H:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Community\\VC\\Auxiliary\\Build\\vcvars32.bat\"\n"
 			"cd \"%s\"\n"
 			"%s\n"
-			"cl %s.c -nologo >%s.compiler.out\n";
+			"cl %s.c -nologo /FAs >%s.compiler.out\n";
 
 		char buffer[4096];
 		string absPath = joinPaths(getCurrentDirectory(), m_resultsDir);
