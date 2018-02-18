@@ -272,6 +272,9 @@ void varCodegen(Ref<AstNode> node, CodeGeneratorState& state, const IVariableInf
 
 	state.output() << state.cname(typeNode) << " ";
 	state.output() << state.cname(node) << ";\n";
+
+	if (node->childExists(1))
+		codegen(node->child(1), state, NamedVariable(node, state));
 }
 
 /// <summary>
