@@ -211,29 +211,30 @@ TEST_F(C_CodegenTests, generateCode)
 
 /// <summary>
 /// Test code generation for function definition nodes.
+/// Also tests 'genFunctionHeader' function.
 /// </summary>
 TEST_F(C_CodegenTests, functionCodegen)
 {
 	//Function with a scalar return value.
-	//EXPECT_RUN_OK("test1",
-	//	"function add (a:int, b: int):int {\n"
-	//	"  a+b\n"
-	//	"}\n"
-	//	"function test ():int {\n"
-	//	"  if (add(3,7) == 10) 0 else 1\n"
-	//	"}"
-	//);
+	EXPECT_RUN_OK("test1",
+		"function add (a:int, b: int):int {\n"
+		"  a+b\n"
+		"}\n"
+		"function test ():int {\n"
+		"  if (add(3,7) == 10) 0 else 1\n"
+		"}"
+	);
 
-	////Function with no return value
-	//EXPECT_RUN_OK("test2",
-	//	"function t2 (a:int, b: int):() {\n"
-	//	"  a+b\n"
-	//	"}\n"
-	//	"function test ():int {\n"
-	//	"  t2(3,1);\n"
-	//	"  0\n"
-	//	"}"
-	//);
+	//Function with no return value
+	EXPECT_RUN_OK("test2",
+		"function t2 (a:int, b: int):() {\n"
+		"  a+b\n"
+		"}\n"
+		"function test ():int {\n"
+		"  t2(3,1);\n"
+		"  0\n"
+		"}"
+	);
 
 	//Function with a tuple return value.
 	EXPECT_RUN_OK("test3",
@@ -247,55 +248,6 @@ TEST_F(C_CodegenTests, functionCodegen)
 		"    0 else 1\n"
 		"}"
 	);
-
-	//ASSERT_TRUE(!res.empty());
-	////cout << res;
-
-	//EXPECT_TRUE(res.find("Parameters for 'add'") != string::npos);
-	//EXPECT_FALSE(res.find("Return value for 'add'") != string::npos);
-	//EXPECT_TRUE(res.find("Code for 'add'") != string::npos);
-	//EXPECT_TRUE(res.find("static int add_") != string::npos);
-	//EXPECT_TRUE(res.find("return") != string::npos);
-
-	//res = runCodegen(
-	//	"function add (a:int, b: int) {\n"
-	//	"  a+b\n"
-	//	"}"
-	//);
-
-	//ASSERT_TRUE(!res.empty());
-	////cout << res;
-
-	//EXPECT_TRUE(res.find("Parameters for 'add'") != string::npos);
-	//EXPECT_FALSE(res.find("Return value for 'add'") != string::npos);
-	//EXPECT_TRUE(res.find("Code for 'add'") != string::npos);
-	//EXPECT_TRUE(res.find("static int add_") != string::npos);
-
-	//res = runCodegen(
-	//	"function add (a:int, b: int):(int, int) {\n"
-	//	"  (a+b, a-b)\n"
-	//	"}"
-	//);
-
-	//ASSERT_TRUE(!res.empty());
-	//cout << res;
-
-	//EXPECT_TRUE(res.find("Parameters for 'add'") != string::npos);
-	//EXPECT_TRUE(res.find("Return value for 'add'") != string::npos);
-	//EXPECT_TRUE(res.find("Code for 'add'") != string::npos);
-
-	//res = runCodegen(
-	//	"function test ():() {\n"
-	//	"  \n"
-	//	"}"
-	//);
-
-	//ASSERT_TRUE(!res.empty());
-	////cout << res;
-
-	//EXPECT_FALSE(res.find("Parameters for 'test'") != string::npos);
-	//EXPECT_FALSE(res.find("Return value for 'test'") != string::npos);
-	//EXPECT_TRUE(res.find("Code for 'test'") != string::npos);
 }
 
 
