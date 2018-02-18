@@ -273,9 +273,9 @@ Ref<BaseType> NamedVariable::dataType()const
 /// <summary>
 /// Constructor for 'TupleField'. Resolves needed data on invocation.
 /// </summary>
-TupleField::TupleField(Ref<AstNode> tuple, int fieldIndex, CodeGeneratorState& state)
+TupleField::TupleField(const IVariableInfo& tuple, int fieldIndex, CodeGeneratorState& state)
 {
-	auto type = tuple->getDataType();
+	auto type = tuple.dataType();
 
 	assert(type->type() == DT_TUPLE);
 	auto	tupleType = type.staticCast<TupleType>();
@@ -283,7 +283,7 @@ TupleField::TupleField(Ref<AstNode> tuple, int fieldIndex, CodeGeneratorState& s
 	assert(fieldIndex < tupleType->memberCount());
 
 	m_type = tupleType->getMemberType(fieldIndex);
-	m_cName = state.cname(tuple) + "." + state.cname(tupleType->getMemberNode(fieldIndex));
+	m_cName = tuple.cname() + "." + state.cname(tupleType->getMemberNode(fieldIndex));
 }
 
 const std::string& TupleField::cname()const

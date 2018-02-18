@@ -126,7 +126,7 @@ private:
 class TupleField : public IVariableInfo
 {
 public:
-	TupleField(Ref<AstNode> tuple, int fieldIndex, CodeGeneratorState& state);
+	TupleField(const IVariableInfo& tuple, int fieldIndex, CodeGeneratorState& state);
 
 	virtual const std::string&	cname()const override;
 	virtual Ref<BaseType>		dataType()const  override;

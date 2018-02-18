@@ -243,35 +243,21 @@ void blockCodegen(Ref<AstNode> node, CodeGeneratorState& state, const IVariableI
 /// Generates code for a tuple creation expression.
 /// </summary>
 void tupleCodegen(
-	Ref<AstNode> node,
-	CodeGeneratorState& state,
-	const IVariableInfo& resultDest)
-{
-	tupleCodegen(node, state, resultDest, Ref<TupleType>());
-}
-
-/// <summary>
-/// Generates code for a tuple creation expression.
-/// </summary>
-void tupleCodegen(
 	Ref<AstNode> node, 
 	CodeGeneratorState& state, 
-	const IVariableInfo& resultDest,
-	Ref<TupleType> tupleType)
+	const IVariableInfo& resultDest)
 {
 	//TODO: Review this check. Is really right not to evaluate the sub-expressions?
 	if (resultDest.isVoid())
 		return;
 
-	if (tupleType.isNull())
-		tupleType = node->getDataType().staticCast<TupleType>();
-
 	auto&	expressions = node->children();
+	auto	tupleType = resultDest.dataType().staticCast<TupleType>();
 
 	for (size_t i = 0; i < expressions.size(); ++i)
 	{
 		auto		childNode = tupleType->getMemberNode((unsigned)i);
-		TupleField	field(node, i, state);
+		TupleField	field(resultDest, i, state);
 
 		codegen(expressions[i], state, field);
 	}
@@ -408,7 +394,7 @@ void callCodegen(Ref<AstNode> node, CodeGeneratorState& state, const IVariableIn
 		auto			paramsType = fnType->getParameters();
 		TempVariable	tmpParams(paramsType.staticCast<BaseType>(), state);
 
-		tupleCodegen(paramsExpr, state, tmpParams, paramsType);
+		codegen(paramsExpr, state, tmpParams);
 
 		if (!resultDest.isVoid())
 			state.output() << resultDest.cname() << " = ";

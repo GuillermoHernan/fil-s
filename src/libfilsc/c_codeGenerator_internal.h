@@ -21,7 +21,6 @@ void functionCodegen(Ref<AstNode> node, CodeGeneratorState& state, const IVariab
 //void typedefCodegen (Ref<AstNode> node, CodeGeneratorState& state, const IVariableInfo& resultDest);
 void blockCodegen (Ref<AstNode> node, CodeGeneratorState& state, const IVariableInfo& resultDest);
 void tupleCodegen(Ref<AstNode> node, CodeGeneratorState& state, const IVariableInfo& resultDest);
-void tupleCodegen(Ref<AstNode> node, CodeGeneratorState& state, const IVariableInfo& resultDest, Ref<TupleType> tupleType);
 void varCodegen (Ref<AstNode> node, CodeGeneratorState& state, const IVariableInfo& resultDest);
 void tupleDefCodegen (Ref<AstNode> node, CodeGeneratorState& state, const IVariableInfo& resultDest);
 void ifCodegen (Ref<AstNode> node, CodeGeneratorState& state, const IVariableInfo& resultDest);
