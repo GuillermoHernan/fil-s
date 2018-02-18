@@ -215,25 +215,25 @@ TEST_F(C_CodegenTests, generateCode)
 TEST_F(C_CodegenTests, functionCodegen)
 {
 	//Function with a scalar return value.
-	EXPECT_RUN_OK("test1",
-		"function add (a:int, b: int):int {\n"
-		"  a+b\n"
-		"}\n"
-		"function test ():int {\n"
-		"  if (add(3,7) == 10) 0 else 1\n"
-		"}"
-	);
+	//EXPECT_RUN_OK("test1",
+	//	"function add (a:int, b: int):int {\n"
+	//	"  a+b\n"
+	//	"}\n"
+	//	"function test ():int {\n"
+	//	"  if (add(3,7) == 10) 0 else 1\n"
+	//	"}"
+	//);
 
-	//Function with no return value
-	EXPECT_RUN_OK("test2",
-		"function t2 (a:int, b: int):() {\n"
-		"  a+b\n"
-		"}\n"
-		"function test ():int {\n"
-		"  t2(3,1);\n"
-		"  0\n"
-		"}"
-	);
+	////Function with no return value
+	//EXPECT_RUN_OK("test2",
+	//	"function t2 (a:int, b: int):() {\n"
+	//	"  a+b\n"
+	//	"}\n"
+	//	"function test ():int {\n"
+	//	"  t2(3,1);\n"
+	//	"  0\n"
+	//	"}"
+	//);
 
 	//Function with a tuple return value.
 	EXPECT_RUN_OK("test3",

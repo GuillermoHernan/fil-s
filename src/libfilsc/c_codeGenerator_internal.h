@@ -36,3 +36,4 @@ void prefixOpCodegen (Ref<AstNode> node, CodeGeneratorState& state, const IVaria
 void postfixOpCodegen (Ref<AstNode> node, CodeGeneratorState& state, const IVariableInfo& resultDest);
 
 std::string genFunctionHeader(Ref<AstNode> node, CodeGeneratorState& state);
+std::string varAccessExpression(Ref<AstNode> node, CodeGeneratorState& state);

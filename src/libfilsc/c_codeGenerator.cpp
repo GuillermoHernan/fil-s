@@ -435,14 +435,8 @@ void varAccessCodegen(Ref<AstNode> node, CodeGeneratorState& state, const IVaria
 	if (resultDest.isVoid())
 		return;
 
-	string namePrefix = "";
-
-	auto referenced = node->getScope()->get(node->getName());
-
-	if (referenced->hasFlag(ASTF_FUNCTION_PARAMETER))
-		namePrefix = "_gen_params->";
-
-	state.output() << resultDest.cname() << " = " << namePrefix << state.cname(referenced) << ";\n";
+	string accessExpression = varAccessExpression(node, state);
+	state.output() << resultDest.cname() << " = " << accessExpression << ";\n";
 }
 
 /// <summary>
@@ -480,7 +474,7 @@ void memberAccessCodegen(
 		auto type = left->getType();
 
 		if (type == AST_IDENTIFIER)
-			nameStack.push_back(state.cname(left));
+			nameStack.push_back(varAccessExpression(left, state));
 		else if (type == AST_MEMBER_ACCESS)
 		{
 			nameStack.push_back(state.cname(left->child(1)));
@@ -571,4 +565,23 @@ void postfixOpCodegen(Ref<AstNode> node, CodeGeneratorState& state, const IVaria
 
 	if (!resultDest.isVoid())
 		state.output() << resultDest << " = " << temp.cname() << ";\n";
+}
+
+/// <summary>
+/// Generates the expression need to access a variable. 
+/// It returns it, it does not write it on the output
+/// </summary>
+/// <param name="node"></param>
+/// <param name="state"></param>
+/// <returns></returns>
+std::string varAccessExpression(Ref<AstNode> node, CodeGeneratorState& state)
+{
+	string namePrefix = "";
+
+	auto referenced = node->getScope()->get(node->getName());
+
+	if (referenced->hasFlag(ASTF_FUNCTION_PARAMETER))
+		namePrefix = "_gen_params->";
+
+	return namePrefix + state.cname(referenced);
 }
