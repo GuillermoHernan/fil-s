@@ -254,21 +254,17 @@ TEST_F(C_CodegenTests, functionCodegen)
 /// <summary>
 /// Test code generation for block nodes.
 /// </summary>
-TEST_F(C_CodegenTests, DISABLED_blockCodegen)
+TEST_F(C_CodegenTests, blockCodegen)
 {
-	//m_printAST = true;
-
-	//string res = runCodegen(
-	//	"function ppc() {\n"
-	//	"  const alpha = (9 * 9) - 8\n"
-	//	"  const bravo = 5 + 12\n"
-	//	"  alpha % bravo"
-	//	"}"
-	//);
-
-	//ASSERT_TRUE(!res.empty());
-	//cout << res;
-
-	//EXPECT_TRUE(res.find("static int ppc_") != string::npos);
-	//EXPECT_TRUE(res.find("alpha % bravo") != string::npos);
+	EXPECT_RUN_OK("test1",
+		"function ppc(p:int, p':int) {\n"
+		"  const alpha = (p * p) - 8\n"
+		"  const bravo = p' + {12}\n"
+		"  {}\n"
+		"  alpha % bravo\n"
+		"}\n"
+		"function test ():int {\n"
+		"  if (ppc(9,5) == 5) 0 else 1\n"
+		"}\n"
+	);
 }

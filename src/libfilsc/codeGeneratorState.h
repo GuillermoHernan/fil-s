@@ -48,7 +48,7 @@ private:
 	std::map< Ref<RefCountObj>, std::string>	m_objNames;
 	int											m_nextSymbolId = 0;
 
-	std::string		allocCName(const std::string& base);
+	std::string		allocCName(std::string base);
 	TempVarInfo*	findTemporary(std::function<bool(const TempVarInfo&)> predicate);
 };
 

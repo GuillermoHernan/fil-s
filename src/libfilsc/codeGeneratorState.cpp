@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "codeGeneratorState.h"
+#include "utils.h"
 
 using namespace std;
 
@@ -165,16 +166,17 @@ bool CodeGeneratorState::releaseTemp(const std::string& varName)
 /// </summary>
 /// <param name="base">The name will start by this root</param>
 /// <returns></returns>
-std::string	CodeGeneratorState::allocCName(const std::string& base)
+std::string	CodeGeneratorState::allocCName(std::string base)
 {
 	const size_t	bufSize = base.size() + 32;
 	char *			buffer = new char[bufSize];
-	const char*		base2 = base.c_str();
 
 	if (base == "")
-		base2 = "_unnamed";
+		base = "_unnamed";
+	else
+		replace(base, '\'', "1");	// single quotes are illegal in 'C' names.
 
-	sprintf_s(buffer, bufSize, "%s_%04X", base2, m_nextSymbolId++);
+	sprintf_s(buffer, bufSize, "%s_%04X", base.c_str(), m_nextSymbolId++);
 
 	string result = buffer;
 	delete[]buffer;
