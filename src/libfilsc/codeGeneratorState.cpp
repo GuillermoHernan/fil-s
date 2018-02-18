@@ -200,12 +200,21 @@ CodeGeneratorState::TempVarInfo* CodeGeneratorState::findTemporary(
 }
 
 /// <summary>
+/// Utility operator to write the 'C' name of a variable on the output stream.
+/// </summary>
+std::ostream& operator << (std::ostream& output, const IVariableInfo& var)
+{
+	output << var.cname();
+	return output;
+}
+
+/// <summary>
 /// Constructor of 'TempVariable'. Reserves a new temporary value.
 /// </summary>
 /// <param name="type"></param>
 /// <param name="state"></param>
 TempVariable::TempVariable(Ref<BaseType> type, CodeGeneratorState& state)
-	:m_state(state)
+	:m_state(state), m_dataType(type)
 {
 	string	cTypeName = state.cname(type);
 
@@ -233,4 +242,55 @@ TempVariable::TempVariable(Ref<AstNode> node, CodeGeneratorState& state)
 TempVariable::~TempVariable()
 {
 	m_state.releaseTemp(m_cName);
+}
+
+
+const std::string& VoidVariable::cname()const
+{
+	static string empty;
+	return empty;
+}
+
+Ref<BaseType> VoidVariable::dataType()const
+{
+	return DefaultType::createVoid();
+}
+
+NamedVariable::NamedVariable(Ref<AstNode> node, CodeGeneratorState& state)
+	:m_node(node), m_cName(state.cname(node))
+{
+}
+
+const std::string& NamedVariable::cname()const
+{
+	return m_cName;
+}
+Ref<BaseType> NamedVariable::dataType()const
+{
+	return m_node->getDataType();
+}
+
+/// <summary>
+/// Constructor for 'TupleField'. Resolves needed data on invocation.
+/// </summary>
+TupleField::TupleField(Ref<AstNode> tuple, int fieldIndex, CodeGeneratorState& state)
+{
+	auto type = tuple->getDataType();
+
+	assert(type->type() == DT_TUPLE);
+	auto	tupleType = type.staticCast<TupleType>();
+
+	assert(fieldIndex < tupleType->memberCount());
+
+	m_type = tupleType->getMemberType(fieldIndex);
+	m_cName = state.cname(tuple) + "." + state.cname(tupleType->getMemberNode(fieldIndex));
+}
+
+const std::string& TupleField::cname()const
+{
+	return m_cName;
+}
+Ref<BaseType> TupleField::dataType()const
+{
+	return m_type;
 }
