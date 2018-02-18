@@ -30,7 +30,8 @@ void replace(std::string &str, char textFrom, const char *textTo);
 
 bool startsWith (const std::string& str, const std::string& prefix);
 StringVector split (const std::string& str, const std::string& separator);
-std::string join (const StringVector& strings, const std::string& separator);
+std::string join(const StringVector& strings, const std::string& separator);
+std::string trim(const std::string& inputStr, const std::string& trimChars = " \t\n\r");
 
 int copyWhile(char* dest, const char* src, bool (*conditionFN)(char), int maxLen);
 

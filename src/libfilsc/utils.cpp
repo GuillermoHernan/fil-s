@@ -143,6 +143,24 @@ std::string join (const StringVector& strings, const std::string& separator)
     return output.str();
 }
 
+/// <summary>
+/// Removes the specified characters from both ends of the string.
+/// </summary>
+/// <param name="inputStr"></param>
+/// <returns></returns>
+std::string trim(const std::string& inputStr, const std::string& trimChars)
+{
+	auto begin = inputStr.find_first_not_of(trimChars);
+
+	if (begin == string::npos)
+		return "";
+
+	auto end = inputStr.find_last_not_of(trimChars);
+
+	return inputStr.substr(begin, (end - begin) + 1);
+}
+
+
 
 
 int copyWhile(char* dest, const char* src, bool (*conditionFN)(char), int maxLen)

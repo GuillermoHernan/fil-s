@@ -1,0 +1,12 @@
+
+*functionCodegen
+Parser.*
+*function*
+
+This file is an example of the file to set the filter for the unit tests. 
+Only the first line is taken into account. Therefore, the rest of the file can be used
+to add comments or disabled filters.
+Because only the first line is used, one of the easiest ways to disable the filter
+is just to begin the file with a new line.
+The real filter file (test_filter) has been added to '.gitignore', as it is a local
+configuration file.

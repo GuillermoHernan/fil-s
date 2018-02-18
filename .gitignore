@@ -261,3 +261,4 @@ __pycache__/
 *.pyc
 /src/AsyncScript-master
 /test/libfilsc_test/results
+/test/libfilsc_test/test_filter.txt
