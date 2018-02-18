@@ -174,7 +174,13 @@ std::string	CodeGeneratorState::allocCName(std::string base)
 	if (base == "")
 		base = "_unnamed";
 	else
+	{
+		//Limit name length
+		if (base.size() > 16)
+			base = base.substr(0, 7) + "__" + base.substr(base.size()-7, 7);
+
 		replace(base, '\'', "1");	// single quotes are illegal in 'C' names.
+	}
 
 	sprintf_s(buffer, bufSize, "%s_%04X", base.c_str(), m_nextSymbolId++);
 
