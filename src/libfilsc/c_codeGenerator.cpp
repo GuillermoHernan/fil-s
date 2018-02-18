@@ -140,6 +140,9 @@ void nodeListCodegen(Ref<AstNode> node, ostream& output, CodeGeneratorState& sta
 /// </summary>
 void functionCodegen(Ref<AstNode> node, ostream& output, CodeGeneratorState& state, const string& resultDest)
 {
+	//Necessary because functions usually define their own temporaries.
+	state.enterBlock();
+
 	//Generate code for the parameters tuple.
 	auto params = node->child(0);
 	auto retTuple = node->child(1);
@@ -173,6 +176,8 @@ void functionCodegen(Ref<AstNode> node, ostream& output, CodeGeneratorState& sta
 	}
 
 	output << "}\n\n";
+
+	state.exitBlock();
 }
 
 /// <summary>
@@ -270,11 +275,13 @@ void varCodegen(Ref<AstNode> node, std::ostream& output, CodeGeneratorState& sta
 /// </summary>
 void tupleDefCodegen(Ref<AstNode> node, std::ostream& output, CodeGeneratorState& state, const std::string& resultDest)
 {
+	string name = state.cname(node);
+
 	output << "typedef struct " << "{\n";
 
 	nodeListCodegen(node, output, state, "");
 
-	output << "}" << state.cname(node) << ";\n\n";
+	output << "}" << name << ";\n\n";
 }
 
 /// <summary>
