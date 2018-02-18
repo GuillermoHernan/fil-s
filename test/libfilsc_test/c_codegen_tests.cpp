@@ -156,7 +156,10 @@ private:
 		_flushall();
 		int result = system(command.c_str());
 		if (result != 0)
-			throw exception("Error compiling 'C' code");
+		{
+			string message = string("Error compiling 'C' code (") + testName + ".c)";
+			throw exception(message.c_str());
+		}
 	}
 
 	std::string buildOutputFilePath(const string& testName, const string& extension)
@@ -211,12 +214,37 @@ TEST_F(C_CodegenTests, generateCode)
 /// </summary>
 TEST_F(C_CodegenTests, functionCodegen)
 {
-	EXPECT_RUN_OK ( "test1", 
+	//Function with a scalar return value.
+	EXPECT_RUN_OK("test1",
 		"function add (a:int, b: int):int {\n"
 		"  a+b\n"
 		"}\n"
 		"function test ():int {\n"
 		"  if (add(3,7) == 10) 0 else 1\n"
+		"}"
+	);
+
+	//Function with no return value
+	EXPECT_RUN_OK("test2",
+		"function t2 (a:int, b: int):() {\n"
+		"  a+b\n"
+		"}\n"
+		"function test ():int {\n"
+		"  t2(3,1);\n"
+		"  0\n"
+		"}"
+	);
+
+	//Function with a tuple return value.
+	EXPECT_RUN_OK("test3",
+		"function stats (a:int, b: int, c: int):(sum: int, mean:int) {\n"
+		"  const sum = a+b+c\n"
+		"  (sum, sum/3)"
+		"}\n"
+		"function test ():int {\n"
+		"  const result = stats (7,5,6);"
+		"  if ((result.sum == 18) && (result.mean == 6))\n"
+		"    0 else 1\n"
 		"}"
 	);
 

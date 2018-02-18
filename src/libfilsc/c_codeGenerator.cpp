@@ -158,7 +158,9 @@ void functionCodegen(Ref<AstNode> node, CodeGeneratorState& state, const string&
 	if (returnType->type() == DT_TUPLE)
 	{
 		state.output() << "//Return value for '" << node->getName() << "' function\n";
-		codegen(params, state, "");
+
+		//TODO: This may not work for inferred return types.
+		codegen(retTuple, state, "");
 	}
 
 	state.output() << "//Code for '" << node->getName() << "' function\n";
@@ -169,7 +171,7 @@ void functionCodegen(Ref<AstNode> node, CodeGeneratorState& state, const string&
 		codegen(fnCode, state, "");
 	else
 	{
-		TempVariable	tmpReturn(fnCode, state);
+		TempVariable	tmpReturn(returnType, state);
 		codegen(fnCode, state, tmpReturn.cname());
 
 		state.output() << "return " << tmpReturn.cname() << ";\n";
