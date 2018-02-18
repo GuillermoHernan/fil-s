@@ -464,30 +464,36 @@ void memberAccessCodegen(
 	const IVariableInfo& variable,
 	bool isWrite)
 {
-	auto			left = node->child(0);
-	auto			right = node->child(1);
 	vector <string>	nameStack;
-
-	nameStack.push_back(state.cname(right));
+	auto curNode = node;
+	AstNodeTypes	type;
 
 	do {
-		auto type = left->getType();
+		type = curNode->getType();
 
 		if (type == AST_IDENTIFIER)
-			nameStack.push_back(varAccessExpression(left, state));
+			nameStack.push_back(varAccessExpression(curNode, state));
 		else if (type == AST_MEMBER_ACCESS)
 		{
-			nameStack.push_back(state.cname(left->child(1)));
-			left = left->child(0);
+			auto tuple = curNode->child(0);
+			auto tType = tuple->getDataType().staticCast<TupleType>();
+			string fieldName = curNode->child(1)->getName();
+			int index = tType->findMemberByName(fieldName);
+
+			if (index < 0)
+				errorAt(node->position(), ETYPE_MEMBER_NOT_FOUND_2, fieldName.c_str(), tType->toString().c_str());
+
+			nameStack.push_back(state.cname(tType->getMemberNode(index)));
+			curNode = tuple;
 		}
 		else
 		{
-			TempVariable	temp(left, state);
+			TempVariable	temp(curNode, state);
 
-			codegen(left, state, temp);
+			codegen(curNode, state, temp);
 			nameStack.push_back(temp.cname());
 		}
-	} while (left->getType() == AST_MEMBER_ACCESS);
+	} while (type == AST_MEMBER_ACCESS);
 
 	assert(nameStack.size() >= 2);
 
