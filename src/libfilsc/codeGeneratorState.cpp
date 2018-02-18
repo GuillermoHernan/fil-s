@@ -76,8 +76,10 @@ void CodeGeneratorState::setCname(Ref<AstNode> node, const std::string& name)
 /// <summary>
 /// Constructor of CodeGeneratorState
 /// </summary>
-CodeGeneratorState::CodeGeneratorState()
+CodeGeneratorState::CodeGeneratorState(std::ostream* pOutput)
+	: m_output(pOutput)
 {
+	assert(pOutput != NULL);
 	//Create root block
 	enterBlock();
 }
@@ -204,14 +206,14 @@ CodeGeneratorState::TempVarInfo* CodeGeneratorState::findTemporary(
 /// <param name="node"></param>
 /// <param name="output"></param>
 /// <param name="state"></param>
-TempVariable::TempVariable(Ref<AstNode> node, std::ostream& output, CodeGeneratorState& state)
+TempVariable::TempVariable(Ref<AstNode> node, CodeGeneratorState& state)
 	:m_state(state)
 {
 	auto	typeNode = node->getDataType();
 	string	cTypeName = state.cname(typeNode);
 
 	if (state.allocTemp(cTypeName, m_cName))
-		output << cTypeName << "\t" << m_cName << ";\n";
+		state.output() << cTypeName << "\t" << m_cName << ";\n";
 
 	//If 'allocTemp' returns false, it means that a temp value has been reused.
 	//It shall not be declared again.

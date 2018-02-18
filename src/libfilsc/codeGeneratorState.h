@@ -9,7 +9,7 @@
 class CodeGeneratorState
 {
 public:
-	CodeGeneratorState();
+	CodeGeneratorState(std::ostream* pOutput);
 	~CodeGeneratorState();
 
 	std::string cname(Ref<AstNode> node);
@@ -22,6 +22,11 @@ public:
 
 	bool allocTemp(const std::string& cTypeName, std::string& outputName);
 	bool releaseTemp(const std::string& varName);
+
+	std::ostream& output()
+	{
+		return *m_output;
+	}
 
 private:
 	/// <summary>Info about a temporary variable.</summary>
@@ -38,6 +43,7 @@ private:
 		std::vector<TempVarInfo>	tempVars;
 	};
 
+	std::ostream*								m_output;
 	std::vector<BlockInfo>						m_blockStack;
 	std::map< Ref<RefCountObj>, std::string>	m_objNames;
 	int											m_nextSymbolId = 0;
@@ -53,7 +59,7 @@ private:
 class TempVariable
 {
 public:
-	TempVariable(Ref<AstNode> node, std::ostream& output, CodeGeneratorState& state);
+	TempVariable(Ref<AstNode> node, CodeGeneratorState& state);
 	~TempVariable();
 
 	const std::string& cname()const

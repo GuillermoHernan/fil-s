@@ -35,8 +35,8 @@ string generateCode(Ref<AstNode> node)
 /// <returns></returns>
 string generateCode(Ref<AstNode> node, std::function<bool(Ref<AstNode>)> entryPointFn)
 {
-	CodeGeneratorState	state;
 	ostringstream		output;
+	CodeGeneratorState	state(&output);
 
 	auto &topLevelItems = node->children();
 	auto it = find_if(topLevelItems.begin(), topLevelItems.end(), entryPointFn);
@@ -44,7 +44,7 @@ string generateCode(Ref<AstNode> node, std::function<bool(Ref<AstNode>)> entryPo
 	if (it != topLevelItems.end())
 		state.setCname(*it, (*it)->getName());
 
-	codegen(node, output, state, "");
+	codegen(node, state, "");
 
 	return output.str();
 }
@@ -62,7 +62,7 @@ string generateCode(Ref<AstNode> node, std::function<bool(Ref<AstNode>)> entryPo
 /// <param name="resultDest">Name of the 'C' variable where the result of the expression
 /// should be stored.
 /// </param>
-void codegen(Ref<AstNode> node, ostream& output, CodeGeneratorState& state, const string& resultDest)
+void codegen(Ref<AstNode> node, CodeGeneratorState& state, const string& resultDest)
 {
 	static NodeCodegenFN types[AST_TYPES_COUNT] = { NULL, NULL };
 
@@ -104,20 +104,20 @@ void codegen(Ref<AstNode> node, ostream& output, CodeGeneratorState& state, cons
 	}
 
 	if (node.notNull())
-		types[node->getType()](node, output, state, resultDest);
+		types[node->getType()](node, state, resultDest);
 }
 
 /// <summary>
 /// Code generation function for nodes which do not require code generation
 /// </summary>
-void voidCodegen(Ref<AstNode> node, ostream& output, CodeGeneratorState& state, const string& resultDest)
+void voidCodegen(Ref<AstNode> node, CodeGeneratorState& state, const string& resultDest)
 {
 }
 
 /// <summary>
 /// Handles the case of node types which are not suppossed to reach code generation phase.
 /// </summary>
-void invalidNodeCodegen(Ref<AstNode> node, ostream& output, CodeGeneratorState& state, const string& resultDest)
+void invalidNodeCodegen(Ref<AstNode> node, CodeGeneratorState& state, const string& resultDest)
 {
 	errorAt(node->position(),
 		ETYPE_INVALID_CODEGEN_NODE_1,
@@ -127,18 +127,18 @@ void invalidNodeCodegen(Ref<AstNode> node, ostream& output, CodeGeneratorState& 
 /// <summary>
 /// Calls code generation for all children of the node.
 /// </summary>
-void nodeListCodegen(Ref<AstNode> node, ostream& output, CodeGeneratorState& state, const string& resultDest)
+void nodeListCodegen(Ref<AstNode> node, CodeGeneratorState& state, const string& resultDest)
 {
 	assert(resultDest == "");
 
 	for (auto child : node->children())
-		codegen(child, output, state, "");
+		codegen(child, state, "");
 }
 
 /// <summary>
 /// Generates code for a function definition node.
 /// </summary>
-void functionCodegen(Ref<AstNode> node, ostream& output, CodeGeneratorState& state, const string& resultDest)
+void functionCodegen(Ref<AstNode> node, CodeGeneratorState& state, const string& resultDest)
 {
 	//Necessary because functions usually define their own temporaries.
 	state.enterBlock();
@@ -151,31 +151,31 @@ void functionCodegen(Ref<AstNode> node, ostream& output, CodeGeneratorState& sta
 
 	if (params->childCount() > 0)
 	{
-		output << "//Parameters for '" << node->getName() << "' function\n";
-		codegen(params, output, state, "");
+		state.output() << "//Parameters for '" << node->getName() << "' function\n";
+		codegen(params, state, "");
 	}
 
 	if (returnType->type() == DT_TUPLE)
 	{
-		output << "//Return value for '" << node->getName() << "' function\n";
-		codegen(params, output, state, "");
+		state.output() << "//Return value for '" << node->getName() << "' function\n";
+		codegen(params, state, "");
 	}
 
-	output << "//Code for '" << node->getName() << "' function\n";
-	output << genFunctionHeader(node, state);
-	output << "{\n";
+	state.output() << "//Code for '" << node->getName() << "' function\n";
+	state.output() << genFunctionHeader(node, state);
+	state.output() << "{\n";
 
 	if(returnType->type() == DT_VOID)
-		codegen(fnCode, output, state, "");
+		codegen(fnCode, state, "");
 	else
 	{
-		TempVariable	tmpReturn(fnCode, output, state);
-		codegen(fnCode, output, state, tmpReturn.cname());
+		TempVariable	tmpReturn(fnCode, state);
+		codegen(fnCode, state, tmpReturn.cname());
 
-		output << "return " << tmpReturn.cname() << ";\n";
+		state.output() << "return " << tmpReturn.cname() << ";\n";
 	}
 
-	output << "}\n\n";
+	state.output() << "}\n\n";
 
 	state.exitBlock();
 }
@@ -215,7 +215,7 @@ string genFunctionHeader(Ref<AstNode> node, CodeGeneratorState& state)
 /// <summary>
 /// Generates code for a block of expressions
 /// </summary>
-void blockCodegen(Ref<AstNode> node, ostream& output, CodeGeneratorState& state, const string& resultDest)
+void blockCodegen(Ref<AstNode> node, CodeGeneratorState& state, const string& resultDest)
 {
 	if (node->childCount() == 0)
 		return;
@@ -225,14 +225,14 @@ void blockCodegen(Ref<AstNode> node, ostream& output, CodeGeneratorState& state,
 
 	state.enterBlock();
 
-	output << "{\n";
+	state.output() << "{\n";
 
 	for (size_t i = 0; i < children.size() - 1; ++i)
-		codegen(children[i], output, state, "");
+		codegen(children[i], state, "");
 
-	codegen(lastChild, output, state, resultDest);
+	codegen(lastChild, state, resultDest);
 
-	output << "}\n";
+	state.output() << "}\n";
 
 	state.exitBlock();
 }
@@ -240,7 +240,7 @@ void blockCodegen(Ref<AstNode> node, ostream& output, CodeGeneratorState& state,
 /// <summary>
 /// Generates code for a tuple creation expression.
 /// </summary>
-void tupleCodegen(Ref<AstNode> node, std::ostream& output, CodeGeneratorState& state, const std::string& resultDest)
+void tupleCodegen(Ref<AstNode> node, CodeGeneratorState& state, const std::string& resultDest)
 {
 	//TODO: Review this check. Is really right not to evaluate the sub-expressions?
 	if (resultDest == "")
@@ -255,85 +255,85 @@ void tupleCodegen(Ref<AstNode> node, std::ostream& output, CodeGeneratorState& s
 		string fieldName = state.cname(childNode);
 		string childDest = resultDest + "." + fieldName;
 
-		codegen(expressions[i], output, state, resultDest);
+		codegen(expressions[i], state, resultDest);
 	}
 }
 
 /// <summary>
 /// Generates code for a variable declaration.
 /// </summary>
-void varCodegen(Ref<AstNode> node, std::ostream& output, CodeGeneratorState& state, const std::string& resultDest)
+void varCodegen(Ref<AstNode> node, CodeGeneratorState& state, const std::string& resultDest)
 {
 	auto	typeNode = node->getDataType();
 
-	output << state.cname(typeNode) << " ";
-	output << state.cname(node) << ";\n";
+	state.output() << state.cname(typeNode) << " ";
+	state.output() << state.cname(node) << ";\n";
 }
 
 /// <summary>
 /// Generates code for a tuple definition.
 /// </summary>
-void tupleDefCodegen(Ref<AstNode> node, std::ostream& output, CodeGeneratorState& state, const std::string& resultDest)
+void tupleDefCodegen(Ref<AstNode> node, CodeGeneratorState& state, const std::string& resultDest)
 {
 	string name = state.cname(node);
 
-	output << "typedef struct " << "{\n";
+	state.output() << "typedef struct " << "{\n";
 
-	nodeListCodegen(node, output, state, "");
+	nodeListCodegen(node, state, "");
 
-	output << "}" << name << ";\n\n";
+	state.output() << "}" << name << ";\n\n";
 }
 
 /// <summary>
 /// Generates code for an 'if' flow control expression.
 /// </summary>
-void ifCodegen(Ref<AstNode> node, std::ostream& output, CodeGeneratorState& state, const std::string& resultDest)
+void ifCodegen(Ref<AstNode> node, CodeGeneratorState& state, const std::string& resultDest)
 {
 	auto	condition = node->child(0);
 	auto	thenExpr = node->child(1);
 	auto	elseExpr = node->child(2);
 
 	//Condition
-	TempVariable conditionTempVar(condition, output, state);
+	TempVariable conditionTempVar(condition, state);
 
-	codegen(condition, output, state, conditionTempVar.cname());
+	codegen(condition, state, conditionTempVar.cname());
 
-	output << "if(" << conditionTempVar.cname() << "){\n";
+	state.output() << "if(" << conditionTempVar.cname() << "){\n";
 
 	//Then
-	codegen(thenExpr, output, state, resultDest);
-	output << "}\n";
+	codegen(thenExpr, state, resultDest);
+	state.output() << "}\n";
 
 	//Else (optional)
 	if (elseExpr.notNull())
 	{
-		output << "else{\n";
-		codegen(elseExpr, output, state, resultDest);
-		output << "}\n";
+		state.output() << "else{\n";
+		codegen(elseExpr, state, resultDest);
+		state.output() << "}\n";
 	}
 }
 
 /// <summary>
 /// Generates code for a return statement
 /// </summary>
-void returnCodegen(Ref<AstNode> node, std::ostream& output, CodeGeneratorState& state, const std::string& resultDest)
+void returnCodegen(Ref<AstNode> node, CodeGeneratorState& state, const std::string& resultDest)
 {
 	if (!node->childExists(0))
-		output << "return;\n";
+		state.output() << "return;\n";
 	else
 	{
 		auto			expression = node->child(0);
-		TempVariable	tempVar(expression, output, state);
+		TempVariable	tempVar(expression, state);
 
-		codegen(expression, output, state, tempVar.cname());
-		output << "return" << tempVar.cname() << ";\n";
+		codegen(expression, state, tempVar.cname());
+		state.output() << "return" << tempVar.cname() << ";\n";
 	}
 }
 
 /// <summary>
 /// Generates code for an assignment expression.
 /// </summary>
-void assignmentCodegen(Ref<AstNode> node, std::ostream& output, CodeGeneratorState& state, const std::string& resultDest)
+void assignmentCodegen(Ref<AstNode> node, CodeGeneratorState& state, const std::string& resultDest)
 {
 	auto	assignment = node.staticCast<AstOperator>();
 	auto	lexpr = assignment->child(0);
@@ -343,28 +343,28 @@ void assignmentCodegen(Ref<AstNode> node, std::ostream& output, CodeGeneratorSta
 
 	if (lexpr->getType() == AST_IDENTIFIER)
 	{
-		codegen(rexpr, output, state, state.cname(lexpr));
+		codegen(rexpr, state, state.cname(lexpr));
 		if (resultDest != "")
-			output << resultDest << " = " << state.cname(lexpr);
+			state.output() << resultDest << " = " << state.cname(lexpr);
 	}
 	else
 	{
 		//By the moment, only 'member access' nodes are sopported.
 		assert(lexpr->getType() == AST_MEMBER_ACCESS);
-		TempVariable	tempResult(node, output, state);
+		TempVariable	tempResult(node, state);
 
-		codegen(rexpr, output, state, tempResult.cname());
-		memberAccessCodegen(lexpr, output, state, tempResult.cname(), true);
+		codegen(rexpr, state, tempResult.cname());
+		memberAccessCodegen(lexpr, state, tempResult.cname(), true);
 
 		if (resultDest != "")
-			output << resultDest << " = " << tempResult.cname();
+			state.output() << resultDest << " = " << tempResult.cname();
 	}
 }
 
 /// <summary>
 /// Generates code for a function call expression.
 /// </summary>
-void callCodegen(Ref<AstNode> node, std::ostream& output, CodeGeneratorState& state, const std::string& resultDest)
+void callCodegen(Ref<AstNode> node, CodeGeneratorState& state, const std::string& resultDest)
 {
 	auto fnExpr = node->child(0);
 	auto paramsExpr = node->child(1);
@@ -378,27 +378,27 @@ void callCodegen(Ref<AstNode> node, std::ostream& output, CodeGeneratorState& st
 	if (paramsExpr->childCount() == 0)
 	{
 		if (resultDest != "")
-			output << resultDest << " = ";
+			state.output() << resultDest << " = ";
 
-		output << fnCName << "();\n";
+		state.output() << fnCName << "();\n";
 	}
 	else
 	{
-		TempVariable	tmpParams(paramsExpr, output, state);
+		TempVariable	tmpParams(paramsExpr, state);
 
-		codegen(paramsExpr, output, state, tmpParams.cname());
+		codegen(paramsExpr, state, tmpParams.cname());
 
 		if (resultDest != "")
-			output << resultDest << " = ";
+			state.output() << resultDest << " = ";
 
-		output << fnCName << "(&" << tmpParams.cname() << ");\n";
+		state.output() << fnCName << "(&" << tmpParams.cname() << ");\n";
 	}
 }
 
 /// <summary>
 /// Generates code for a literal node
 /// </summary>
-void literalCodegen(Ref<AstNode> node, std::ostream& output, CodeGeneratorState& state, const std::string& resultDest)
+void literalCodegen(Ref<AstNode> node, CodeGeneratorState& state, const std::string& resultDest)
 {
 	if (resultDest == "")
 		return;
@@ -407,11 +407,11 @@ void literalCodegen(Ref<AstNode> node, std::ostream& output, CodeGeneratorState&
 	{
 	case AST_INTEGER:
 	case AST_FLOAT:
-		output << resultDest << " = " << node->getValue() << ";\n";
+		state.output() << resultDest << " = " << node->getValue() << ";\n";
 		break;
 
 	case AST_STRING:
-		output << resultDest << " = " << escapeString (node->getValue(), true) << ";\n";
+		state.output() << resultDest << " = " << escapeString (node->getValue(), true) << ";\n";
 		break;
 
 	default:
@@ -422,21 +422,21 @@ void literalCodegen(Ref<AstNode> node, std::ostream& output, CodeGeneratorState&
 /// <summary>
 /// Generates code to read a variable.
 /// </summary>
-void varAccessCodegen(Ref<AstNode> node, std::ostream& output, CodeGeneratorState& state, const std::string& resultDest)
+void varAccessCodegen(Ref<AstNode> node, CodeGeneratorState& state, const std::string& resultDest)
 {
 	if (resultDest == "")
 		return;
 
-	output << resultDest << " = " << state.cname(node) << ";\n";
+	state.output() << resultDest << " = " << state.cname(node) << ";\n";
 }
 
 /// <summary>
 /// Generates code for an access to member expression.
 /// Just for reads.
 /// </summary>
-void memberAccessCodegen(Ref<AstNode> node, std::ostream& output, CodeGeneratorState& state, const std::string& resultDest)
+void memberAccessCodegen(Ref<AstNode> node, CodeGeneratorState& state, const std::string& resultDest)
 {
-	memberAccessCodegen(node, output, state, resultDest, false);
+	memberAccessCodegen(node, state, resultDest, false);
 }
 
 /// <summary>
@@ -444,7 +444,6 @@ void memberAccessCodegen(Ref<AstNode> node, std::ostream& output, CodeGeneratorS
 /// Read / write version.
 /// </summary>
 /// <param name="node"></param>
-/// <param name="output"></param>
 /// <param name="state"></param>
 /// <param name="varName">'C' name of the variable from which to read the value on writes
 /// or to write it on reads.
@@ -452,7 +451,6 @@ void memberAccessCodegen(Ref<AstNode> node, std::ostream& output, CodeGeneratorS
 /// <param name="isWrite">Selects between read and write mode.</param>
 void memberAccessCodegen(
 	Ref<AstNode> node, 
-	std::ostream& output, 
 	CodeGeneratorState& state, 
 	const std::string& varName, 
 	bool isWrite)
@@ -475,9 +473,9 @@ void memberAccessCodegen(
 		}
 		else
 		{
-			TempVariable	temp(left, output, state);
+			TempVariable	temp(left, state);
 
-			codegen(left, output, state, temp.cname());
+			codegen(left, state, temp.cname());
 			nameStack.push_back(temp.cname());
 		}
 	} while (left->getType() == AST_MEMBER_ACCESS);
@@ -490,13 +488,13 @@ void memberAccessCodegen(
 
 		if (isWrite)
 		{
-			output << join(nameStack, ".");
-			output << " = " << varName << ";\n";
+			state.output() << join(nameStack, ".");
+			state.output() << " = " << varName << ";\n";
 		}
 		else
 		{
-			output << varName << " = ";
-			output << join(nameStack, ".") << ";\n";
+			state.output() << varName << " = ";
+			state.output() << join(nameStack, ".") << ";\n";
 		}
 	}
 }
@@ -504,7 +502,7 @@ void memberAccessCodegen(
 /// <summary>
 /// Generates code for a binary operation
 /// </summary>
-void binaryOpCodegen(Ref<AstNode> node, std::ostream& output, CodeGeneratorState& state, const std::string& resultDest)
+void binaryOpCodegen(Ref<AstNode> node, CodeGeneratorState& state, const std::string& resultDest)
 {
 	if (resultDest == "")
 		return;
@@ -513,49 +511,49 @@ void binaryOpCodegen(Ref<AstNode> node, std::ostream& output, CodeGeneratorState
 	auto rightExpr = node->child(1);
 	auto operation = node.staticCast<AstOperator>()->operation;
 
-	TempVariable	leftTmp(leftExpr, output, state);
-	TempVariable	rightTmp(rightExpr, output, state);
+	TempVariable	leftTmp(leftExpr, state);
+	TempVariable	rightTmp(rightExpr, state);
 
-	codegen(leftExpr, output, state, leftTmp.cname());
-	codegen(rightExpr, output, state, rightTmp.cname());
+	codegen(leftExpr, state, leftTmp.cname());
+	codegen(rightExpr, state, rightTmp.cname());
 
-	output << resultDest << " = ";
-	output << leftTmp.cname() << operation << rightTmp.cname() << ";\n";
+	state.output() << resultDest << " = ";
+	state.output() << leftTmp.cname() << operation << rightTmp.cname() << ";\n";
 }
 
 
 /// <summary>
 /// Generates code for a prefix operator
 /// </summary>
-void prefixOpCodegen(Ref<AstNode> node, std::ostream& output, CodeGeneratorState& state, const std::string& resultDest)
+void prefixOpCodegen(Ref<AstNode> node, CodeGeneratorState& state, const std::string& resultDest)
 {
 	auto child = node->child(0);
 	auto operation = node.staticCast<AstOperator>()->operation;
 
-	TempVariable	temp(child, output, state);
+	TempVariable	temp(child, state);
 
-	codegen(child, output, state, temp.cname());
+	codegen(child, state, temp.cname());
 
 	if (resultDest != "")
-		output << resultDest << " = ";
-	output << operation << temp.cname() << ";\n";
+		state.output() << resultDest << " = ";
+	state.output() << operation << temp.cname() << ";\n";
 }
 
 
 /// <summary>
 /// Generates code for a postfix operator
 /// </summary>
-void postfixOpCodegen(Ref<AstNode> node, std::ostream& output, CodeGeneratorState& state, const std::string& resultDest)
+void postfixOpCodegen(Ref<AstNode> node, CodeGeneratorState& state, const std::string& resultDest)
 {
 	auto child = node->child(0);
 	auto operation = node.staticCast<AstOperator>()->operation;
 
-	TempVariable	temp(child, output, state);
+	TempVariable	temp(child, state);
 
-	codegen(child, output, state, temp.cname());
+	codegen(child, state, temp.cname());
 
-	output << operation << temp.cname() << ";\n";
+	state.output() << operation << temp.cname() << ";\n";
 
 	if (resultDest != "")
-		output << resultDest << " = " << temp.cname() << ";\n";
+		state.output() << resultDest << " = " << temp.cname() << ";\n";
 }
