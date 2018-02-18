@@ -446,7 +446,14 @@ void varAccessCodegen(Ref<AstNode> node, CodeGeneratorState& state, const std::s
 	if (resultDest == "")
 		return;
 
-	state.output() << resultDest << " = " << state.cname(node) << ";\n";
+	string namePrefix = "";
+
+	auto referenced = node->getScope()->get(node->getName());
+
+	if (referenced->hasFlag(ASTF_FUNCTION_PARAMETER))
+		namePrefix = "_gen_params->";
+
+	state.output() << resultDest << " = " << namePrefix << state.cname(referenced) << ";\n";
 }
 
 /// <summary>
