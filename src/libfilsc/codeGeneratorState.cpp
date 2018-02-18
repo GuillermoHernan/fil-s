@@ -199,18 +199,15 @@ CodeGeneratorState::TempVarInfo* CodeGeneratorState::findTemporary(
 	return NULL;
 }
 
-
 /// <summary>
 /// Constructor of 'TempVariable'. Reserves a new temporary value.
 /// </summary>
-/// <param name="node"></param>
-/// <param name="output"></param>
+/// <param name="type"></param>
 /// <param name="state"></param>
-TempVariable::TempVariable(Ref<AstNode> node, CodeGeneratorState& state)
+TempVariable::TempVariable(Ref<BaseType> type, CodeGeneratorState& state)
 	:m_state(state)
 {
-	auto	typeNode = node->getDataType();
-	string	cTypeName = state.cname(typeNode);
+	string	cTypeName = state.cname(type);
 
 	if (state.allocTemp(cTypeName, m_cName))
 		state.output() << cTypeName << "\t" << m_cName << ";\n";
@@ -218,6 +215,17 @@ TempVariable::TempVariable(Ref<AstNode> node, CodeGeneratorState& state)
 	//If 'allocTemp' returns false, it means that a temp value has been reused.
 	//It shall not be declared again.
 }
+
+/// <summary>
+/// Constructor of 'TempVariable'. Reserves a new temporary value.
+/// </summary>
+/// <param name="node"></param>
+/// <param name="state"></param>
+TempVariable::TempVariable(Ref<AstNode> node, CodeGeneratorState& state)
+	:TempVariable(node->getDataType(), state)
+{
+}
+
 
 /// <summary>
 /// Destructor. Releases the temporary variable.

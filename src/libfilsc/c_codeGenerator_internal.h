@@ -7,6 +7,7 @@
 #include "c_codeGenerator.h"
 
 class CodeGeneratorState;
+class TupleType;
 
 typedef void (*NodeCodegenFN)(Ref<AstNode> node, CodeGeneratorState& state, const std::string& resultDest);
 
@@ -18,7 +19,8 @@ void nodeListCodegen (Ref<AstNode> node, CodeGeneratorState& state, const std::s
 void functionCodegen(Ref<AstNode> node, CodeGeneratorState& state, const std::string& resultDest);
 //void typedefCodegen (Ref<AstNode> node, CodeGeneratorState& state, const std::string& resultDest);
 void blockCodegen (Ref<AstNode> node, CodeGeneratorState& state, const std::string& resultDest);
-void tupleCodegen (Ref<AstNode> node, CodeGeneratorState& state, const std::string& resultDest);
+void tupleCodegen(Ref<AstNode> node, CodeGeneratorState& state, const std::string& resultDest);
+void tupleCodegen(Ref<AstNode> node, CodeGeneratorState& state, const std::string& resultDest, Ref<TupleType> tupleType);
 void varCodegen (Ref<AstNode> node, CodeGeneratorState& state, const std::string& resultDest);
 void tupleDefCodegen (Ref<AstNode> node, CodeGeneratorState& state, const std::string& resultDest);
 void ifCodegen (Ref<AstNode> node, CodeGeneratorState& state, const std::string& resultDest);

@@ -59,6 +59,7 @@ private:
 class TempVariable
 {
 public:
+	TempVariable(Ref<BaseType> type, CodeGeneratorState& state);
 	TempVariable(Ref<AstNode> node, CodeGeneratorState& state);
 	~TempVariable();
 

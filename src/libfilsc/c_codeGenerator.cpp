@@ -240,22 +240,39 @@ void blockCodegen(Ref<AstNode> node, CodeGeneratorState& state, const string& re
 /// <summary>
 /// Generates code for a tuple creation expression.
 /// </summary>
-void tupleCodegen(Ref<AstNode> node, CodeGeneratorState& state, const std::string& resultDest)
+void tupleCodegen(
+	Ref<AstNode> node,
+	CodeGeneratorState& state,
+	const std::string& resultDest)
+{
+	tupleCodegen(node, state, resultDest, Ref<TupleType>());
+}
+
+/// <summary>
+/// Generates code for a tuple creation expression.
+/// </summary>
+void tupleCodegen(
+	Ref<AstNode> node, 
+	CodeGeneratorState& state, 
+	const std::string& resultDest,
+	Ref<TupleType> tupleType)
 {
 	//TODO: Review this check. Is really right not to evaluate the sub-expressions?
 	if (resultDest == "")
 		return;
 
-	auto	dataType = node->getDataType().staticCast<TupleType>();
+	if (tupleType.isNull())
+		tupleType = node->getDataType().staticCast<TupleType>();
+
 	auto&	expressions = node->children();
 
 	for (size_t i = 0; i < expressions.size(); ++i)
 	{
-		auto childNode = dataType->getMemberNode((unsigned)i);
+		auto childNode = tupleType->getMemberNode((unsigned)i);
 		string fieldName = state.cname(childNode);
 		string childDest = resultDest + "." + fieldName;
 
-		codegen(expressions[i], state, resultDest);
+		codegen(expressions[i], state, childDest);
 	}
 }
 
@@ -384,9 +401,11 @@ void callCodegen(Ref<AstNode> node, CodeGeneratorState& state, const std::string
 	}
 	else
 	{
-		TempVariable	tmpParams(paramsExpr, state);
+		auto			fnType = fnNode->getDataType().staticCast<FunctionType>();
+		auto			paramsType = fnType->getParameters();
+		TempVariable	tmpParams(paramsType.staticCast<BaseType>(), state);
 
-		codegen(paramsExpr, state, tmpParams.cname());
+		tupleCodegen(paramsExpr, state, tmpParams.cname(), paramsType);
 
 		if (resultDest != "")
 			state.output() << resultDest << " = ";
