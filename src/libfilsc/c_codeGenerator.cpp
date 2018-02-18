@@ -386,7 +386,7 @@ void callCodegen(Ref<AstNode> node, CodeGeneratorState& state, const IVariableIn
 
 	if (paramsExpr->childCount() == 0)
 	{
-		if (resultDest.isVoid())
+		if (!resultDest.isVoid())
 			state.output() << resultDest.cname() << " = ";
 
 		state.output() << fnCName << "();\n";
