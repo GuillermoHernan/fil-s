@@ -213,7 +213,7 @@ ExprResult parseScript(LexToken token)
 ExprResult parseTopLevelItem(LexToken token)
 {
 	return parseConst(token)
-		.orElse(parseActorExpr)
+		.orElse(parseActorDef)
 		.orElse(parseFunctionDef)
 		.orElse(parseTypedef);
 }
@@ -1009,49 +1009,131 @@ ExprResult parseMemberAccess (LexToken token, Ref<AstNode> objExpr)
  * @param token
  * @return 
  */
-ExprResult parseActorExpr (LexToken token)
+ExprResult parseActorDef (LexToken token)
 {
-    Ref<AstActor>   actorNode;
+    auto	r = ExprResult::requireReserved("actor", token).then(parseIdentifier);
 
-    auto r = ExprResult::requireReserved("actor", token);
-    if (r.error())
-        return r.final();
+	if (!r.ok())
+		return r.final();
 
-	//TODO: implement actor parsing
-	return r.getError(ETYPE_NOT_IMPLEMENTED_1, "Actor parsing");
+	string			name = r.result->getName();
+	Ref<AstNode>    actor = astCreateActor(token.getPosition(), name);
 
-    //const string name = r.token.text();
-    //
-    //r = r.require(LEX_ID);
-    //
-    //if (r.ok())
-    //{
-    //    actorNode = AstActor::create(pos, name);
-    //    r.result = actorNode;
-    //    r = r.then(parseArgumentList).requireOp("{");
+	if (r.nextText() == "(")
+	{
+		r = r.then(parseTupleDef);
+		auto params = r.result;
 
-    //    while (r.ok() && !r.token.isOperator("}"))
-    //    {
-    //        //Skip ';', which may (optionally) act as separators.
-    //        while (r.token.isOperator (";"))
-    //            r = r.skip();
-    //        
-    //        if (r.token.isOperator("}"))
-    //            break;
-    //        
-    //        r = parseActorMember(r.token);
-    //        if (r.ok())
-    //            actorNode->addChild(r.result);
-    //    }
-    //    
-    //    r = r.requireOp("}");
-    //}//if
-    //
-    //if (r.ok())
-    //    r.result = actorNode;
-    //
-    //return r.final();
+		if (r.ok())
+		{
+			markAsParameters(params);
+			actor->addChild(params);
+		}
+	}
+	else
+	{
+		//No parameters, add an empty tuple.
+		actor->addChild(astCreateTuple(r.nextToken()));
+	}
+
+	r = r.requireOp("{");
+
+	while (r.ok() && r.nextText() != "}")
+	{
+		r = r.then(parseInputMsg)
+			.orElse(parseOutputMsg)
+			.orElse(parseVar)
+			.orElse(parseConst)
+			.orElse(parseTypedef);
+
+		if (r.ok())
+		{
+			actor->addChild(r.result);
+
+			if (r.nextText() != "}")
+				r = parseStatementSeparator(r);
+		}
+	}
+
+	r = r.requireOp("}");
+
+	if (r.ok())
+		r.result = actor;
+
+	return r.final();
 }
+
+/// <summary>
+/// Parses an input message definition.
+/// </summary>
+/// <param name="token"></param>
+/// <returns></returns>
+ExprResult parseInputMsg(LexToken token)
+{
+	auto	r = ExprResult::requireReserved("input", token).then(parseMsgHeader);
+
+	auto header = r.result;
+	r = r.then(parseBlock);
+
+	if (r.ok())
+	{
+		auto block = r.result;
+		r.result = astCreateInputMsg(token.getPosition(), header->getName());
+		r.result->addChild(header->child(0));
+		r.result->addChild(block);
+	}
+
+	return r;
+}
+
+
+/// <summary>
+/// Parses an output message declaration.
+/// </summary>
+/// <param name="token"></param>
+/// <returns></returns>
+ExprResult parseOutputMsg(LexToken token)
+{
+	auto	r = ExprResult::requireReserved("output", token).then(parseMsgHeader);
+
+	if (r.ok())
+	{
+		auto header = r.result;
+		r.result = astCreateOutputMsg(token.getPosition(), header->getName());
+		r.result->addChild(header->child(0));
+	}
+
+	return r;
+}
+
+/// <summary>
+/// Parses the header (name + parameters) o an input or output message.
+/// </summary>
+/// <param name="token"></param>
+/// <returns></returns>
+ExprResult parseMsgHeader(LexToken token)
+{
+	auto	r = parseIdentifier(token);
+
+	if (!r.ok())
+		return r.final();
+	
+	string name = r.result->getName();
+
+	//Parameters tuple.
+	r = r.then(parseTupleDef);
+
+	if (r.ok())
+	{
+		auto params = r.result;
+		r.result = refFromNew(new AstNamedBranch(AST_LIST, token.getPosition(), name));
+		markAsParameters(params);
+		r.result->addChild(params);
+	}
+
+	return r.final();
+}
+
 
 ///**
 // * Parses one of the possible members of an actor.

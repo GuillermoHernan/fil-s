@@ -329,15 +329,15 @@ Ref<AstNode> astCreateActor(ScriptPosition pos, const std::string& name)
     return refFromNew(new AstNamedBranch(AST_ACTOR, pos, name));
 }
 
-//Ref<AstFunction> astCreateInputMessage(ScriptPosition pos, const std::string& name)
-//{
-//    return refFromNew(new AstFunction(AST_INPUT, pos, name));
-//}
-//
-//Ref<AstFunction> astCreateOutputMessage(ScriptPosition pos, const std::string& name)
-//{
-//    return refFromNew(new AstFunction(AST_OUTPUT, pos, name));
-//}
+Ref<AstNode> astCreateInputMsg(ScriptPosition pos, const std::string& name)
+{
+    return refFromNew(new AstNamedBranch(AST_INPUT, pos, name));
+}
+
+Ref<AstNode> astCreateOutputMsg(ScriptPosition pos, const std::string& name)
+{
+    return refFromNew(new AstNamedBranch(AST_OUTPUT, pos, name));
+}
 
 //Ref<AstNode> astCreateConnect(ScriptPosition pos,
 //                                 Ref<AstNode> lexpr, 
@@ -652,6 +652,8 @@ std::string astTypeToString(AstNodeTypes type)
 		types[AST_CONNECT] = "AST_CONNECT";
 		types[AST_DEFAULT_TYPE] = "AST_DEFAULT_TYPE";
 		types[AST_TYPE_NAME] = "AST_TYPE_NAME";
+		types[AST_INPUT] = "AST_INPUT";
+		types[AST_OUTPUT] = "AST_OUTPUT";
 		//types[AST_TYPES_COUNT] = "AST_TYPES_COUNT";
 
 		assert(types.size() == AST_TYPES_COUNT);

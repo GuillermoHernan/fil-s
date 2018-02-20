@@ -85,10 +85,11 @@ ExprResult parseMemberAccess(LexToken token, Ref<AstNode> objExpr);
 //ExprResult parseBinaryRLOp(LexToken token, LEX_TYPES opType, ExprResult::ParseFunction childParser);
 //ExprResult parseBinaryRLOp(LexToken token, const int *types, ExprResult::ParseFunction childParser);
 
-ExprResult parseActorExpr(LexToken token);
+ExprResult parseActorDef(LexToken token);
 //ExprResult parseActorMember(LexToken token);
-//ExprResult parseInputMessage(LexToken token);
-//ExprResult parseOutputMessage(LexToken token);
+ExprResult parseInputMsg(LexToken token);
+ExprResult parseOutputMsg(LexToken token);
+ExprResult parseMsgHeader(LexToken token);
 //ExprResult parseConnectExpr(LexToken token);
 //
 //ExprResult parseClassExpr(LexToken token);

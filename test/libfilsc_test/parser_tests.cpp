@@ -757,3 +757,95 @@ TEST(Parser, markAsParameters)
 	EXPECT_FALSE(nodes[2]->hasFlag(ASTF_FUNCTION_PARAMETER));
 	EXPECT_STREQ("z", nodes[2]->getName().c_str());
 }
+
+/// <summary>
+/// Tests for 'parseActorDef' function.
+/// Also tests 'parseInputMsg', 'parseOutputMsg' functions.
+/// </summary>
+TEST(Parser, parseActorDef)
+{
+	auto parseActorDef_ = [](const char* code)
+	{
+		return parseActorDef(LexToken(code).next());
+	};
+
+	EXPECT_PARSE_OK(parseActorDef_(
+		"actor Test1{\n"
+		"  output o1(int)\n"
+		"  input i1(a: int, b: int){\n"
+		"    o1(a+b);\n"
+		"  }\n"
+		"}\n"
+	));
+
+	EXPECT_PARSE_ERROR(parseActorDef_(
+		"function test2(){return 4;}\n"
+	));
+
+	EXPECT_PARSE_ERROR(parseActorDef_(
+		"actor 1a{\n"
+		"  output o1(int)\n"
+		"  input i1(a: int, b: int){\n"
+		"    o1(a+b);\n"
+		"  }\n"
+		"}\n"
+	));
+
+	EXPECT_PARSE_ERROR(parseActorDef_(
+		"actor 1a{\n"
+		"  output 3o1(int)\n"
+		"  input i1(a: int, b: int){\n"
+		"    o1(a+b);\n"
+		"  }\n"
+		"}\n"
+	));
+
+	auto r = parseActorDef_(
+		"actor Test1 (a: int, b: bool){\n"
+		"  output o1(int)\n"
+		"  input i1(a: int, b: int){\n"
+		"    o1(a+b);\n"
+		"  }\n"
+		"}\n"
+	);
+	
+	ASSERT_PARSE_OK(r);
+	EXPECT_EQ(AST_ACTOR, r.result->getType());
+	ASSERT_EQ(3, r.result->childCount());
+	EXPECT_EQ(AST_TUPLE_DEF, r.result->child(0)->getType());
+	EXPECT_EQ(AST_OUTPUT, r.result->child(1)->getType());
+	EXPECT_EQ(AST_INPUT, r.result->child(2)->getType());
+}
+
+/// <summary>
+/// Tests for 'parseMsgHeader' function.
+/// Also tests 'parseInputMsg', 'parseOutputMsg' functions.
+/// </summary>
+TEST(Parser, parseMsgHeader)
+{
+	auto parseMsgHeader_ = [](const char* code)
+	{
+		return checkAllParsed(code, parseMsgHeader);
+	};
+
+	EXPECT_PARSE_OK(parseMsgHeader_("name1(a: int, b: int)"));
+	EXPECT_PARSE_OK(parseMsgHeader_("name2()"));
+
+	EXPECT_PARSE_ERROR(parseMsgHeader_("name();"));
+	EXPECT_PARSE_ERROR(parseMsgHeader_("2name(x: int);"));
+	EXPECT_PARSE_ERROR(parseMsgHeader_("name(1,2,3);"));
+
+	auto r = parseMsgHeader_("name1(a: int, b: int)");
+	ASSERT_PARSE_OK(r);
+	auto node = r.result;
+
+	EXPECT_STREQ("name1", node->getName().c_str());
+	ASSERT_EQ(1, node->childCount());
+	
+	auto params = node->child(0);
+	ASSERT_EQ(2, params->childCount());
+	EXPECT_TRUE(params->child(0)->hasFlag(ASTF_FUNCTION_PARAMETER));
+	EXPECT_TRUE(params->child(1)->hasFlag(ASTF_FUNCTION_PARAMETER));
+	EXPECT_STREQ("a", params->child(0)->getName().c_str());
+	EXPECT_STREQ("b", params->child(1)->getName().c_str());
+}

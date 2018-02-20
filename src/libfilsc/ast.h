@@ -52,6 +52,8 @@ enum AstNodeTypes
     ,AST_CONNECT
 	,AST_DEFAULT_TYPE
 	,AST_TYPE_NAME
+	,AST_INPUT
+	,AST_OUTPUT
 
 	//Remember to add new entries to 'astTypeToString' function!
 
@@ -137,8 +139,10 @@ Ref<AstNode> astCreateMemberAccess(ScriptPosition pos,
                                   Ref<AstNode> objExpr, 
                                   Ref<AstNode> identifier);
 
-Ref<AstFunction> astCreateInputMessage(ScriptPosition pos, const std::string& name);
-Ref<AstFunction> astCreateOutputMessage(ScriptPosition pos, const std::string& name);
+Ref<AstNode> astCreateActor(ScriptPosition pos, const std::string& name);
+
+Ref<AstNode> astCreateInputMsg(ScriptPosition pos, const std::string& name);
+Ref<AstNode> astCreateOutputMsg(ScriptPosition pos, const std::string& name);
 Ref<AstNode> astCreateConnect(ScriptPosition pos,
                                  Ref<AstNode> lexpr, 
                                  Ref<AstNode> rexpr);
