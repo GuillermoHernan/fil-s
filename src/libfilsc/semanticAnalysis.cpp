@@ -49,7 +49,9 @@ const PassList& getSemAnalysisPasses()
 		passes.push_back(modulesPass);
 		passes.push_back(scopeCreationPass);
 		passes.push_back(symbolGatherPass);
+		passes.push_back(preTypeCheckPass);
 		passes.push_back(typeCheckPass);
+		passes.push_back(typeCheckPass2);
 	}
 
 	return passes;

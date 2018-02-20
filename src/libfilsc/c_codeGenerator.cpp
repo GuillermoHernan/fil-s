@@ -36,7 +36,7 @@ string generateCode(Ref<AstNode> node)
 string generateCode(Ref<AstNode> node, std::function<bool(Ref<AstNode>)> entryPointFn)
 {
 	ostringstream		output;
-	CodeGeneratorState	state(&output);
+	CodeGeneratorState	state(&output, [](auto t, auto& s) {tupleDefCodegen(t, s); });
 
 	auto &topLevelItems = node->children();
 	auto it = find_if(topLevelItems.begin(), topLevelItems.end(), entryPointFn);
@@ -142,7 +142,7 @@ void nodeListCodegen(Ref<AstNode> node, CodeGeneratorState& state, const IVariab
 void functionCodegen(Ref<AstNode> node, CodeGeneratorState& state, const IVariableInfo& resultDest)
 {
 	//Necessary because functions usually define their own temporaries.
-	state.enterBlock();
+	CodegenBlock	functionBlock(state);
 
 	//Generate code for the parameters tuple.
 	auto params = node->child(0);
@@ -179,8 +179,6 @@ void functionCodegen(Ref<AstNode> node, CodeGeneratorState& state, const IVariab
 	}
 
 	state.output() << "}\n\n";
-
-	state.exitBlock();
 }
 
 /// <summary>
@@ -226,7 +224,7 @@ void blockCodegen(Ref<AstNode> node, CodeGeneratorState& state, const IVariableI
 	const auto &	children = node->children();
 	auto			lastChild = children.back();
 
-	state.enterBlock();
+	CodegenBlock	block(state);
 
 	state.output() << "{\n";
 
@@ -236,8 +234,6 @@ void blockCodegen(Ref<AstNode> node, CodeGeneratorState& state, const IVariableI
 	codegen(lastChild, state, resultDest);
 
 	state.output() << "}\n";
-
-	state.exitBlock();
 }
 
 /// <summary>
@@ -394,28 +390,6 @@ void assignmentCodegen(Ref<AstNode> node, CodeGeneratorState& state, const IVari
 	state.output() << "*" << lRef << " = " << rResult << ";\n";
 	if (!resultDest.isVoid())
 		state.output() << resultDest << " = " << rResult << ";\n";
-
-	//if (lexpr->getType() == AST_IDENTIFIER)
-	//{
-	//	auto			referenced = node->getScope()->get(lexpr->getName());
-	//	NamedVariable	destination(referenced, state);
-
-	//	codegen(rexpr, state, destination);
-	//	if (!resultDest.isVoid())
-	//		state.output() << resultDest.cname() << " = " << destination.cname() << ";\n";
-	//}
-	//else
-	//{
-	//	//By the moment, only 'member access' nodes are sopported.
-	//	assert(lexpr->getType() == AST_MEMBER_ACCESS);
-	//	TempVariable	tempResult(node, state);
-
-	//	codegen(rexpr, state, tempResult);
-	//	memberAccessCodegen(lexpr, state, tempResult, true);
-
-	//	if (!resultDest.isVoid())
-	//		state.output() << resultDest.cname() << " = " << tempResult.cname() << ";\n";
-	//}
 }
 
 /// <summary>

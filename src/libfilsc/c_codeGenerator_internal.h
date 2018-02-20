@@ -10,7 +10,7 @@ class CodeGeneratorState;
 class TupleType;
 struct IVariableInfo;
 
-typedef void (*NodeCodegenFN)(Ref<AstNode> node, CodeGeneratorState& state, const IVariableInfo& resultDest);
+typedef void(*NodeCodegenFN)(Ref<AstNode> node, CodeGeneratorState& state, const IVariableInfo& resultDest);
 
 void codegen(Ref<AstNode> node, CodeGeneratorState& state, const IVariableInfo& resultDest);
 

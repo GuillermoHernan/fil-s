@@ -10,8 +10,9 @@ class CompileError;
 class BaseType;
 class TupleType;
 
-SemanticResult typeCheckPass(Ref<AstNode> node, SemAnalysisState& state);
 SemanticResult preTypeCheckPass(Ref<AstNode> node, SemAnalysisState& state);
+SemanticResult typeCheckPass(Ref<AstNode> node, SemAnalysisState& state);
+SemanticResult typeCheckPass2(Ref<AstNode> node, SemAnalysisState& state);
 
 CompileError recursiveSymbolReferenceCheck(Ref<AstNode> node, SemAnalysisState& state);
 
@@ -40,11 +41,13 @@ CompileError logicalOperatorTypeCheck(Ref<AstNode> node, SemAnalysisState& state
 
 
 CompileError returnTypeAssign(Ref<AstNode> node, SemAnalysisState& state);
+CompileError returnTypeCheck(Ref<AstNode> node, SemAnalysisState& state);
 CompileError literalTypeAssign(Ref<AstNode> node, SemAnalysisState& state);
 CompileError defaultTypeAssign(Ref<AstNode> node, SemAnalysisState& state);
 
 Ref<AstNode> tupleRemoveTypedef(Ref<AstNode> node, SemAnalysisState& state);
 Ref<AstNode> addTupleAdapter(Ref<AstNode> node, SemAnalysisState& state);
+Ref<AstNode> addReturnTupleAdapter(Ref<AstNode> node, SemAnalysisState& state);
 
 CompileError setVoidType(Ref<AstNode> node, SemAnalysisState& state);
 

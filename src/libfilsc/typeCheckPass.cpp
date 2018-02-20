@@ -46,20 +46,28 @@ SemanticResult typeCheckPass(Ref<AstNode> node, SemAnalysisState& state)
 		functions.add(AST_ASSIGNMENT, addTupleAdapter);
 	}
 
-	auto preResult = preTypeCheckPass(node, state);
+	return semInOrderWalk(functions, state, node);
+}
 
-	if (preResult.ok())
-		node = preResult.ast;
+/// <summary>
+/// Second phase of type check.
+/// They are operations that require the first type check phase (pass) to be complete.
+/// </summary>
+/// <param name="node"></param>
+/// <param name="state"></param>
+/// <returns></returns>
+SemanticResult typeCheckPass2(Ref<AstNode> node, SemAnalysisState& state)
+{
+	static PassOperations	functions;
 
-	auto result = semInOrderWalk(functions, state, node);
-
-	if (!preResult.ok())
+	if (functions.empty())
 	{
-		preResult.errors.insert(preResult.errors.end(), result.errors.begin(), result.errors.end());
-		return preResult;
+		functions.add(AST_RETURN, returnTypeCheck);
+		functions.add(AST_RETURN, addReturnTupleAdapter);		
 	}
-	else
-		return result;
+
+	return semInOrderWalk(functions, state, node);
+
 }
 
 /// <summary>
@@ -252,6 +260,33 @@ CompileError returnTypeAssign(Ref<AstNode> node, SemAnalysisState& state)
 	else
 		return setVoidType(node, state);
 }
+
+/// <summary>
+/// Check that the return statement expression type matches the return type of 
+/// the function which contains it.
+/// It also tests that the return statement belongs to a function.
+/// </summary>
+CompileError returnTypeCheck(Ref<AstNode> node, SemAnalysisState& state)
+{
+	auto functionNode = state.findParent([](auto node) {
+		return node->getType() == AST_FUNCTION;
+	});
+
+	if (functionNode.isNull())
+		return semError(node, ETYPE_RETURN_OUTSIDE_FUNCTION);
+
+	auto returnType = functionNode->getDataType().staticCast<FunctionType>()->getReturnType();
+
+	if (!areTypesCompatible(returnType, node->getDataType()))
+	{
+		return semError(node, ETYPE_INCOMPATIBLE_RETURN_TYPE_2,
+			node->getDataType()->toString().c_str(),
+			returnType->toString().c_str());
+	}
+	else
+		return CompileError::ok();
+}
+
 
 /// <summary>
 /// Performs type checking on a function definition.
@@ -570,6 +605,33 @@ Ref<AstNode> addTupleAdapter(Ref<AstNode> node, SemAnalysisState& state)
 	return node;
 }
 
+
+/// <summary>
+/// Adds a 'tuple adapter node' for tuple returned values which are compatible, 
+/// but not the same, as the function return type.
+/// </summary>
+Ref<AstNode> addReturnTupleAdapter(Ref<AstNode> node, SemAnalysisState& state)
+{
+	auto functionNode = state.findParent([](auto node) {
+		return node->getType() == AST_FUNCTION;
+	});
+
+	assert(functionNode.notNull());
+
+	auto returnType = functionNode->getDataType().staticCast<FunctionType>()->getReturnType();
+
+	if (returnType->type() != DT_TUPLE || returnType == node->getDataType())
+		return node;
+
+	auto child = node->child(0);
+	auto adapterNode = astCreateTupleAdapter(child);
+	
+	adapterNode->setDataType(returnType);
+	node->setDataType(returnType);
+	node->setChild(0, adapterNode);
+
+	return node;
+}
 
 
 /// <summary>Utility function to assign void type to a node.</summary>

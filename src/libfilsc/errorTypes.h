@@ -28,6 +28,8 @@ enum ErrorTypes
 	ETYPE_WRONG_TYPE_2,
 	ETYPE_INCOMPATIBLE_TYPES_2,
 	ETYPE_RECURSIVE_SYMBOL_REFERENCE_1,
+	ETYPE_RETURN_OUTSIDE_FUNCTION,
+	ETYPE_INCOMPATIBLE_RETURN_TYPE_2,
 
 	//Add new error types above this line.
 	//REMEMBER to add the description to 'errorTypeTemplate' function.

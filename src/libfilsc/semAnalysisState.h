@@ -3,6 +3,8 @@
 #include "ast.h"
 #include "SymbolScope.h"
 
+#include <functional>
+
 /// <summary>
 /// Holds the current state of the semantic analyzer.
 /// Keeps it between passes
@@ -18,6 +20,8 @@ public:
 
 	void				pushParent(Ref<AstNode> node);
 	Ref<AstNode>		popParent();
+
+	Ref<AstNode>		findParent(std::function<bool(Ref<AstNode>)> pred)const;
 
 private:
 	std::vector<Ref<AstNode>>	m_parents;

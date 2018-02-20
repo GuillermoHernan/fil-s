@@ -15,7 +15,7 @@ using namespace std;
 TEST(CodeGeneratorState, cname)
 {
 	ostringstream		output;
-	CodeGeneratorState	state(&output);
+	CodeGeneratorState	state(&output, [](auto a, auto& b) {});
 
 	auto r = semAnalysisCheck(
 		"type entero is int\n"
@@ -58,7 +58,7 @@ TEST(CodeGeneratorState, cname)
 TEST(CodeGeneratorState, temporaries)
 {
 	ostringstream		output;
-	CodeGeneratorState	state(&output);
+	CodeGeneratorState	state(&output, [](auto a, auto& b) {});
 	string				name1, name2, name3;
 
 	state.enterBlock();

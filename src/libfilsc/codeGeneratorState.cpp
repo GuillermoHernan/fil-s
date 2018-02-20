@@ -73,7 +73,10 @@ std::string CodeGeneratorState::cname(Ref<BaseType> type)
 /// <returns></returns>
 bool CodeGeneratorState::hasName(Ref<BaseType> type)const
 {
-	return m_objNames.count(type) > 0;
+	if (type->type() < DT_TUPLE)
+		return true;
+	else
+		return m_objNames.count(type) > 0;
 }
 
 
@@ -87,10 +90,21 @@ void CodeGeneratorState::setCname(Ref<AstNode> node, const std::string& name)
 }
 
 /// <summary>
+/// Generates code for a type.
+/// It invokes the supplied type generation function
+/// </summary>
+/// <param name="type"></param>
+/// <param name="state"></param>
+void CodeGeneratorState::typeCodegen(Ref<BaseType> type, CodeGeneratorState& state)
+{
+	m_typeGenFN(type, state);
+}
+
+/// <summary>
 /// Constructor of CodeGeneratorState
 /// </summary>
-CodeGeneratorState::CodeGeneratorState(std::ostream* pOutput)
-	: m_output(pOutput)
+CodeGeneratorState::CodeGeneratorState(std::ostream* pOutput, TypeCodegenFN typeGenFN)
+	: m_output(pOutput), m_typeGenFN(typeGenFN)
 {
 	assert(pOutput != NULL);
 	//Create root block
@@ -238,6 +252,10 @@ std::ostream& operator << (std::ostream& output, const IVariableInfo& var)
 TempVariable::TempVariable(Ref<BaseType> type, CodeGeneratorState& state, bool ref)
 	: IVariableInfo(ref), m_state(state), m_dataType(type)
 {
+	//If the datatype has not been declared in 'C' source, declare it.
+	if (!state.hasName(type))
+		state.typeCodegen(type, state);
+
 	string	cTypeName = state.cname(type);
 
 	if (state.allocTemp(cTypeName, m_cName, ref))

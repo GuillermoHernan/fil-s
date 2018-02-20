@@ -112,6 +112,8 @@ const char * errorTypeTemplate(ErrorTypes type)
 		/*ETYPE_WRONG_TYPE_2*/			"wrong type '%s' in expression. '%s' was expected.",
 		/*ETYPE_INCOMPATIBLE_TYPES_2*/	"Type '%s' is incompatible and cannot be assigned to type '%s'",
 		/*ETYPE_RECURSIVE_SYMBOL_REFERENCE_1*/ "Symbol '%s' is referenced in its initialization expression",
+		/*ETYPE_RETURN_OUTSIDE_FUNCTION*/"Return statements can only be used inside functions",
+		/*ETYPE_INCOMPATIBLE_RETURN_TYPE_2*/"Returned type '%s' is incompatible with function return type '%s'",
 	};
 
 	return templates[type];

@@ -3,14 +3,24 @@
 #include "ast.h"
 #include "dataTypes.h"
 
+#ifndef FRIEND_TEST
+#define FRIEND_TEST(x,y)
+#endif
+
 /// <summary>Stores code generator state</summary>
 /// <remarks>Most code generator state has to do with assigning names in 'C' source
 /// to FILS variables, and managing local temporary variables.</remarks>
 class CodeGeneratorState
 {
 public:
-	CodeGeneratorState(std::ostream* pOutput);
+	//typedef void(*TypeCodegenFN)(Ref<BaseType> type, CodeGeneratorState& state);
+	typedef std::function<void(Ref<BaseType>, CodeGeneratorState&)> TypeCodegenFN;
+
+	CodeGeneratorState(std::ostream* pOutput, TypeCodegenFN typeGenFN);
 	~CodeGeneratorState();
+
+	CodeGeneratorState(const CodeGeneratorState&) = delete;
+	CodeGeneratorState& operator=(const CodeGeneratorState&) = delete;
 
 	std::string cname(Ref<AstNode> node);
 	std::string cname(Ref<BaseType> type);
@@ -18,16 +28,23 @@ public:
 
 	void setCname(Ref<AstNode> node, const std::string& name);
 
+	std::ostream& output()
+	{
+		return *m_output;
+	}
+
+	void typeCodegen(Ref<BaseType> type, CodeGeneratorState& state);
+
+protected:
 	void enterBlock();
 	void exitBlock();
 
 	bool allocTemp(const std::string& cTypeName, std::string& outputName, bool ref);
 	bool releaseTemp(const std::string& varName);
 
-	std::ostream& output()
-	{
-		return *m_output;
-	}
+	friend class TempVariable;
+	friend class CodegenBlock;
+	FRIEND_TEST(CodeGeneratorState, temporaries);
 
 private:
 	/// <summary>Info about a temporary variable.</summary>
@@ -46,6 +63,7 @@ private:
 	};
 
 	std::ostream*								m_output;
+	TypeCodegenFN								m_typeGenFN;
 	std::vector<BlockInfo>						m_blockStack;
 	std::map< Ref<RefCountObj>, std::string>	m_objNames;
 	int											m_nextSymbolId = 0;
@@ -53,6 +71,27 @@ private:
 	std::string		allocCName(std::string base);
 	TempVarInfo*	findTemporary(std::function<bool(const TempVarInfo&)> predicate);
 };
+
+/// <summary>
+/// Manages the lifetime of a block in code generation.
+/// </summary>
+class CodegenBlock
+{
+public:
+	CodegenBlock(CodeGeneratorState& state) : m_state(state)
+	{
+		state.enterBlock();
+	}
+
+	~CodegenBlock()
+	{
+		m_state.exitBlock();
+	}
+
+private:
+	CodeGeneratorState& m_state;
+};
+
 
 /// <summary>
 /// Interface to get informaiton about variables in code generation.

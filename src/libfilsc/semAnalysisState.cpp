@@ -25,6 +25,23 @@ Ref<AstNode> SemAnalysisState::popParent()
 	return result;
 }
 
+/// <summary>
+/// Finds the first parent for which the predicate 'pred' evaluates to 'true'
+/// </summary>
+/// <param name=""></param>
+/// <returns>The first parent node which fulfills the predicate or null</returns>
+Ref<AstNode> SemAnalysisState::findParent(std::function<bool(Ref<AstNode>)> pred)const
+{
+	for (auto it = m_parents.rbegin(); it != m_parents.rend(); ++it)
+	{
+		if (pred(*it))
+			return *it;
+	}
+
+	return Ref<AstNode>();
+}
+
+
 
 SemAnalysisState::SemAnalysisState()
 	:rootScope (SymbolScope::create(Ref<SymbolScope>()))
