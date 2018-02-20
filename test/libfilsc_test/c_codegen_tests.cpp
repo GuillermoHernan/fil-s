@@ -8,6 +8,8 @@
 #include "semanticAnalysis.h"
 #include "utils.h"
 
+//#include <time.h>
+
 using namespace std;
 
 /// <summary>
@@ -35,6 +37,7 @@ protected:
 		auto entryPointFn = [](Ref<AstNode> node) {
 			return (node->getType() == AST_FUNCTION && node->getName() == "test");
 		};
+		//clock_t		t0 = clock();
 		auto parseRes = parseScript(code);
 
 		if (!parseRes.ok())
@@ -53,8 +56,20 @@ protected:
 		writeCcode(Ccode, name);
 		_flushall();	//To ensure all generated files are witten to the disk.
 
+		//clock_t t1 = clock();
+		//cout << "FIL-S compile time: " << double(t1 - t0)*1000 / CLOCKS_PER_SEC << " msegs.\n";
+		//t0 = t1;
+
 		compileC(name);
-		return executeProgram(name);
+		//t1 = clock();
+		//cout << "'C' compile time: " << double(t1 - t0)*1000 / CLOCKS_PER_SEC << " msegs.\n";
+		//t0 = t1;
+
+		int result = executeProgram(name);
+		//t1 = clock();
+		//cout << "execution time: " << double(t1 - t0)*1000 / CLOCKS_PER_SEC << " msegs.\n";
+
+		return result;
 	}
 
 	~C_CodegenTests()
