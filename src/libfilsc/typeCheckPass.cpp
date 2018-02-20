@@ -384,12 +384,18 @@ CompileError prefixOpTypeCheck(Ref<AstNode> node, SemAnalysisState& state)
 
 	node->setDataType(childType);
 
-	if (op == "!" && !isBoolType(childType))
-		return semError(node->child(0), ETYPE_WRONG_TYPE_2, childType->toString().c_str(), "bool");
-	else if (!isIntType(childType))
-		return semError(node->child(0), ETYPE_WRONG_TYPE_2, childType->toString().c_str(), "int");
+	if (op == "!")
+	{
+		if (!isBoolType(childType))
+			return semError(node->child(0), ETYPE_WRONG_TYPE_2, childType->toString().c_str(), "bool");
+	}
 	else
-		return CompileError::ok();
+	{
+		if (!isIntType(childType))
+			return semError(node->child(0), ETYPE_WRONG_TYPE_2, childType->toString().c_str(), "int");
+	}
+
+	return CompileError::ok();
 }
 
 /// <summary>Type check for postfix operators</summary>

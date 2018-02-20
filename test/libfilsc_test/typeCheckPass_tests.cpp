@@ -329,3 +329,27 @@ TEST(TypeCheck, binaryOpTypeCheck)
 	//Check node leaks
 	//EXPECT_EQ(0, AstNode::nodeCount());
 }
+
+
+/// <summary>Tests prefix operators type checking</summary>
+TEST(TypeCheck, prefixOpTypeCheck)
+{
+	auto check = [](const string& codeFragment) {
+		return semAnalysisCheck(("function test():() {\n" + codeFragment + "\n};\n").c_str());
+	};
+
+	EXPECT_SEM_OK(check(
+		"  var b = true;\n"
+		"  var x = 5;\n"
+		"  var y: int\n"
+		"  b = !b;\n"
+		"  y = -x;\n"
+		"  y = +y;\n"
+		"  x = --y;\n"
+		"  y = ++x;\n"
+		"  --y;\n"
+	));
+	//EXPECT_SEM_ERROR(check("3+true"));
+	//EXPECT_SEM_ERROR(check("false/true"));
+	//EXPECT_SEM_ERROR(check("false-4"));
+}
