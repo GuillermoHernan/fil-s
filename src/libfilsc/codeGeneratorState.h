@@ -21,7 +21,7 @@ public:
 	void enterBlock();
 	void exitBlock();
 
-	bool allocTemp(const std::string& cTypeName, std::string& outputName);
+	bool allocTemp(const std::string& cTypeName, std::string& outputName, bool ref);
 	bool releaseTemp(const std::string& varName);
 
 	std::ostream& output()
@@ -33,9 +33,10 @@ private:
 	/// <summary>Info about a temporary variable.</summary>
 	struct TempVarInfo
 	{
-		std::string	cType;
-		std::string	cName;
-		bool		free = false;
+		const std::string	cType;
+		const std::string	cName;
+		const bool			ref;
+		bool				free = false;
 	};
 
 	/// <summary> Keeps track of the temporaries of a block</summary>
@@ -65,6 +66,11 @@ struct IVariableInfo
 	{
 		return dataType()->type() == DT_VOID;
 	}
+
+	const bool isReference;
+
+protected:
+	IVariableInfo(bool ref) : isReference(ref) {}
 };
 
 std::ostream& operator << (std::ostream& output, const IVariableInfo& var);
@@ -76,8 +82,8 @@ std::ostream& operator << (std::ostream& output, const IVariableInfo& var);
 class TempVariable : public IVariableInfo
 {
 public:
-	TempVariable(Ref<BaseType> type, CodeGeneratorState& state);
-	TempVariable(Ref<AstNode> node, CodeGeneratorState& state);
+	TempVariable(Ref<BaseType> type, CodeGeneratorState& state, bool ref);
+	TempVariable(Ref<AstNode> node, CodeGeneratorState& state, bool ref);
 	~TempVariable();
 
 	const std::string& cname()const override
@@ -103,6 +109,8 @@ struct VoidVariable : public IVariableInfo
 {
 	virtual const std::string&	cname()const override;
 	virtual Ref<BaseType>		dataType()const  override;
+
+	VoidVariable() : IVariableInfo(false) {}
 };
 
 /// <summary>

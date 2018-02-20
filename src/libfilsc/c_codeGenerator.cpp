@@ -172,7 +172,7 @@ void functionCodegen(Ref<AstNode> node, CodeGeneratorState& state, const IVariab
 		codegen(fnCode, state, VoidVariable());
 	else
 	{
-		TempVariable	tmpReturn(returnType, state);
+		TempVariable	tmpReturn(returnType, state, false);
 		codegen(fnCode, state, tmpReturn);
 
 		state.output() << "return " << tmpReturn.cname() << ";\n";
@@ -318,7 +318,7 @@ void tupleAdapterCodegen(Ref<AstNode> node, CodeGeneratorState& state, const IVa
 
 	//TODO: This is not going to work when default tuple values are implemented.
 	//(or other more complex type-adapting features)
-	TempVariable	rTemp(node->child(0), state);
+	TempVariable	rTemp(node->child(0), state, false);
 	string			lName = resultDest.cname();
 
 	codegen(node->child(0), state, rTemp);
@@ -338,7 +338,7 @@ void ifCodegen(Ref<AstNode> node, CodeGeneratorState& state, const IVariableInfo
 	auto	elseExpr = node->child(2);
 
 	//Condition
-	TempVariable conditionTempVar(condition, state);
+	TempVariable conditionTempVar(condition, state, false);
 
 	codegen(condition, state, conditionTempVar);
 
@@ -367,7 +367,7 @@ void returnCodegen(Ref<AstNode> node, CodeGeneratorState& state, const IVariable
 	else
 	{
 		auto			expression = node->child(0);
-		TempVariable	tempVar(node, state);
+		TempVariable	tempVar(node, state, false);
 
 		codegen(expression, state, tempVar);
 		state.output() << "return " << tempVar.cname() << ";\n";
@@ -385,27 +385,37 @@ void assignmentCodegen(Ref<AstNode> node, CodeGeneratorState& state, const IVari
 
 	assert(assignment->operation == "=");
 
-	if (lexpr->getType() == AST_IDENTIFIER)
-	{
-		auto			referenced = node->getScope()->get(lexpr->getName());
-		NamedVariable	destination(referenced, state);
+	TempVariable	lRef(lexpr, state, true);
+	TempVariable	rResult(rexpr, state, false);
+	
+	codegen(lexpr, state, lRef);
+	codegen(rexpr, state, rResult);
 
-		codegen(rexpr, state, destination);
-		if (!resultDest.isVoid())
-			state.output() << resultDest.cname() << " = " << destination.cname() << ";\n";
-	}
-	else
-	{
-		//By the moment, only 'member access' nodes are sopported.
-		assert(lexpr->getType() == AST_MEMBER_ACCESS);
-		TempVariable	tempResult(node, state);
+	state.output() << "*" << lRef << " = " << rResult << ";\n";
+	if (!resultDest.isVoid())
+		state.output() << resultDest << " = " << rResult << ";\n";
 
-		codegen(rexpr, state, tempResult);
-		memberAccessCodegen(lexpr, state, tempResult, true);
+	//if (lexpr->getType() == AST_IDENTIFIER)
+	//{
+	//	auto			referenced = node->getScope()->get(lexpr->getName());
+	//	NamedVariable	destination(referenced, state);
 
-		if (!resultDest.isVoid())
-			state.output() << resultDest.cname() << " = " << tempResult.cname() << ";\n";
-	}
+	//	codegen(rexpr, state, destination);
+	//	if (!resultDest.isVoid())
+	//		state.output() << resultDest.cname() << " = " << destination.cname() << ";\n";
+	//}
+	//else
+	//{
+	//	//By the moment, only 'member access' nodes are sopported.
+	//	assert(lexpr->getType() == AST_MEMBER_ACCESS);
+	//	TempVariable	tempResult(node, state);
+
+	//	codegen(rexpr, state, tempResult);
+	//	memberAccessCodegen(lexpr, state, tempResult, true);
+
+	//	if (!resultDest.isVoid())
+	//		state.output() << resultDest.cname() << " = " << tempResult.cname() << ";\n";
+	//}
 }
 
 /// <summary>
@@ -432,7 +442,7 @@ void callCodegen(Ref<AstNode> node, CodeGeneratorState& state, const IVariableIn
 	{
 		auto			fnType = fnNode->getDataType().staticCast<FunctionType>();
 		auto			paramsType = fnType->getParameters();
-		TempVariable	tmpParams(paramsType.staticCast<BaseType>(), state);
+		TempVariable	tmpParams(paramsType.staticCast<BaseType>(), state, false);
 
 		codegen(paramsExpr, state, tmpParams);
 
@@ -476,33 +486,19 @@ void varAccessCodegen(Ref<AstNode> node, CodeGeneratorState& state, const IVaria
 		return;
 
 	string accessExpression = varAccessExpression(node, state);
-	state.output() << resultDest.cname() << " = " << accessExpression << ";\n";
+	if (resultDest.isReference)
+		state.output() << resultDest.cname() << " = &" << accessExpression << ";\n";
+	else
+		state.output() << resultDest.cname() << " = " << accessExpression << ";\n";
 }
 
 /// <summary>
 /// Generates code for an access to member expression.
-/// Just for reads.
 /// </summary>
-void memberAccessCodegen(Ref<AstNode> node, CodeGeneratorState& state, const IVariableInfo& resultDest)
-{
-	memberAccessCodegen(node, state, resultDest, false);
-}
-
-/// <summary>
-/// Generates code for an access to member expression.
-/// Read / write version.
-/// </summary>
-/// <param name="node"></param>
-/// <param name="state"></param>
-/// <param name="varName">'C' name of the variable from which to read the value on writes
-/// or to write it on reads.
-/// </param>
-/// <param name="isWrite">Selects between read and write mode.</param>
 void memberAccessCodegen(
 	Ref<AstNode> node, 
 	CodeGeneratorState& state, 
-	const IVariableInfo& variable,
-	bool isWrite)
+	const IVariableInfo& variable)
 {
 	vector <string>	nameStack;
 	auto curNode = node;
@@ -528,7 +524,7 @@ void memberAccessCodegen(
 		}
 		else
 		{
-			TempVariable	temp(curNode, state);
+			TempVariable	temp(curNode, state, false);
 
 			codegen(curNode, state, temp);
 			nameStack.push_back(temp.cname());
@@ -541,16 +537,10 @@ void memberAccessCodegen(
 	{
 		std::reverse(nameStack.begin(), nameStack.end());
 
-		if (isWrite)
-		{
-			state.output() << join(nameStack, ".");
-			state.output() << " = " << variable << ";\n";
-		}
-		else
-		{
-			state.output() << variable << " = ";
-			state.output() << join(nameStack, ".") << ";\n";
-		}
+		state.output() << variable << " = ";
+		if (variable.isReference)
+			state.output() << "&";
+		state.output() << join(nameStack, ".") << ";\n";
 	}
 }
 
@@ -566,8 +556,8 @@ void binaryOpCodegen(Ref<AstNode> node, CodeGeneratorState& state, const IVariab
 	auto rightExpr = node->child(1);
 	auto operation = node.staticCast<AstOperator>()->operation;
 
-	TempVariable	leftTmp(leftExpr, state);
-	TempVariable	rightTmp(rightExpr, state);
+	TempVariable	leftTmp(leftExpr, state, false);
+	TempVariable	rightTmp(rightExpr, state, false);
 
 	codegen(leftExpr, state, leftTmp);
 	codegen(rightExpr, state, rightTmp);
@@ -584,14 +574,19 @@ void prefixOpCodegen(Ref<AstNode> node, CodeGeneratorState& state, const IVariab
 {
 	auto child = node->child(0);
 	auto operation = node.staticCast<AstOperator>()->operation;
+	bool needsRef = (operation == "++" || operation == "--");
 
-	TempVariable	temp(child, state);
+	TempVariable	temp(child, state, needsRef);
 
 	codegen(child, state, temp);
 
 	if (!resultDest.isVoid())
 		state.output() << resultDest << " = ";
-	state.output() << operation << temp.cname() << ";\n";
+	
+	state.output() << operation;
+	if (needsRef)
+		state.output() << "*";
+	state.output() << temp << ";\n";
 }
 
 
@@ -603,14 +598,14 @@ void postfixOpCodegen(Ref<AstNode> node, CodeGeneratorState& state, const IVaria
 	auto child = node->child(0);
 	auto operation = node.staticCast<AstOperator>()->operation;
 
-	TempVariable	temp(child, state);
+	TempVariable	temp(child, state, true);
 
 	codegen(child, state, temp);
 
-	state.output() << operation << temp.cname() << ";\n";
+	state.output() << operation << "(*" << temp << ");\n";
 
 	if (!resultDest.isVoid())
-		state.output() << resultDest << " = " << temp.cname() << ";\n";
+		state.output() << resultDest << " = *" << temp.cname() << ";\n";
 }
 
 /// <summary>

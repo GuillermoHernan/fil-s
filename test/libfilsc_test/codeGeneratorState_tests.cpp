@@ -63,10 +63,10 @@ TEST(CodeGeneratorState, temporaries)
 
 	state.enterBlock();
 	
-	EXPECT_TRUE(state.allocTemp("int", name1));
-	EXPECT_TRUE(state.allocTemp("int", name2));
+	EXPECT_TRUE(state.allocTemp("int", name1, false));
+	EXPECT_TRUE(state.allocTemp("int", name2, false));
 	EXPECT_TRUE(state.releaseTemp(name1));
-	EXPECT_FALSE(state.allocTemp("int", name3));
+	EXPECT_FALSE(state.allocTemp("int", name3, false));
 	EXPECT_STREQ(name1.c_str(), name3.c_str());
 
 	state.enterBlock();

@@ -129,10 +129,12 @@ void CodeGeneratorState::exitBlock()
 /// name is copied (output parameter)</param>
 /// <returns>true if a new temporary has been allocated, or false if a previous
 /// temporary has been reused</returns>
-bool CodeGeneratorState::allocTemp(const std::string& cTypeName, std::string& outputName)
+bool CodeGeneratorState::allocTemp(const std::string& cTypeName, std::string& outputName, bool ref)
 {
-	auto tempVar = findTemporary([&cTypeName](const TempVarInfo& varInfo) {
-		return varInfo.cType == cTypeName && varInfo.free == true;
+	auto tempVar = findTemporary([&cTypeName, ref](const TempVarInfo& varInfo) {
+		return varInfo.cType == cTypeName 
+			&& varInfo.ref == ref
+			&& varInfo.free == true;
 	});
 
 	//Try to reuse.
@@ -146,7 +148,7 @@ bool CodeGeneratorState::allocTemp(const std::string& cTypeName, std::string& ou
 	else
 	{
 		outputName = allocCName("temp");
-		m_blockStack.back().tempVars.push_back(TempVarInfo{ cTypeName, outputName });
+		m_blockStack.back().tempVars.push_back(TempVarInfo{ cTypeName, outputName, ref });
 
 		return true;
 	}
@@ -233,13 +235,18 @@ std::ostream& operator << (std::ostream& output, const IVariableInfo& var)
 /// </summary>
 /// <param name="type"></param>
 /// <param name="state"></param>
-TempVariable::TempVariable(Ref<BaseType> type, CodeGeneratorState& state)
-	:m_state(state), m_dataType(type)
+TempVariable::TempVariable(Ref<BaseType> type, CodeGeneratorState& state, bool ref)
+	: IVariableInfo(ref), m_state(state), m_dataType(type)
 {
 	string	cTypeName = state.cname(type);
 
-	if (state.allocTemp(cTypeName, m_cName))
-		state.output() << cTypeName << "\t" << m_cName << ";\n";
+	if (state.allocTemp(cTypeName, m_cName, ref))
+	{
+		state.output() << cTypeName;
+		if (ref)
+			state.output() << "*";
+		state.output() << "\t" << m_cName << ";\n";
+	}
 
 	//If 'allocTemp' returns false, it means that a temp value has been reused.
 	//It shall not be declared again.
@@ -250,8 +257,8 @@ TempVariable::TempVariable(Ref<BaseType> type, CodeGeneratorState& state)
 /// </summary>
 /// <param name="node"></param>
 /// <param name="state"></param>
-TempVariable::TempVariable(Ref<AstNode> node, CodeGeneratorState& state)
-	:TempVariable(node->getDataType(), state)
+TempVariable::TempVariable(Ref<AstNode> node, CodeGeneratorState& state, bool ref)
+	:TempVariable(node->getDataType(), state, ref)
 {
 }
 
@@ -277,7 +284,7 @@ Ref<BaseType> VoidVariable::dataType()const
 }
 
 NamedVariable::NamedVariable(Ref<AstNode> node, CodeGeneratorState& state)
-	:m_node(node), m_cName(state.cname(node))
+	:IVariableInfo(false), m_node(node), m_cName(state.cname(node))
 {
 }
 
@@ -294,6 +301,7 @@ Ref<BaseType> NamedVariable::dataType()const
 /// Constructor for 'TupleField'. Resolves needed data on invocation.
 /// </summary>
 TupleField::TupleField(const IVariableInfo& tuple, int fieldIndex, CodeGeneratorState& state)
+	:IVariableInfo(false)
 {
 	auto type = tuple.dataType();
 
