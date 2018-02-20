@@ -301,6 +301,9 @@ TEST_F(C_CodegenTests, returnCodegen)
 		"function divide(a:int, b:int) {\n"
 		"  return (a/b, a%b)\n"
 		"}\n"
+		"function divide'(a:int, b:int):(r:int, q:int) {\n"
+		"  return (a/b, a%b)\n"
+		"}\n"
 		"function doNothing() {\n"
 		"  return;\n"
 		"}\n"
@@ -308,7 +311,11 @@ TEST_F(C_CodegenTests, returnCodegen)
 		"  var x:(q:int, r:int)\n"
 		"  doNothing()\n"
 		"  x = divide (23, 7)\n"
-		"  if ( (x.q == 3) && (x.r == 2)) 0 else 1\n"
+		"  if ( (x.q != 3) || (x.r != 2)) return 1\n"
+		"  if ( divide'(14,2).r != 7) return 2\n"
+		"  if ( divide'(31,7).q != 3) return 3\n"
+		"\n"
+		"  return 0"
 		"}\n"
 	);
 }
