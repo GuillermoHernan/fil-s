@@ -290,3 +290,48 @@ TEST_F(C_CodegenTests, tupleCodegen)
 		"}\n"
 	);
 }
+
+
+/// <summary>
+/// Test code generation for return statements.
+/// </summary>
+TEST_F(C_CodegenTests, returnCodegen)
+{
+	EXPECT_RUN_OK("test1",
+		"function divide(a:int, b:int) {\n"
+		"  return (a/b, a%b)\n"
+		"}\n"
+		"function doNothing() {\n"
+		"  return;\n"
+		"}\n"
+		"function test ():int {\n"
+		"  var x:(q:int, r:int)\n"
+		"  doNothing()\n"
+		"  x = divide (23, 7)\n"
+		"  if ( (x.q == 3) && (x.r == 2)) 0 else 1\n"
+		"}\n"
+	);
+}
+
+/// <summary>
+/// Test code generation for return assignment expressions.
+/// </summary>
+TEST_F(C_CodegenTests, assignmentCodegen)
+{
+	EXPECT_RUN_OK("test1",
+		//"function divide(a:int, b:int) {\n"
+		//"  return (a/b, a%b)\n"
+		//"}\n"
+		//"function doNothing() {\n"
+		//"  return;\n"
+		//"}\n"
+		"function test ():int {\n"
+		"  var x:int\n"
+		"  var y:int\n"
+		"  x = y = 5\n"
+		"  if ((x*y) != 25) return 1\n"
+		"  \n"
+		"  return 0\n"
+		"}\n"
+	);
+}
