@@ -32,6 +32,7 @@ public:
 	ExprResult requireId(const char* text);
 	ExprResult requireOp(const char* text);
 	ExprResult requireReserved(const char* text);
+	ExprResult noNewLine();
 
 	static ExprResult require(TokenCheck checkFn, LexToken token);
 	static ExprResult require(LEX_TYPES tokenType, LexToken token);

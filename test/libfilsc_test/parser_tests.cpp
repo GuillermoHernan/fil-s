@@ -478,6 +478,7 @@ TEST(Parser, parsePrefixExpr)
 	EXPECT_PARSE_ERROR(parsePrefixExpr_("-~c"));
 	EXPECT_PARSE_ERROR(parsePrefixExpr_("r + 9"));
 	EXPECT_PARSE_ERROR(parsePrefixExpr_("i++"));
+	EXPECT_PARSE_ERROR(parsePrefixExpr_("++\ni"));
 }
 
 /// <summary>
@@ -500,6 +501,7 @@ TEST(Parser, parsePostfixExpr)
 	EXPECT_PARSE_ERROR(parsePostfixExpr_("--c"));
 	EXPECT_PARSE_ERROR(parsePostfixExpr_("i++ ++"));
 	EXPECT_PARSE_ERROR(parsePostfixExpr_("c+4"));
+	EXPECT_PARSE_ERROR(parsePostfixExpr_("i\n++"));
 }
 
 /// <summary>

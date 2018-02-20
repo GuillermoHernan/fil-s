@@ -203,6 +203,22 @@ ExprResult ExprResult::requireReserved(const char* text, LexToken token)
 }
 
 /// <summary>
+/// Checks that a newline does not follow the current token.
+/// </summary>
+/// <returns></returns>
+ExprResult ExprResult::noNewLine()
+{
+	if (error())
+		return *this;
+
+	if (nextToken(LexToken::NEWLINE).type() == LEX_NEWLINE)
+		return getError(ETYPE_UNEXPECTED_TOKEN_1, "[new line]");
+	else
+		return *this;
+}
+
+
+/// <summary>
 /// Creates a sucessful expression result.
 /// </summary>
 /// <param name="token">Token at which the result is located.</param>

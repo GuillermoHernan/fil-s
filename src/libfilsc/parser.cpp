@@ -727,7 +727,7 @@ ExprResult parseBinaryExpr(LexToken token)
 /// <returns></returns>
 ExprResult parsePrefixExpr(LexToken token)
 {
-	auto r = ExprResult::require(isPrefixOp, token).then(parseTerm);
+	auto r = ExprResult::require(isPrefixOp, token).noNewLine().then(parseTerm);
 
 	if (r.ok())
 		r.result = astCreatePrefixOp(token, r.result);
@@ -745,7 +745,7 @@ ExprResult parsePostfixExpr (LexToken token)
 	ExprResult	r = parsePrimaryExpr(token);
 
 	if (isPostfixOp(r.nextToken()))
-		return r.then(parsePostfixOperator).final();
+		return r.noNewLine().then(parsePostfixOperator).final();
 
 	while (r.ok())
 	{
