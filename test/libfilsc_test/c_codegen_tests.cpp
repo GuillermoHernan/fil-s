@@ -203,7 +203,7 @@ private:
 /// </summary>
 TEST_F(C_CodegenTests, generateCode)
 {
-	int res = runTest("test1", "function test ():int {0}");
+	int res = runTest("generate1", "function test ():int {0}");
 
 	//TODO: this is a very basic check. Add more checks.
 	ASSERT_EQ(0, res);
@@ -216,7 +216,7 @@ TEST_F(C_CodegenTests, generateCode)
 TEST_F(C_CodegenTests, functionCodegen)
 {
 	//Function with a scalar return value.
-	EXPECT_RUN_OK("test1",
+	EXPECT_RUN_OK("function1",
 		"function add (a:int, b: int):int {\n"
 		"  a+b\n"
 		"}\n"
@@ -226,7 +226,7 @@ TEST_F(C_CodegenTests, functionCodegen)
 	);
 
 	//Function with no return value
-	EXPECT_RUN_OK("test2",
+	EXPECT_RUN_OK("function2",
 		"function t2 (a:int, b: int):() {\n"
 		"  a+b\n"
 		"}\n"
@@ -237,7 +237,7 @@ TEST_F(C_CodegenTests, functionCodegen)
 	);
 
 	//Function with a tuple return value.
-	EXPECT_RUN_OK("test3",
+	EXPECT_RUN_OK("function3",
 		"function stats (a:int, b: int, c: int):(sum: int, mean:int) {\n"
 		"  const sum = a+b+c\n"
 		"  (sum, sum/3)"
@@ -256,7 +256,7 @@ TEST_F(C_CodegenTests, functionCodegen)
 /// </summary>
 TEST_F(C_CodegenTests, blockCodegen)
 {
-	EXPECT_RUN_OK("test1",
+	EXPECT_RUN_OK("block1",
 		"function ppc(p:int, p':int) {\n"
 		"  const alpha = (p * p) - 8\n"
 		"  const bravo = p' + {12}\n"
@@ -275,7 +275,7 @@ TEST_F(C_CodegenTests, blockCodegen)
 /// </summary>
 TEST_F(C_CodegenTests, tupleCodegen)
 {
-	EXPECT_RUN_OK("test1",
+	EXPECT_RUN_OK("tuple1",
 		"function divide(a:int, b:int) {\n"
 		"  (a/b, a%b)\n"
 		"}\n"
@@ -297,7 +297,7 @@ TEST_F(C_CodegenTests, tupleCodegen)
 /// </summary>
 TEST_F(C_CodegenTests, returnCodegen)
 {
-	EXPECT_RUN_OK("test1",
+	EXPECT_RUN_OK("return1",
 		"function divide(a:int, b:int) {\n"
 		"  return (a/b, a%b)\n"
 		"}\n"
@@ -325,7 +325,7 @@ TEST_F(C_CodegenTests, returnCodegen)
 /// </summary>
 TEST_F(C_CodegenTests, assignmentCodegen)
 {
-	EXPECT_RUN_OK("test1",
+	EXPECT_RUN_OK("assign1",
 		"function test ():int {\n"
 		"  var x:int\n"
 		"  var y:int\n"
@@ -350,7 +350,7 @@ TEST_F(C_CodegenTests, assignmentCodegen)
 /// </summary>
 TEST_F(C_CodegenTests, callCodegen)
 {
-	EXPECT_RUN_OK("test1",
+	EXPECT_RUN_OK("call1",
 		"function double(a:int):int {\n"
 		"  a * 2\n"
 		"}\n"
@@ -378,13 +378,37 @@ TEST_F(C_CodegenTests, callCodegen)
 /// </summary>
 TEST_F(C_CodegenTests, literalCodegen)
 {
-	EXPECT_RUN_OK("test1",
+	EXPECT_RUN_OK("literal1",
 		"function test ():int {\n"
 		"  var x:int\n"
 		"  x = 3\n"
 		"  7\n"
 		"  x\n"
 		"  if (x!=3) return 1\n"
+		"  0\n"
+		"}\n"
+	);
+}
+
+
+/// <summary>
+/// Test code generation for prefix operators.
+/// </summary>
+TEST_F(C_CodegenTests, prefixOpCodegen)
+{
+	EXPECT_RUN_OK("prefix1",
+		"function test ():int {\n"
+		"  var x:int\n"
+		"  var y:int\n"
+		"  x = 3\n"
+		"  y = -x\n"
+		"  if ((x+y) != 0) return 1\n"
+		"  if (!((x+y) == 0)) return 2\n"
+		"  y = ++x\n"
+		"  if ((x != 4) || (x != y)) return 3\n"
+		"  x = --y\n"
+		"  if ((x != 3) || (x != y)) return 4\n"
+		"  \n"
 		"  0\n"
 		"}\n"
 	);
