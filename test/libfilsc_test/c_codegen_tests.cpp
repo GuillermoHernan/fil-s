@@ -351,7 +351,7 @@ TEST_F(C_CodegenTests, callCodegen)
 		"  return;\n"
 		"}\n"
 		"function divide(a:int, b:int):(q:int, r:int) {\n"
-		"  return (a/b, a%b)\n"
+		"  (a/b, a%b)\n"
 		"}\n"
 		"function test ():int {\n"
 		"  doNothing()\n"

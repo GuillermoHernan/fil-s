@@ -367,7 +367,7 @@ void returnCodegen(Ref<AstNode> node, CodeGeneratorState& state, const IVariable
 	else
 	{
 		auto			expression = node->child(0);
-		TempVariable	tempVar(expression, state);
+		TempVariable	tempVar(node, state);
 
 		codegen(expression, state, tempVar);
 		state.output() << "return " << tempVar.cname() << ";\n";
@@ -424,8 +424,7 @@ void callCodegen(Ref<AstNode> node, CodeGeneratorState& state, const IVariableIn
 
 	if (paramsExpr->childCount() == 0)
 	{
-		if (!resultDest.isVoid())
-			state.output() << resultDest.cname() << " = ";
+		assert(resultDest.isVoid());
 
 		state.output() << fnCName << "();\n";
 	}
