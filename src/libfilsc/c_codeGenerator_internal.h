@@ -22,7 +22,9 @@ void functionCodegen(Ref<AstNode> node, CodeGeneratorState& state, const IVariab
 void blockCodegen (Ref<AstNode> node, CodeGeneratorState& state, const IVariableInfo& resultDest);
 void tupleCodegen(Ref<AstNode> node, CodeGeneratorState& state, const IVariableInfo& resultDest);
 void varCodegen (Ref<AstNode> node, CodeGeneratorState& state, const IVariableInfo& resultDest);
-void tupleDefCodegen (Ref<AstNode> node, CodeGeneratorState& state, const IVariableInfo& resultDest);
+void tupleDefCodegen(Ref<AstNode> node, CodeGeneratorState& state, const IVariableInfo& resultDest);
+void tupleDefCodegen(Ref<BaseType> type, CodeGeneratorState& state);
+void tupleAdapterCodegen(Ref<AstNode> node, CodeGeneratorState& state, const IVariableInfo& resultDest);
 void ifCodegen (Ref<AstNode> node, CodeGeneratorState& state, const IVariableInfo& resultDest);
 void returnCodegen (Ref<AstNode> node, CodeGeneratorState& state, const IVariableInfo& resultDest);
 void assignmentCodegen (Ref<AstNode> node, CodeGeneratorState& state, const IVariableInfo& resultDest);

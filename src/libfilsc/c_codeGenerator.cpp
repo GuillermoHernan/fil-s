@@ -78,7 +78,8 @@ void codegen(Ref<AstNode> node, CodeGeneratorState& state, const IVariableInfo& 
 		types[AST_BLOCK]		= blockCodegen;
 		types[AST_TUPLE]		= tupleCodegen;
 		types[AST_DECLARATION]	= varCodegen;
-		types[AST_TUPLE_DEF]	= tupleDefCodegen;
+		types[AST_TUPLE_DEF] = tupleDefCodegen;
+		types[AST_TUPLE_ADAPTER] = tupleAdapterCodegen;
 		types[AST_IF]			= ifCodegen;
 		types[AST_FOR]			= invalidNodeCodegen;
 		types[AST_FOR_EACH]		= invalidNodeCodegen;
@@ -269,6 +270,9 @@ void tupleCodegen(
 void varCodegen(Ref<AstNode> node, CodeGeneratorState& state, const IVariableInfo& resultDest)
 {
 	auto	typeNode = node->getDataType();
+	
+	if (typeNode->type() == DT_TUPLE && state.hasName(typeNode) == false)
+		tupleDefCodegen(typeNode, state);
 
 	state.output() << state.cname(typeNode) << " ";
 	state.output() << state.cname(node) << ";\n";
@@ -290,6 +294,39 @@ void tupleDefCodegen(Ref<AstNode> node, CodeGeneratorState& state, const IVariab
 
 	state.output() << "}" << name << ";\n\n";
 }
+void tupleDefCodegen(Ref<BaseType> type, CodeGeneratorState& state)
+{
+	assert(type->type() == DT_TUPLE);
+	string name = state.cname(type);
+
+	state.output() << "typedef struct " << "{\n";
+
+	auto tType = type.staticCast<TupleType>();
+	const int count = tType->memberCount();
+	for (int i = 0; i < count; ++i)
+		codegen(tType->getMemberNode(i), state, VoidVariable());
+
+	state.output() << "}" << name << ";\n\n";
+}
+
+/// <summary>
+/// Generates code for a tuple adapter node.
+/// </summary>
+void tupleAdapterCodegen(Ref<AstNode> node, CodeGeneratorState& state, const IVariableInfo& resultDest)
+{
+	assert(!resultDest.isVoid());
+
+	//TODO: This is not going to work when default tuple values are implemented.
+	//(or other more complex type-adapting features)
+	TempVariable	rTemp(node->child(0), state);
+	string			lName = resultDest.cname();
+
+	codegen(node->child(0), state, rTemp);
+	state.output() << "memcpy (&" << lName << ", &" << rTemp.cname() 
+		<< ", sizeof(" << resultDest.cname() << "));\n";
+
+}
+
 
 /// <summary>
 /// Generates code for an 'if' flow control expression.
@@ -350,7 +387,8 @@ void assignmentCodegen(Ref<AstNode> node, CodeGeneratorState& state, const IVari
 
 	if (lexpr->getType() == AST_IDENTIFIER)
 	{
-		NamedVariable destination(lexpr, state);
+		auto			referenced = node->getScope()->get(lexpr->getName());
+		NamedVariable	destination(referenced, state);
 
 		codegen(rexpr, state, destination);
 		if (!resultDest.isVoid())

@@ -42,6 +42,8 @@ SemanticResult typeCheckPass(Ref<AstNode> node, SemAnalysisState& state)
 		functions.add(AST_PREFIXOP, prefixOpTypeCheck);
 		functions.add(AST_POSTFIXOP, postfixOpTypeCheck);
 		functions.add(AST_DEFAULT_TYPE, defaultTypeAssign);
+
+		functions.add(AST_ASSIGNMENT, addTupleAdapter);
 	}
 
 	auto preResult = preTypeCheckPass(node, state);
@@ -167,7 +169,7 @@ CompileError tupleTypeCheck(Ref<AstNode> node, SemAnalysisState& state)
 
 	for (auto child : node->children())
 	{
-		auto newDeclNode = astCreateDeclaration(child->position(), "", Ref<AstNode>(), child);
+		auto newDeclNode = astCreateDeclaration(child->position(), "", Ref<AstNode>(), Ref<AstNode>());
 		newDeclNode->setDataType(child->getDataType());
 		tupleDataType->addMember(newDeclNode);
 	}
@@ -256,7 +258,8 @@ CompileError returnTypeAssign(Ref<AstNode> node, SemAnalysisState& state)
 /// </summary>
 CompileError functionDefTypeCheck(Ref<AstNode> node, SemAnalysisState& state)
 {
-	auto bodyType = node->child(2)->getDataType();
+	auto body = node->child(2);
+	auto bodyType = body->getDataType();
 
 	//Create function own data type.
 	auto fnType = FunctionType::create(node);
@@ -265,6 +268,12 @@ CompileError functionDefTypeCheck(Ref<AstNode> node, SemAnalysisState& state)
 	//Infer return type if necessary.
 	if (!node->childExists(1))
 	{
+		if (bodyType->type() == DT_TUPLE)
+		{
+			auto tupleType = bodyType.staticCast<TupleType>();
+			auto tupleDefNode = buildTupleDefFromTupleType(tupleType, body->position());
+			node->setChild(1, tupleDefNode);
+		}
 		fnType->setReturnType(bodyType);
 		return CompileError::ok();
 	}
@@ -530,6 +539,32 @@ Ref<AstNode> tupleRemoveTypedef(Ref<AstNode> node, SemAnalysisState& state)
 	}
 }
 
+/// <summary>
+/// Adds a 'tuple adapter node' for tuple assignments between compatible, 
+/// but not the same type tuples
+/// </summary>
+Ref<AstNode> addTupleAdapter(Ref<AstNode> node, SemAnalysisState& state)
+{
+	auto lNode = node->child(0);
+	auto lType = lNode->getDataType();
+
+	if (lType->type() != DT_TUPLE)
+		return node;
+
+	auto rNode = node->child(1);
+	auto rType = rNode->getDataType();
+
+	if (lType == rType)
+		return node;
+
+	auto adapterNode = astCreateTupleAdapter(rNode);
+	adapterNode->setDataType(lType);
+
+	node->setChild(1, adapterNode);
+	return node;
+}
+
+
 
 /// <summary>Utility function to assign void type to a node.</summary>
 /// <returns>Always 'ok'</returns>
@@ -629,6 +664,26 @@ Ref<BaseType> getCommonType(Ref<BaseType> typeA, Ref<BaseType> typeB, SemAnalysi
 		}
 	}
 }
+
+/// <summary>
+/// Builds an AST Tuple definition node from a tuple data type.
+/// It is used for type inference.
+/// </summary>
+/// <param name="tuple"></param>
+/// <returns></returns>
+Ref<AstNode> buildTupleDefFromTupleType(Ref<TupleType> tuple, const ScriptPosition& pos)
+{
+	auto result = astCreateTupleDef(pos, "");
+
+	int count = tuple->memberCount();
+	for (int i = 0; i < count; ++i)
+		result->addChild(tuple->getMemberNode(i));
+
+	result->setDataType(tuple);
+
+	return result;
+}
+
 
 /// <summary>Checks if a type is boolean</summary>
 bool isBoolType(Ref<BaseType> type)

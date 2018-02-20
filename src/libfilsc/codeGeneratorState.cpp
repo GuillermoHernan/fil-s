@@ -65,6 +65,18 @@ std::string CodeGeneratorState::cname(Ref<BaseType> type)
 	}
 }
 
+/// <summary>
+/// Checks if the type already has an assigned 'C' name. 
+/// It does not try to create a name if it does not exist.
+/// </summary>
+/// <param name="type"></param>
+/// <returns></returns>
+bool CodeGeneratorState::hasName(Ref<BaseType> type)const
+{
+	return m_objNames.count(type) > 0;
+}
+
+
 /// <summary>Forces to use a given name in the 'C' source for a given node.</summary>
 /// <remarks>It is used to identify the entry point.</remarks>
 /// <param name="node"></param>

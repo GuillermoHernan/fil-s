@@ -160,6 +160,20 @@ Ref<AstNode> astCreateTuple(LexToken token)
 	return refFromNew(new AstBranchNode(AST_TUPLE, token.getPosition()));
 }
 
+Ref<AstNode> astCreateTupleDef(ScriptPosition pos, const std::string& name)
+{
+	return refFromNew(new AstNamedBranch(AST_TUPLE_DEF, pos, name));
+}
+
+Ref<AstNode> astCreateTupleAdapter(Ref<AstNode> tupleNode)
+{
+	auto result = refFromNew(new AstBranchNode(AST_TUPLE_ADAPTER, tupleNode->position()));
+
+	result->addChild(tupleNode);
+	return result;
+}
+
+
 Ref<AstNode> astCreateIf (ScriptPosition pos, 
                           Ref<AstNode> condition,
                           Ref<AstNode> thenSt,
@@ -614,6 +628,7 @@ std::string astTypeToString(AstNodeTypes type)
 		types[AST_TUPLE] = "AST_TUPLE";
 		types[AST_DECLARATION] = "AST_DECLARATION";
 		types[AST_TUPLE_DEF] = "AST_TUPLE_DEF";
+		types[AST_TUPLE_ADAPTER] = "AST_TUPLE_ADAPTER";
 		types[AST_IF] = "AST_IF";
 		types[AST_FOR] = "AST_FOR";
 		types[AST_FOR_EACH] = "AST_FOR_EACH";
@@ -638,6 +653,8 @@ std::string astTypeToString(AstNodeTypes type)
 		types[AST_DEFAULT_TYPE] = "AST_DEFAULT_TYPE";
 		types[AST_TYPE_NAME] = "AST_TYPE_NAME";
 		//types[AST_TYPES_COUNT] = "AST_TYPES_COUNT";
+
+		assert(types.size() == AST_TYPES_COUNT);
     }
     
     TypesMap::const_iterator it = types.find(type);

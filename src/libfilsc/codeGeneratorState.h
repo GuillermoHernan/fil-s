@@ -14,6 +14,7 @@ public:
 
 	std::string cname(Ref<AstNode> node);
 	std::string cname(Ref<BaseType> type);
+	bool hasName(Ref<BaseType> type)const;
 
 	void setCname(Ref<AstNode> node, const std::string& name);
 

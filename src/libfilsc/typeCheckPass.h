@@ -44,6 +44,7 @@ CompileError literalTypeAssign(Ref<AstNode> node, SemAnalysisState& state);
 CompileError defaultTypeAssign(Ref<AstNode> node, SemAnalysisState& state);
 
 Ref<AstNode> tupleRemoveTypedef(Ref<AstNode> node, SemAnalysisState& state);
+Ref<AstNode> addTupleAdapter(Ref<AstNode> node, SemAnalysisState& state);
 
 CompileError setVoidType(Ref<AstNode> node, SemAnalysisState& state);
 
@@ -51,6 +52,7 @@ CompileError	areTypesCompatible(Ref<BaseType> typeA, Ref<BaseType> typeB, Ref<As
 bool			areTypesCompatible(Ref<BaseType> typeA, Ref<BaseType> typeB);
 bool			areTuplesCompatible(Ref<TupleType> tupleA, Ref<TupleType> tupleB);
 Ref<BaseType>	getCommonType(Ref<BaseType> typeA, Ref<BaseType> typeB, SemAnalysisState& state);
+Ref<AstNode> buildTupleDefFromTupleType(Ref<TupleType> tuple, const ScriptPosition& pos);
 
 bool isBoolType(Ref<BaseType> type);
 bool isIntType(Ref<BaseType> type);

@@ -27,6 +27,7 @@ enum AstNodeTypes
 	,AST_TUPLE
 	,AST_DECLARATION
 	,AST_TUPLE_DEF
+	,AST_TUPLE_ADAPTER
     ,AST_IF
     ,AST_FOR
     ,AST_FOR_EACH
@@ -51,6 +52,8 @@ enum AstNodeTypes
     ,AST_CONNECT
 	,AST_DEFAULT_TYPE
 	,AST_TYPE_NAME
+
+	//Remember to add new entries to 'astTypeToString' function!
 
 	,AST_TYPES_COUNT
 };
@@ -96,6 +99,8 @@ Ref<AstNode> astCreateFunction(ScriptPosition pos,
 
 Ref<AstNode> astCreateBlock(LexToken token);
 Ref<AstNode> astCreateTuple(LexToken token);
+Ref<AstNode> astCreateTupleDef(ScriptPosition pos, const std::string& name);
+Ref<AstNode> astCreateTupleAdapter(Ref<AstNode> tupleNode);
 Ref<AstNode> astCreateIf (ScriptPosition pos,
                           Ref<AstNode> condition,
                           Ref<AstNode> thenSt,

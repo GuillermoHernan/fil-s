@@ -268,3 +268,25 @@ TEST_F(C_CodegenTests, blockCodegen)
 		"}\n"
 	);
 }
+
+
+/// <summary>
+/// Test code generation for Tuples.
+/// </summary>
+TEST_F(C_CodegenTests, tupleCodegen)
+{
+	EXPECT_RUN_OK("test1",
+		"function divide(a:int, b:int) {\n"
+		"  (a/b, a%b)\n"
+		"}\n"
+		"function doNothing() {\n"
+		"  ()\n"
+		"}\n"
+		"function test ():int {\n"
+		"  var x:(q:int, r:int)\n"
+		"  doNothing()\n"
+		"  x = divide (23, 7)\n"
+		"  if ( (x.q == 3) && (x.r == 2)) 0 else 1\n"
+		"}\n"
+	);
+}
