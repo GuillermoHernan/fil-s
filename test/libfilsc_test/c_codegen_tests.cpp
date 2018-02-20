@@ -417,3 +417,27 @@ TEST_F(C_CodegenTests, prefixOpCodegen)
 		"}\n"
 	);
 }
+
+/// <summary>
+/// Test code generation for postfix operators.
+/// </summary>
+TEST_F(C_CodegenTests, postfixOpCodegen)
+{
+	EXPECT_RUN_OK("postfix1",
+		"function test ():int {\n"
+		"  var x:int = 5\n"
+		"  var y:int\n"
+		"  y = x++\n"
+		"  if (y != 5) return 1010\n"
+		"  if (x != 6) return 1020\n"
+		"  \n"
+		"  x = y--\n"
+		"  if (y != 4) return 1030\n"
+		"  if (x != 5) return 1040\n"
+		"  \n"
+		"  ++y;\n"
+		"  if (y != 5) return 1050\n"
+		"  0\n"
+		"}\n"
+	);
+}

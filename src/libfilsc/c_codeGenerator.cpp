@@ -602,10 +602,9 @@ void postfixOpCodegen(Ref<AstNode> node, CodeGeneratorState& state, const IVaria
 
 	codegen(child, state, temp);
 
-	state.output() << operation << "(*" << temp << ");\n";
-
 	if (!resultDest.isVoid())
-		state.output() << resultDest << " = *" << temp.cname() << ";\n";
+		state.output() << resultDest << " = ";
+	state.output() << "(*" << temp << ")" << operation << ";\n";
 }
 
 /// <summary>
