@@ -337,3 +337,29 @@ TEST_F(C_CodegenTests, assignmentCodegen)
 		"}\n"
 	);
 }
+
+/// <summary>
+/// Test code generation for function call nodes.
+/// </summary>
+TEST_F(C_CodegenTests, callCodegen)
+{
+	EXPECT_RUN_OK("test1",
+		"function double(a:int):int {\n"
+		"  a * 2\n"
+		"}\n"
+		"function doNothing() {\n"
+		"  return;\n"
+		"}\n"
+		"function divide(a:int, b:int):(q:int, r:int) {\n"
+		"  return (a/b, a%b)\n"
+		"}\n"
+		"function test ():int {\n"
+		"  doNothing()\n"
+		"  if (double(4) != 8) return 1\n"
+		"  if (divide(17, 5).q != 3) return 2\n"
+		"  if (divide(30, 5).r != 0) return 3\n"
+		"  \n"
+		"  return 0\n"
+		"}\n"
+	);
+}
