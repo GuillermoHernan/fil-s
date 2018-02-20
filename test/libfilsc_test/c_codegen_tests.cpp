@@ -39,6 +39,7 @@ protected:
 
 		if (!parseRes.ok())
 			throw parseRes.errorDesc;
+		writeAST(parseRes.result, name);
 
 		auto semanticRes = semanticAnalysis(parseRes.result);
 
