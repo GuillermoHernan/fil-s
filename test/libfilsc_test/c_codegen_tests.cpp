@@ -370,3 +370,22 @@ TEST_F(C_CodegenTests, callCodegen)
 		"}\n"
 	);
 }
+
+
+/// <summary>
+/// Test code generation for literal expressions.
+/// Also tests 'varAccessCodegen'
+/// </summary>
+TEST_F(C_CodegenTests, literalCodegen)
+{
+	EXPECT_RUN_OK("test1",
+		"function test ():int {\n"
+		"  var x:int\n"
+		"  x = 3\n"
+		"  7\n"
+		"  x\n"
+		"  if (x!=3) return 1\n"
+		"  0\n"
+		"}\n"
+	);
+}
