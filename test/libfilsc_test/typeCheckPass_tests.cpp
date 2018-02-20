@@ -353,3 +353,24 @@ TEST(TypeCheck, prefixOpTypeCheck)
 	EXPECT_SEM_ERROR(check("var x = !3;\n"));
 	EXPECT_SEM_ERROR(check("var x = -true;\n"));
 }
+
+
+/// <summary>Tests 'returnTypeCheck' function.</summary>
+TEST(TypeCheck, returnTypeCheck)
+{
+	EXPECT_SEM_OK(semAnalysisCheck("function f() {return (9,4);}"));
+
+	auto r = semAnalysisCheck(
+		"function f(a:int):int {\n"
+		"  if (a > 7) return (9,4);\n"
+		"  16\n"
+		"}"
+	);
+	ASSERT_SEM_ERROR(r);
+	EXPECT_EQ(ETYPE_INCOMPATIBLE_RETURN_TYPE_2, r.errors[0].type());
+
+	r = semAnalysisCheck("const a = {return (9,4)}");
+	ASSERT_SEM_ERROR(r);
+	EXPECT_EQ(ETYPE_RETURN_OUTSIDE_FUNCTION, r.errors[0].type());
+}
+
