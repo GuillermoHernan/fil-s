@@ -349,7 +349,7 @@ TEST(TypeCheck, prefixOpTypeCheck)
 		"  y = ++x;\n"
 		"  --y;\n"
 	));
-	//EXPECT_SEM_ERROR(check("3+true"));
-	//EXPECT_SEM_ERROR(check("false/true"));
-	//EXPECT_SEM_ERROR(check("false-4"));
+	
+	EXPECT_SEM_ERROR(check("var x = !3;\n"));
+	EXPECT_SEM_ERROR(check("var x = -true;\n"));
 }
