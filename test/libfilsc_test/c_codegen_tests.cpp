@@ -17,7 +17,6 @@ using namespace std;
 /// </summary>
 class C_CodegenTests : public ::testing::Test {
 protected:
-	CodeGeneratorState*	m_pState = NULL;
 	string		m_resultsDir;
 
 	/// <summary>Test initialization</summary>
@@ -70,11 +69,6 @@ protected:
 		//cout << "execution time: " << double(t1 - t0)*1000 / CLOCKS_PER_SEC << " msegs.\n";
 
 		return result;
-	}
-
-	~C_CodegenTests()
-	{
-		delete m_pState;
 	}
 
 private:
