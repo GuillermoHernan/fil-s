@@ -609,10 +609,7 @@ ExprResult parseReturn (LexToken token)
 		return parseExpression(token);
 	else
 	{
-		//To check if it just ends here.
-		auto r2 = parseStatementSeparator(r);
-
-		if (r2.ok())
+		if (followsStatementSeparator(r))
 		{
 			r.result = astCreateReturn(token.getPosition(), Ref<AstNode>());
 			return r;
@@ -1189,6 +1186,20 @@ ExprResult parseStatementSeparator(ExprResult r)
 			next.text().c_str(), 
 			"statement separator (';' or new line)");
 }
+
+/// <summary>
+/// Checks if a statement separator is the next token.
+/// </summary>
+bool followsStatementSeparator(ExprResult r)
+{
+	if (!r.ok())
+		return false;
+
+	LexToken	next = r.nextToken(LexToken::NEWLINE);
+
+	return (next.type() == LEX_NEWLINE || next.text() == ";");
+}
+
 
 
 /// <summary>

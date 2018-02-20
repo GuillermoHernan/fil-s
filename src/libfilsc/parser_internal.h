@@ -99,6 +99,8 @@ ExprResult parseActorExpr(LexToken token);
 //ExprResult parseImport(LexToken token);
 
 ExprResult parseStatementSeparator(ExprResult prevResult);
+bool followsStatementSeparator(ExprResult prevResult);
+
 
 void markAsParameters(Ref<AstNode> node);
 
