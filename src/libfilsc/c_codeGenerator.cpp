@@ -370,7 +370,7 @@ void returnCodegen(Ref<AstNode> node, CodeGeneratorState& state, const IVariable
 		TempVariable	tempVar(expression, state);
 
 		codegen(expression, state, tempVar);
-		state.output() << "return" << tempVar.cname() << ";\n";
+		state.output() << "return " << tempVar.cname() << ";\n";
 	}
 }
 
@@ -392,7 +392,7 @@ void assignmentCodegen(Ref<AstNode> node, CodeGeneratorState& state, const IVari
 
 		codegen(rexpr, state, destination);
 		if (!resultDest.isVoid())
-			state.output() << resultDest.cname() << " = " << destination.cname();
+			state.output() << resultDest.cname() << " = " << destination.cname() << ";\n";
 	}
 	else
 	{
@@ -404,7 +404,7 @@ void assignmentCodegen(Ref<AstNode> node, CodeGeneratorState& state, const IVari
 		memberAccessCodegen(lexpr, state, tempResult, true);
 
 		if (!resultDest.isVoid())
-			state.output() << resultDest.cname() << " = " << tempResult.cname();
+			state.output() << resultDest.cname() << " = " << tempResult.cname() << ";\n";
 	}
 }
 
