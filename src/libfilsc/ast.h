@@ -345,26 +345,6 @@ protected:
 };
 
 /**
- * AST node for actor definitions
- */
-class AstActor : public AstNamedBranch
-{
-public:
-    static Ref<AstActor> create(ScriptPosition position,
-                                   const std::string& name)
-    {
-        return refFromNew (new AstActor(position, name));
-    }
-
-protected:
-    AstActor(ScriptPosition position, const std::string& name) :
-    AstNamedBranch(AST_ACTOR, position, name)
-    {
-    }
-};
-
-
-/**
  * Base class for all AST nodes which represent operators.
  */
 class AstOperator : public AstBranchNode
