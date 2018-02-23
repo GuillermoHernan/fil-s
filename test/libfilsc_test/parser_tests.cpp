@@ -792,7 +792,7 @@ TEST(Parser, parseActorDef)
 	));
 
 	EXPECT_PARSE_ERROR(parseActorDef_(
-		"actor 1a{\n"
+		"actor a1{\n"
 		"  output 3o1(int)\n"
 		"  input i1(a: int, b: int){\n"
 		"    o1(a+b);\n"
@@ -808,11 +808,27 @@ TEST(Parser, parseActorDef)
 		"  }\n"
 		"}\n"
 	);
-	
 	ASSERT_PARSE_OK(r);
 	EXPECT_EQ(AST_ACTOR, r.result->getType());
 	ASSERT_EQ(3, r.result->childCount());
 	EXPECT_EQ(AST_TUPLE_DEF, r.result->child(0)->getType());
+	EXPECT_EQ(2, r.result->child(0)->childCount());
+	EXPECT_EQ(AST_OUTPUT, r.result->child(1)->getType());
+	EXPECT_EQ(AST_INPUT, r.result->child(2)->getType());
+
+	r = parseActorDef_(
+		"actor Test1 {\n"
+		"  output o1(int)\n"
+		"  input i1(a: int, b: int){\n"
+		"    o1(a+b);\n"
+		"  }\n"
+		"}\n"
+	);
+	ASSERT_PARSE_OK(r);
+	EXPECT_EQ(AST_ACTOR, r.result->getType());
+	ASSERT_EQ(3, r.result->childCount());
+	EXPECT_EQ(AST_TUPLE_DEF, r.result->child(0)->getType());
+	EXPECT_EQ(0, r.result->child(0)->childCount());
 	EXPECT_EQ(AST_OUTPUT, r.result->child(1)->getType());
 	EXPECT_EQ(AST_INPUT, r.result->child(2)->getType());
 }

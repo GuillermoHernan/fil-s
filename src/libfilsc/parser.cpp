@@ -1032,8 +1032,8 @@ ExprResult parseActorDef (LexToken token)
 	}
 	else
 	{
-		//No parameters, add an empty tuple.
-		actor->addChild(astCreateTuple(r.nextToken()));
+		//No parameters, add an empty tuple definition.
+		actor->addChild(astCreateTupleDef(r.nextToken().getPosition(), ""));
 	}
 
 	r = r.requireOp("{");
