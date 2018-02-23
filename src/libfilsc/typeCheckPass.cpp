@@ -42,6 +42,9 @@ SemanticResult typeCheckPass(Ref<AstNode> node, SemAnalysisState& state)
 		functions.add(AST_PREFIXOP, prefixOpTypeCheck);
 		functions.add(AST_POSTFIXOP, postfixOpTypeCheck);
 		functions.add(AST_DEFAULT_TYPE, defaultTypeAssign);
+		functions.add(AST_ACTOR, actorTypeCheck);
+		functions.add(AST_INPUT, messageTypeCheck);
+		functions.add(AST_OUTPUT, messageTypeCheck);
 
 		functions.add(AST_ASSIGNMENT, addTupleAdapter);
 	}
@@ -340,11 +343,10 @@ CompileError callTypeCheck(Ref<AstNode> node, SemAnalysisState& state)
 	auto type = node->child(0)->getDataType();
 	auto paramsType = node->child(1)->getDataType();
 
-	assert(type->type() == DT_FUNCTION);
-	auto fnType = type.staticCast<FunctionType>();
+	assert(type->canBeCalled());
 
-	node->setDataType(fnType->getReturnType());
-	return areTypesCompatible(fnType->getParameters(), paramsType, node);
+	node->setDataType(type->getReturnType());
+	return areTypesCompatible(type->getParameters(), paramsType, node);
 }
 
 /// <summary>Type check for variable / symbol reading</summary>
@@ -563,6 +565,35 @@ CompileError defaultTypeAssign(Ref<AstNode> node, SemAnalysisState& state)
 
 	return CompileError::ok();
 }
+
+/// <summary>
+/// Performs type-checking for actor declarations.
+/// </summary>
+CompileError actorTypeCheck(Ref<AstNode> node, SemAnalysisState& state)
+{
+	auto	scope = node->getScope();
+	auto	actorType = ActorType::create(node);
+
+	node->setDataType(actorType);
+
+	return CompileError::ok();
+}
+
+/// <summary>
+/// Performs type checking on actor messages (input & output).
+/// </summary>
+/// <param name="node"></param>
+/// <param name="state"></param>
+/// <returns></returns>
+CompileError messageTypeCheck(Ref<AstNode> node, SemAnalysisState& state)
+{
+	//Create message own data type.
+	auto msgType = MessageType::create(node);
+	node->setDataType(msgType);
+
+	return CompileError::ok();
+}
+
 
 /// <summary>
 /// Removes 'typedef' intermediate nodes for named tuple definitions.

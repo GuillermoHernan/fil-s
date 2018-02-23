@@ -45,6 +45,10 @@ CompileError returnTypeCheck(Ref<AstNode> node, SemAnalysisState& state);
 CompileError literalTypeAssign(Ref<AstNode> node, SemAnalysisState& state);
 CompileError defaultTypeAssign(Ref<AstNode> node, SemAnalysisState& state);
 
+CompileError actorTypeCheck(Ref<AstNode> node, SemAnalysisState& state);
+CompileError messageTypeCheck(Ref<AstNode> node, SemAnalysisState& state);
+
+
 Ref<AstNode> tupleRemoveTypedef(Ref<AstNode> node, SemAnalysisState& state);
 Ref<AstNode> addTupleAdapter(Ref<AstNode> node, SemAnalysisState& state);
 Ref<AstNode> addReturnTupleAdapter(Ref<AstNode> node, SemAnalysisState& state);

@@ -374,3 +374,71 @@ TEST(TypeCheck, returnTypeCheck)
 	EXPECT_EQ(ETYPE_RETURN_OUTSIDE_FUNCTION, r.errors[0].type());
 }
 
+
+/// <summary>
+/// Tests 'actorTypeCheck' function.
+/// Also tests 'messageTypeCheck' function
+/// </summary>
+TEST(TypeCheck, actorTypeCheck)
+{
+	EXPECT_SEM_OK(semAnalysisCheck(
+		"actor A1 {\n"
+		"  output o1(v : int)\n"
+		"  input i1(a : int){\n"
+		"    o1(a*a);\n"
+		"  }\n"
+		"}"
+	));
+
+	EXPECT_SEM_OK(semAnalysisCheck(
+		"actor A2 (p1: int, p2: int) {\n"
+		"  output o1(r : int)\n"
+		"  input i1(x : int){\n"
+		"    o1((x*p1) + p2);\n"
+		"  }\n"
+		"}"
+	));
+
+	EXPECT_SEM_OK(semAnalysisCheck(
+		"actor A2 (p1: int, p2: int) {\n"
+		"  const c1 = p1 + (p2*2)\n"
+		"  output o1(r : int)\n"
+		"  input i1(x : int){\n"
+		"    o1((x*p1) + c1);\n"
+		"  }\n"
+		"}"
+	));
+
+	EXPECT_SEM_ERROR(semAnalysisCheck(
+		"actor A2 (p1: int, p2: int) {\n"
+		"  const p1 = p2*2\n"
+		"  output o1(r : int)\n"
+		"  input i1(x : int){\n"
+		"    o1((x*p1) + p2);\n"
+		"  }\n"
+		"}"
+	));
+
+	EXPECT_SEM_ERROR(semAnalysisCheck(
+		"actor A1 {\n"
+		"  output o1(v : int, b: bool)\n"
+		"  input i1(a : int){\n"
+		"    o1(a*a);\n"
+		"  }\n"
+		"}"
+	));
+
+	//auto r = semAnalysisCheck(
+	//	"function f(a:int):int {\n"
+	//	"  if (a > 7) return (9,4);\n"
+	//	"  16\n"
+	//	"}"
+	//);
+	//ASSERT_SEM_ERROR(r);
+	//EXPECT_EQ(ETYPE_INCOMPATIBLE_RETURN_TYPE_2, r.errors[0].type());
+
+	//r = semAnalysisCheck("const a = {return (9,4)}");
+	//ASSERT_SEM_ERROR(r);
+	//EXPECT_EQ(ETYPE_RETURN_OUTSIDE_FUNCTION, r.errors[0].type());
+}
+

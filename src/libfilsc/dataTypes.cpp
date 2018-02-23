@@ -3,6 +3,18 @@
 
 using namespace std;
 
+Ref<TupleType> BaseType::getParameters()const
+{
+	static const auto emptyTuple = TupleType::create();
+	return emptyTuple;
+}
+
+Ref<BaseType> BaseType::getReturnType()const
+{
+	return DefaultType::createVoid();
+}
+
+
 /// <summary>
 /// Creates an integer default type
 /// </summary>
@@ -121,6 +133,17 @@ void TupleType::addMember(Ref<AstNode> node)
 }
 
 /// <summary>
+/// WAlks all tuple members, calling the supplied function for each one.
+/// </summary>
+/// <param name="nodeFn"></param>
+void TupleType::walkMembers(std::function<void(Ref<AstNode>)> nodeFn)
+{
+	for (auto node : m_members)
+		nodeFn(node);
+}
+
+
+/// <summary>
 /// Creates a 'function' data type from an AST node.
 /// </summary>
 /// <param name="node"></param>
@@ -155,4 +178,72 @@ std::string	FunctionType::toString()const
 		result += ":" + m_returnType->toString();
 
 	return result;
+}
+
+/// <summary>
+/// Creates an actor data type from the AST node qhere it is defined.
+/// </summary>
+/// <param name="node"></param>
+/// <returns></returns>
+Ref<ActorType> ActorType::create(Ref<AstNode> node)
+{
+	assert(node->getType() == AST_ACTOR);
+	assert(node->childCount() > 0);
+	assert(node->child(0)->getType() == AST_TUPLE_DEF);
+
+	auto result = refFromNew(new ActorType(node->getName()));
+
+	result->m_parameters = node->child(0)->getDataType().staticCast<TupleType>();
+
+	//Parameters are also members
+	result->walkMembers([result](auto node) {
+		result->addMember(node);
+	});
+
+	//Add the members defined in the body.
+	for (size_t i = 1; i < node->childCount(); ++i)
+	{
+		assert(node->childExists(i));
+		result->addMember(node->child(i));
+	}
+
+	return result;
+}
+
+/// <summary>
+/// Returns an string representation of the actor type.
+/// </summary>
+/// <returns></returns>
+string ActorType::toString()const
+{
+	return string("Actor '") + getName() + "'";
+}
+
+/// <summary>
+/// Creates a 'message' data type from the node in which it is defined.
+/// </summary>
+/// <param name="node"></param>
+/// <returns></returns>
+Ref<MessageType> MessageType::create(Ref<AstNode> node)
+{
+	assert(node->getType() == AST_INPUT || node->getType() == AST_OUTPUT);
+	assert(node->childCount() > 0);
+	assert(node->child(0)->getType() == AST_TUPLE_DEF);
+
+	EDataType	type = node->getType() == AST_INPUT ? DT_INPUT : DT_OUTPUT;
+	auto		result = refFromNew(new MessageType(node->getName(), type));
+
+	result->m_parameters = node->child(0)->getDataType().staticCast<TupleType>();
+	return result;
+}
+
+/// <summary>
+/// String representation of a 'MessageType'
+/// </summary>
+/// <returns></returns>
+std::string	MessageType::toString()const
+{
+	string header = m_type == DT_INPUT ? "input" : "output";
+
+	return header + m_parameters->toString();
 }

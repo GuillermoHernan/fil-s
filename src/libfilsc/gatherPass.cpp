@@ -24,6 +24,8 @@ SemanticResult symbolGatherPass(Ref<AstNode> node, SemAnalysisState& state)
 		operations.add(AST_DECLARATION, gatherSymbol);
 		operations.add(AST_TYPEDEF, gatherSymbol);
 		operations.add(AST_ACTOR, gatherSymbol);
+		operations.add(AST_INPUT, gatherSymbol);
+		operations.add(AST_OUTPUT, gatherSymbol);
 
 		operations.add(AST_DECLARATION, gatherParameters);
 		operations.add(AST_DECLARATION, defaultToConst);
