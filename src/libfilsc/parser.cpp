@@ -470,131 +470,6 @@ ExprResult parseSelect(LexToken token)
 }
 
 
-/**
- * Parses a 'while' statement
- * @param token
- * @return 
- */
-//ExprResult parseWhile (LexToken token)
-//{
-//    ScriptPosition  pos = token.getPosition();
-//
-//    token = token.match(LEX_R_WHILE);
-//    token = token.match('(');
-//    
-//    ExprResult rCondition = parseExpression(token);
-//    rCondition.throwIfError();
-//
-//    token = rCondition.token;
-//    
-//    ExprResult r = parseBodyStatement(token.match(')')).toParseResult();
-//    
-//    auto result = astCreateFor (pos, 
-//                                Ref<AstNode>(), 
-//                                rCondition.result, 
-//                                Ref<AstNode>(), 
-//                                r.ast);
-//    
-//    return ExprResult (r.nextToken, result);
-//}
-
-/**
- * Parses a 'for' statement
- * @param token
- * @return 
- */
-//ExprResult parseFor (LexToken token)
-//{
-//    ExprResult  res = parseForEach(token);
-//    
-//    if (res.ok())
-//        return res.toParseResult();
-//    
-//    //TODO: Better handling of ';'
-//    ScriptPosition      pos = token.getPosition();
-//    Ref<AstNode>   init;
-//    Ref<AstNode>   increment;
-//    Ref<AstNode>   body;
-//    Ref<AstNode>  condition;
-//
-//    token = token.match(LEX_R_FOR);
-//    token = token.match('(');
-//    
-//    ExprResult r;
-//    
-//    //Initialization
-//    if (token.type() != ';')
-//    {
-//        r = parseSimpleStatement(token);
-//        init = r.ast;
-//        token = r.nextToken.match(';');
-//    }
-//    else
-//        token = token.next();
-//    
-//    ExprResult rCondition = parseExpression(token);
-//    rCondition.throwIfError();
-//    condition = rCondition.result;
-//    token = rCondition.token.match(';');
-//    
-//    if (token.type() != ')')
-//    {
-//        r = parseSimpleStatement(token);
-//        increment = r.ast;
-//        token = r.nextToken;        
-//    }
-//    
-//    token = token.match(')');
-//    r = parseBodyStatement(token).toParseResult();
-//    body = r.ast;
-//    token = r.nextToken;
-//
-//    auto result = astCreateFor (pos, init, condition, increment, body);
-//    
-//    return ExprResult (token, result);
-//}
-
-/**
- * Parses a for loop which iterates over the elements of a sequence. 
- * 'for (x in z)...'
- * @param token
- * @return 
- */
-//ExprResult parseForEach (LexToken token)
-//{
-//    ExprResult  r(token);
-//    
-//    r = r.require(LEX_R_FOR).require('(');
-//    if (r.error())
-//        return r.final();
-//
-//    r = r.then(parseIdentifier).requireId("in");
-//    if (r.error())
-//        return r.final();
-//    
-//    auto itemDecl = r.result;
-//    r = r.then(parseExpression).require(')');
-//    
-//    if (r.error())
-//        return r.final();
-//    
-//    auto seqExpression = r.result;
-//    
-//    r = r.then (parseBodyStatement);
-//    
-//    if (r.ok())
-//        r.result = astCreateForEach (token.getPosition(), itemDecl, seqExpression, r.result);
-//    
-//    return r.final();
-//}
-
-
-/**
- * Parses a return statement
- * @param token
- * @return 
- */
-
 /// <summary>
 ///  Parses a return statement
 /// </summary>
@@ -887,11 +762,9 @@ ExprResult parseConditional(LexToken token)
 	return parseIf(token).orElse(parseSelect);
 }
 
-/**
- * Parses an identifier
- * @param token
- * @return 
- */
+/// <summary>
+/// Parses an identifier
+/// </summary>
 ExprResult parseIdentifier (LexToken token)
 {
     ExprResult  r = ExprResult::require(LEX_ID, token);
@@ -902,17 +775,9 @@ ExprResult parseIdentifier (LexToken token)
     return r.final();
 }
 
-/**
- * Parses a function expression
- * @param token
- * @return 
- */
-
 /// <summary>
 /// Parses a function definition
 /// </summary>
-/// <param name="token"></param>
-/// <returns></returns>
 ExprResult parseFunctionDef (LexToken token)
 {
     ScriptPosition  pos = token.getPosition();
@@ -964,24 +829,6 @@ ExprResult parsePrimaryExpr(LexToken token)
 		.orElse(parseBlock)
 		.final();
 }
-
-/**
- * Parses an array access expression ('[expression]')
- * @param token
- * @param arrayExpr
- * @return 
- */
-//ExprResult parseArrayAccess (LexToken token, Ref<AstNode> arrayExpr)
-//{
-//    ExprResult     r(token);
-//    
-//    r = r.require('[').then(parseExpression).require(']');
-//    
-//    if (r.ok())
-//        r.result = astCreateArrayAccess(token.getPosition(), arrayExpr, r.result);
-//    
-//    return r.final();
-//}
 
 /// <summary>
 /// Parses a member access expression ('.' operator)
@@ -1160,113 +1007,6 @@ ExprResult parseUnnamedInput(LexToken token)
 	return r.final();
 }
 
-
-
-///**
-// * Parses one of the possible members of an actor.
-// * @param token
-// * @return 
-// */
-//ExprResult parseActorMember (LexToken token)
-//{
-//    switch (token.type())
-//    {
-//    case LEX_R_VAR:
-//    case LEX_R_CONST:
-//        return parseDeclaration(token);
-//    case LEX_R_INPUT:   return parseInputMessage(token);
-//    case LEX_R_OUTPUT:  return parseOutputMessage(token);
-//    default:            return parseConnectExpr(token);
-//    }
-//}
-//
-///**
-// * Parses an input message definition
-// * @param token
-// * @return 
-// */
-//ExprResult parseInputMessage (LexToken token)
-//{
-//    ScriptPosition      pos = token.getPosition();
-//    ExprResult          r(token);
-//    Ref<AstFunction>    function;
-//
-//    r = r.require(LEX_R_INPUT);
-//    if (r.error())
-//        return r.final();
-//
-//    const string name = r.token.text();
-//    r = r.require(LEX_ID);
-//
-//    if (r.ok())
-//    {
-//        function = astCreateInputMessage (pos, name);
-//        r.result = function;
-//    }
-//    
-//    r = r.then(parseArgumentList).then(parseBlock);
-//    
-//    if (r.ok())
-//    {
-//        function->setCode(r.result);
-//        r.result = function;
-//    }
-//    
-//    return r.final();
-//}
-//
-///**
-// * Parses an output message declaration
-// * @param token
-// * @return 
-// */
-//ExprResult parseOutputMessage (LexToken token)
-//{
-//    ScriptPosition      pos = token.getPosition();
-//    ExprResult          r(token);
-//
-//    r = r.require(LEX_R_OUTPUT);
-//    if (r.error())
-//        return r.final();
-//
-//    const string name = r.token.text();
-//    r = r.require(LEX_ID);
-//
-//    if (r.error())
-//        return r.final();
-//    
-//    Ref<AstFunction>    function = astCreateOutputMessage(pos, name);
-//    r.result = function;
-//    
-//    r = r.then(parseArgumentList);
-//    
-//    if (r.ok())
-//        r.result = function;
-//    
-//    return r.final();
-//}
-//
-///**
-// * Parses message connection operator ('<-')
-// * @param token
-// * @return 
-// */
-//ExprResult parseConnectExpr (LexToken token)
-//{
-//    ExprResult  r(token);
-//    
-//    r = r.then(parseIdentifier);
-//    auto lexpr = r.result;
-//    
-//    ScriptPosition  pos = r.token.getPosition();
-//    r = r.require(LEX_CONNECT).then(parseLeftExpr);
-//    
-//    if (r.ok())
-//        r.result = astCreateConnect (pos, lexpr, r.result);    
-//    
-//    return r.final();
-//}
-//
 
 /// <summary>
 /// Parses one or several statement separators.
