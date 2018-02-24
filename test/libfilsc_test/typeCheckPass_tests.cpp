@@ -447,6 +447,15 @@ TEST(TypeCheck, actorTypeCheck)
 		"  }\n"
 		"}"
 	));
+
+	EXPECT_SEM_ERROR(semAnalysisCheck(
+		"actor A1 {\n"
+		"  output o1(v : int)\n"
+		"  input i1(a : int){\n"
+		"    wrongOutput(a*a);\n"
+		"  }\n"
+		"}"
+	));
 }
 
 
