@@ -114,6 +114,11 @@ const char * errorTypeTemplate(ErrorTypes type)
 		/*ETYPE_RECURSIVE_SYMBOL_REFERENCE_1*/ "Symbol '%s' is referenced in its initialization expression",
 		/*ETYPE_RETURN_OUTSIDE_FUNCTION*/"Return statements can only be used inside functions",
 		/*ETYPE_INCOMPATIBLE_RETURN_TYPE_2*/"Returned type '%s' is incompatible with function return type '%s'",
+		/*ETYPE_MISPLACED_ACTOR_INSTANCE*/"Actor instances can only exist inside other actors",
+		/*ETYPE_RECURSIVE_ACTOR_INSTANCE*/"The actor instance is of the same, or contains, the container actor",
+		/*ETYPE_NON_CONST_ACTOR_INSTANCE*/"Actor instances must be contant ('const')",
+
+
 	};
 
 	return templates[type];

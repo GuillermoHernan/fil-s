@@ -47,17 +47,19 @@ CompileError defaultTypeAssign(Ref<AstNode> node, SemAnalysisState& state);
 
 CompileError actorTypeCheck(Ref<AstNode> node, SemAnalysisState& state);
 CompileError messageTypeCheck(Ref<AstNode> node, SemAnalysisState& state);
+CompileError actorInstanceTypeCheck(Ref<AstNode> node, SemAnalysisState& state);
 
 
 Ref<AstNode> tupleRemoveTypedef(Ref<AstNode> node, SemAnalysisState& state);
 Ref<AstNode> addTupleAdapter(Ref<AstNode> node, SemAnalysisState& state);
+Ref<AstNode> makeTupleAdapter(Ref<AstNode> rNode, Ref<BaseType> lType);
 Ref<AstNode> addReturnTupleAdapter(Ref<AstNode> node, SemAnalysisState& state);
 
 CompileError setVoidType(Ref<AstNode> node, SemAnalysisState& state);
 
 CompileError	areTypesCompatible(Ref<BaseType> typeA, Ref<BaseType> typeB, Ref<AstNode> opNode);
 bool			areTypesCompatible(Ref<BaseType> typeA, Ref<BaseType> typeB);
-bool			areTuplesCompatible(Ref<TupleType> tupleA, Ref<TupleType> tupleB);
+bool			areTuplesCompatible(Ref<BaseType> typeA, Ref<BaseType> typeB);
 Ref<BaseType>	getCommonType(Ref<BaseType> typeA, Ref<BaseType> typeB, SemAnalysisState& state);
 Ref<AstNode> buildTupleDefFromTupleType(Ref<TupleType> tuple, const ScriptPosition& pos);
 

@@ -199,6 +199,10 @@ CompileError declarationTypeCheck(Ref<AstNode> node, SemAnalysisState& state)
 	if (node->childExists(0))
 	{
 		auto declaredType = node->child(0)->getDataType();
+
+		if (declaredType->type() == DT_ACTOR)
+			return actorInstanceTypeCheck(node, state);
+
 		node->setDataType(declaredType);
 
 		if (!node->childExists(1))
@@ -594,6 +598,37 @@ CompileError messageTypeCheck(Ref<AstNode> node, SemAnalysisState& state)
 	return CompileError::ok();
 }
 
+/// <summary>Type checking of an actor instance.</summary>
+CompileError actorInstanceTypeCheck(Ref<AstNode> node, SemAnalysisState& state)
+{
+	assert(node->getType() == AST_DECLARATION);
+	assert(node->childExists(0));
+
+	auto actorType = node->child(0)->getDataType();
+	auto parent = state.parent();
+
+	if (parent->getType() != AST_ACTOR)
+		return semError(node, ETYPE_MISPLACED_ACTOR_INSTANCE);
+
+	//TODO: PRobably, this is going to be detected by a more generic function.
+	//which will handle recursive definitions.
+	//if (parent->getDataType() == actorType)
+	//	return semError(node, ETYPE_RECURSIVE_ACTOR_INSTANCE);
+
+	if (!node->hasFlag(ASTF_CONST))
+		return semError(node, ETYPE_NON_CONST_ACTOR_INSTANCE);
+
+	Ref<BaseType>	paramsType = DefaultType::createVoid();
+
+	if (node->childExists(1))
+		paramsType = node->child(1)->getDataType();
+
+	node->setDataType(actorType);
+
+	return areTypesCompatible(actorType->getParameters(), paramsType, node);
+}
+
+
 
 /// <summary>
 /// Removes 'typedef' intermediate nodes for named tuple definitions.
@@ -619,22 +654,35 @@ Ref<AstNode> addTupleAdapter(Ref<AstNode> node, SemAnalysisState& state)
 {
 	auto lNode = node->child(0);
 	auto lType = lNode->getDataType();
-
-	if (lType->type() != DT_TUPLE)
-		return node;
-
 	auto rNode = node->child(1);
+
+	node->setChild(1, makeTupleAdapter(rNode, lType));
+
+	return node;
+}
+
+/// <summary>
+/// Creates a tuple adapter node if necessary.
+/// </summary>
+/// <param name="rNode">Right hand node (the source node in an assignment)</param>
+/// <param name="lType">Data type to which it shall be converted.</param>
+/// <returns>An AST tuple adapter node or the right hand node if no adaptation is necessary.</returns>
+Ref<AstNode> makeTupleAdapter(Ref<AstNode> rNode, Ref<BaseType> lType)
+{
 	auto rType = rNode->getDataType();
 
+	if (lType->type() != DT_TUPLE && rType->type() != DT_TUPLE)
+		return rNode;
+
 	if (lType == rType)
-		return node;
+		return rNode;
 
 	auto adapterNode = astCreateTupleAdapter(rNode);
 	adapterNode->setDataType(lType);
 
-	node->setChild(1, adapterNode);
-	return node;
+	return adapterNode;
 }
+
 
 
 /// <summary>
@@ -643,23 +691,20 @@ Ref<AstNode> addTupleAdapter(Ref<AstNode> node, SemAnalysisState& state)
 /// </summary>
 Ref<AstNode> addReturnTupleAdapter(Ref<AstNode> node, SemAnalysisState& state)
 {
+	if (!node->childExists(0))
+		return node;
+
 	auto functionNode = state.findParent([](auto node) {
 		return node->getType() == AST_FUNCTION;
 	});
 
 	assert(functionNode.notNull());
 
-	auto returnType = functionNode->getDataType().staticCast<FunctionType>()->getReturnType();
-
-	if (returnType->type() != DT_TUPLE || returnType == node->getDataType())
-		return node;
-
+	auto returnType = functionNode->getDataType()->getReturnType();
 	auto child = node->child(0);
-	auto adapterNode = astCreateTupleAdapter(child);
-	
-	adapterNode->setDataType(returnType);
+
+	node->setChild(0, makeTupleAdapter(child,returnType));
 	node->setDataType(returnType);
-	node->setChild(0, adapterNode);
 
 	return node;
 }
@@ -699,42 +744,56 @@ CompileError areTypesCompatible(Ref<BaseType> typeA, Ref<BaseType> typeB, Ref<As
 /// <returns>true if types are compatible'</returns>
 bool areTypesCompatible(Ref<BaseType> typeA, Ref<BaseType> typeB)
 {
-	if (typeA->type() != typeB->type())
+	auto a = typeA->type();
+	auto b = typeB->type();
+
+	if (a == DT_TUPLE || b == DT_TUPLE)
+		return areTuplesCompatible(typeA, typeB);
+	else if (a != b)
 		return false;
 	else
-	{
-		switch (typeA->type())
-		{
-		case DT_TUPLE:
-			return areTuplesCompatible(typeA.staticCast<TupleType>(), typeB.staticCast<TupleType>());
-		case DT_FUNCTION:
-			return false;
-		default:
-			return true;
-		}
-	}
+		return (a != DT_FUNCTION);		//Function are not assignable, by the moment.
 }
 
-/// <summary>Checks if a tuple of 'tupleB' can be assigned to a tuple of 'tupleA'</summary>
-/// <param name="typeA">tuple which is going to the receive the value.</param>
-/// <param name="typeB">Source tuple.</param>
-/// <returns>true if the tuples are compatible</returns>
-bool areTuplesCompatible(Ref<TupleType> tupleA, Ref<TupleType> tupleB)
+/// <summary>Performs type compatibility check when, at least, one of the types is a tuple</summary>
+/// <param name="typeA">Type of the object which is going to the receive the value.</param>
+/// <param name="typeB">Type of the source object.</param>
+/// <returns>true if types are compatible'</returns>
+bool areTuplesCompatible(Ref<BaseType> typeA, Ref<BaseType> typeB)
 {
-	if (tupleA->memberCount() != tupleB->memberCount())
-		return false;
+	assert(typeA->type() == DT_TUPLE || typeB->type() == DT_TUPLE);
+	if (typeA->type() != DT_TUPLE)
+		return areTuplesCompatible(typeB, typeA);		//Reverse check will work, at this moment.
 	else
 	{
-		const int count = tupleA->memberCount();
+		auto tupleA = typeA.staticCast<TupleType>();
 
-		for (int i = 0; i < count; ++i)
+		if (typeB->type() != DT_TUPLE)
 		{
-			if (!areTypesCompatible(tupleA->getMemberType(i), tupleB->getMemberType(i)))
+			if (tupleA->memberCount() != 1)
 				return false;
+			else
+				return areTypesCompatible(tupleA->getMemberType(0), typeB);
 		}
+		else
+		{
+			auto tupleB = typeB.staticCast<TupleType>();
+			if (tupleA->memberCount() != tupleB->memberCount())
+				return false;
+			else
+			{
+				const int count = tupleA->memberCount();
 
-		return true;
-	}
+				for (int i = 0; i < count; ++i)
+				{
+					if (!areTypesCompatible(tupleA->getMemberType(i), tupleB->getMemberType(i)))
+						return false;
+				}
+
+				return true;
+			}//else
+		}//else
+	}//else
 }
 
 /// <summary>Gets the common type for two types.</summary>

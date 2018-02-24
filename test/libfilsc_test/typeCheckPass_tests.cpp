@@ -449,3 +449,106 @@ TEST(TypeCheck, actorTypeCheck)
 	));
 }
 
+
+/// <summary>
+/// Tests 'actorInstanceTypeCheck' function.
+/// </summary>
+TEST(TypeCheck, actorInstanceTypeCheck)
+{
+	EXPECT_SEM_OK(semAnalysisCheck(
+		"actor A {\n"
+		"  output o1(v : int)\n"
+		"  input i1(a : int){\n"
+		"    o1(a*a);\n"
+		"  }\n"
+		"}\n"
+		"\n"
+		"actor B {\n"
+		"  const aInstance:A\n"
+		"  output o1(v : int)\n"
+		"  input i1(a : int){\n"
+		"    o1(a*a);\n"
+		"  }\n"
+		"}\n"
+	));
+
+	EXPECT_SEM_OK(semAnalysisCheck(
+		"actor A(p1: int) {\n"
+		"  output o1(v : int)\n"
+		"  input i1(a : int){\n"
+		"    o1((a*a) + p1);\n"
+		"  }\n"
+		"}\n"
+		"\n"
+		"actor B {\n"
+		"  const aInstance:A = 3\n"
+		"  output o1(v : int)\n"
+		"  input i1(a : int){\n"
+		"    o1(a*a);\n"
+		"  }\n"
+		"}\n"
+	));
+
+	EXPECT_SEM_OK(semAnalysisCheck(
+		"actor A(p1: int, p2:int) {\n"
+		"  output o1(v : int)\n"
+		"  input i1(a : int){\n"
+		"    o1((a*p2) + p1);\n"
+		"  }\n"
+		"}\n"
+		"\n"
+		"actor B {\n"
+		"  const aInstance:A = (0,3)\n"
+		"  output o1(v : int)\n"
+		"  input i1(a : int){\n"
+		"    o1(a*a);\n"
+		"  }\n"
+		"}\n"
+	));
+
+	auto r= semAnalysisCheck(
+		"actor A {\n"
+		"  output o1(v : int)\n"
+		"  input i1(a : int){\n"
+		"    o1(a*a);\n"
+		"  }\n"
+		"}\n"
+		"\n"
+		"const aInstance:A\n"
+		"\n"
+	);
+	ASSERT_SEM_ERROR(r);
+	EXPECT_EQ(ETYPE_MISPLACED_ACTOR_INSTANCE, r.errors[0].type());
+
+	//auto r = semAnalysisCheck(
+	//	"actor A {\n"
+	//	"  const aInstance:A\n"
+	//	"  output o1(v : int)\n"
+	//	"  input i1(a : int){\n"
+	//	"    o1(a*a);\n"
+	//	"  }\n"
+	//	"}\n"
+	//	"\n"
+	//);
+	//ASSERT_SEM_ERROR(r);
+	//EXPECT_EQ(ETYPE_RECURSIVE_ACTOR_INSTANCE, r.errors[0].type());
+
+	r = semAnalysisCheck(
+		"actor A {\n"
+		"  output o1(v : int)\n"
+		"  input i1(a : int){\n"
+		"    o1(a*a);\n"
+		"  }\n"
+		"}\n"
+		"\n"
+		"actor B {\n"
+		"  var aInstance:A\n"
+		"  output o1(v : int)\n"
+		"  input i1(a : int){\n"
+		"    o1(a*a);\n"
+		"  }\n"
+		"}\n"
+	);
+	ASSERT_SEM_ERROR(r);
+	EXPECT_EQ(ETYPE_NON_CONST_ACTOR_INSTANCE, r.errors[0].type());
+}
