@@ -90,6 +90,8 @@ ExprResult parseActorDef(LexToken token);
 ExprResult parseInputMsg(LexToken token);
 ExprResult parseOutputMsg(LexToken token);
 ExprResult parseMsgHeader(LexToken token);
+ExprResult parseUnnamedInput(LexToken token);
+
 //ExprResult parseConnectExpr(LexToken token);
 //
 //ExprResult parseClassExpr(LexToken token);

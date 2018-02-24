@@ -54,6 +54,7 @@ enum AstNodeTypes
 	,AST_TYPE_NAME
 	,AST_INPUT
 	,AST_OUTPUT
+	,AST_UNNAMED_INPUT
 
 	//Remember to add new entries to 'astTypeToString' function!
 
@@ -158,6 +159,10 @@ Ref<AstNode> astCreateImport (ScriptPosition pos, Ref<AstNode> param);
 Ref<AstNode> astGetExtends(Ref<AstNode> node);
 
 Ref<AstNode> astCreateDefaultType(Ref<DefaultType> type);
+Ref<AstNode> astCreateUnnamedInput(ScriptPosition pos, 
+	Ref<AstNode> outputPath, 
+	Ref<AstNode> params,
+	Ref<AstNode> code);
 
 /**
  * Base class for AST nodes

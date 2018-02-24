@@ -654,6 +654,7 @@ std::string astTypeToString(AstNodeTypes type)
 		types[AST_TYPE_NAME] = "AST_TYPE_NAME";
 		types[AST_INPUT] = "AST_INPUT";
 		types[AST_OUTPUT] = "AST_OUTPUT";
+		types[AST_UNNAMED_INPUT] = "AST_UNNAMED_INPUT";
 		//types[AST_TYPES_COUNT] = "AST_TYPES_COUNT";
 
 		assert(types.size() == AST_TYPES_COUNT);
@@ -678,4 +679,26 @@ Ref<AstNode> astCreateDefaultType(Ref<DefaultType> type)
 	auto node = refFromNew(new AstNamedBranch(AST_DEFAULT_TYPE, ScriptPosition(), type->getName()));
 	node->setDataType(type);
 	return node;
+}
+
+/// <summary>
+/// Creates an unnamed input AST node.
+/// </summary>
+/// <param name="pos"></param>
+/// <param name="outputPath"></param>
+/// <param name="params"></param>
+/// <param name="code"></param>
+/// <returns></returns>
+Ref<AstNode> astCreateUnnamedInput(ScriptPosition pos,
+	Ref<AstNode> outputPath,
+	Ref<AstNode> params,
+	Ref<AstNode> code)
+{
+	auto result = refFromNew(new AstBranchNode(AST_UNNAMED_INPUT, pos));
+
+	result->addChild(outputPath);
+	result->addChild(params);
+	result->addChild(code);
+
+	return result;
 }

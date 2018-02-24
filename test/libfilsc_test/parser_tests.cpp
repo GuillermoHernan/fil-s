@@ -835,7 +835,6 @@ TEST(Parser, parseActorDef)
 
 /// <summary>
 /// Tests for 'parseMsgHeader' function.
-/// Also tests 'parseInputMsg', 'parseOutputMsg' functions.
 /// </summary>
 TEST(Parser, parseMsgHeader)
 {
@@ -864,4 +863,37 @@ TEST(Parser, parseMsgHeader)
 	EXPECT_TRUE(params->child(1)->hasFlag(ASTF_FUNCTION_PARAMETER));
 	EXPECT_STREQ("a", params->child(0)->getName().c_str());
 	EXPECT_STREQ("b", params->child(1)->getName().c_str());
+}
+
+/// <summary>
+/// Tests for 'parseUnnamedInput' function.
+/// </summary>
+TEST(Parser, parseUnnamedInput)
+{
+	auto parseUnnamedInput_ = [](const char* code)
+	{
+		return checkAllParsed(code, parseUnnamedInput);
+	};
+
+	auto r = parseUnnamedInput_("actorA.out1 -> (a: int){}");
+	ASSERT_PARSE_OK(r);
+	auto node = r.result;
+
+	ASSERT_EQ(3, node->childCount());
+	EXPECT_EQ(AST_UNNAMED_INPUT, node->getType());
+	EXPECT_EQ(AST_LIST, node->child(0)->getType());
+	EXPECT_EQ(AST_TUPLE_DEF, node->child(1)->getType());
+	EXPECT_EQ(AST_BLOCK, node->child(2)->getType());
+
+	EXPECT_PARSE_OK(parseUnnamedInput_("actorA.o3 -> (){}"));
+
+	//The following two test are errors suppossed to be handled by the semantic analyzer.
+	EXPECT_PARSE_OK(parseUnnamedInput_("actorA -> (a: int){}"));
+	EXPECT_PARSE_OK(parseUnnamedInput_("-> (a: int){}"));
+
+	EXPECT_PARSE_ERROR(parseUnnamedInput_("actorA.o1 -> {}"));
+	EXPECT_PARSE_ERROR(parseUnnamedInput_("actorA,o1 -> (){}"));
+	EXPECT_PARSE_ERROR(parseUnnamedInput_("actorA.o1 -> ()"));
+	EXPECT_PARSE_ERROR(parseUnnamedInput_("actorA.o1 <- (){}"));
+	EXPECT_PARSE_ERROR(parseUnnamedInput_("actorA.o1 (){}"));
 }

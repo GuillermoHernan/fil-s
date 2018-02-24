@@ -1044,7 +1044,8 @@ ExprResult parseActorDef (LexToken token)
 			.orElse(parseOutputMsg)
 			.orElse(parseVar)
 			.orElse(parseConst)
-			.orElse(parseTypedef);
+			.orElse(parseTypedef)
+			.orElse(parseUnnamedInput);
 
 		if (r.ok())
 		{
@@ -1133,6 +1134,32 @@ ExprResult parseMsgHeader(LexToken token)
 
 	return r.final();
 }
+
+/// <summary>
+/// Parses a 'connect' expression to an unnamed input.
+/// </summary>
+/// <param name="token"></param>
+/// <returns></returns>
+ExprResult parseUnnamedInput(LexToken token)
+{
+	auto r = parseList(token, parseIdentifier, "", "->", ".");
+	auto messageRoute = r.result;
+
+	r = r.then(parseTupleDef);
+	auto params = r.result;
+
+	r = r.then(parseBlock);
+	auto code = r.result;
+
+	if (r.ok())
+	{
+		markAsParameters(params);
+		r.result = astCreateUnnamedInput(token.getPosition(), messageRoute, params, code);
+	}
+
+	return r.final();
+}
+
 
 
 ///**
