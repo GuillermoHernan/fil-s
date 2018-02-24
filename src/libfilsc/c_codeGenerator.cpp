@@ -99,7 +99,6 @@ void codegen(Ref<AstNode> node, CodeGeneratorState& state, const IVariableInfo& 
 		types[AST_PREFIXOP]		= prefixOpCodegen;
 		types[AST_POSTFIXOP]	= postfixOpCodegen;
 		types[AST_ACTOR]		= invalidNodeCodegen;
-		types[AST_CONNECT]		= invalidNodeCodegen;
 		types[AST_DEFAULT_TYPE] = invalidNodeCodegen;
 		types[AST_TYPE_NAME]	= voidCodegen;
 	}

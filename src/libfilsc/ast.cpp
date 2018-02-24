@@ -649,7 +649,6 @@ std::string astTypeToString(AstNodeTypes type)
 		types[AST_PREFIXOP] = "AST_PREFIXOP";
 		types[AST_POSTFIXOP] = "AST_POSTFIXOP";
 		types[AST_ACTOR] = "AST_ACTOR";
-		types[AST_CONNECT] = "AST_CONNECT";
 		types[AST_DEFAULT_TYPE] = "AST_DEFAULT_TYPE";
 		types[AST_TYPE_NAME] = "AST_TYPE_NAME";
 		types[AST_INPUT] = "AST_INPUT";
