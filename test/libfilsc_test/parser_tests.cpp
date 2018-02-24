@@ -33,8 +33,8 @@ TEST(Parser, parseScript)
 /// </summary>
 TEST(Parser, isAssignment)
 {
-	const char * assignmentOps = "= >>>= >>= <<= **= += -= *= /= %= &= |= ^=";
-	const char * otherOps = ">>> >> << ** + - * / % < > <= >= ";
+	const char * assignmentOps = "= >>= <<= += -= *= /= %= &= |= ^=";
+	const char * otherOps = ">> << + - * / % < > <= >= ";
 
 	LexToken	tok(assignmentOps);
 

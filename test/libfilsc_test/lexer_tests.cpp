@@ -297,28 +297,22 @@ TEST(LexToken, parseString)
 /// </summary>
 TEST(LexToken, parseOperator)
 {
-	const char *code = ">>>= ===  !==  >>>  <<=  >>= **=  ==  != \n"
-		"<=  >=  <<  >>  **  +=  -=  *=  /=  %=  &=  |=  ^=  || \n"
+	const char *code = "<<=  >>= ==  != \n"
+		"<=  >=  <<  >>  +=  -=  *=  /=  %=  &=  |=  ^=  || \n"
 		"&&  ++  --  <-  -> \n"
 		"! | % & / () ? = [] {} . , ; : < > + * ^ ~";
 
 	LexToken	tok(code);
 
 	tok = tok.next();
-	tok = tok.match(LEX_OPERATOR, ">>>=");
-	tok = tok.match(LEX_OPERATOR, "===");
-	tok = tok.match(LEX_OPERATOR, "!==");
-	tok = tok.match(LEX_OPERATOR, ">>>");
 	tok = tok.match(LEX_OPERATOR, "<<=");
 	tok = tok.match(LEX_OPERATOR, ">>=");
-	tok = tok.match(LEX_OPERATOR, "**=");
 	tok = tok.match(LEX_OPERATOR, "==");
 	tok = tok.match(LEX_OPERATOR, "!=");
 	tok = tok.match(LEX_OPERATOR, "<=");
 	tok = tok.match(LEX_OPERATOR, ">=");
 	tok = tok.match(LEX_OPERATOR, "<<");
 	tok = tok.match(LEX_OPERATOR, ">>");
-	tok = tok.match(LEX_OPERATOR, "**");
 	tok = tok.match(LEX_OPERATOR, "+=");
 	tok = tok.match(LEX_OPERATOR, "-=");
 	tok = tok.match(LEX_OPERATOR, "*=");
