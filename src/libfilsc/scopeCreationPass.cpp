@@ -64,5 +64,7 @@ bool needsOwnScope(Ref<AstNode> node)
 		|| type == AST_TUPLE_DEF
 		|| type == AST_FUNCTION
 		|| type == AST_INPUT
-		|| type == AST_ACTOR;
+		|| type == AST_ACTOR
+		|| type == AST_UNNAMED_INPUT
+		;
 }

@@ -45,6 +45,7 @@ SemanticResult typeCheckPass(Ref<AstNode> node, SemAnalysisState& state)
 		functions.add(AST_ACTOR, actorTypeCheck);
 		functions.add(AST_INPUT, messageTypeCheck);
 		functions.add(AST_OUTPUT, messageTypeCheck);
+		functions.add(AST_UNNAMED_INPUT, unnamedInputTypeCheck);
 
 		functions.add(AST_ASSIGNMENT, addTupleAdapter);
 	}
@@ -598,6 +599,26 @@ CompileError messageTypeCheck(Ref<AstNode> node, SemAnalysisState& state)
 	return CompileError::ok();
 }
 
+/// <summary>
+/// Type checking for unnnamed input redirections.
+/// </summary>
+CompileError unnamedInputTypeCheck(Ref<AstNode> node, SemAnalysisState& state)
+{
+	auto pathNode = node->child(0);
+
+	if (pathNode->childCount() == 0)
+		return semError(node, ETYPE_UNSPECIFIED_CONNECT_OUTPUT);
+
+	auto output = getConnectOutputType(pathNode, state);
+	if (output.isNull())
+		return semError(node, ETYPE_INVALID_CONNECT_OUTPUT);
+
+	auto paramsNode = node->child(1);
+
+	return areTypesCompatible(output->getParameters(), paramsNode->getDataType(), paramsNode);
+}
+
+
 /// <summary>Type checking of an actor instance.</summary>
 CompileError actorInstanceTypeCheck(Ref<AstNode> node, SemAnalysisState& state)
 {
@@ -628,6 +649,45 @@ CompileError actorInstanceTypeCheck(Ref<AstNode> node, SemAnalysisState& state)
 	return areTypesCompatible(actorType->getParameters(), paramsType, node);
 }
 
+/// <summary>
+/// Gets the data type of the refered output in a connect expression, taking the 'path'
+/// node as input.
+/// If not found or not the expected data type, it would return a null pointer.
+/// </summary>
+/// <param name="pathNode"></param>
+/// <param name="state"></param>
+/// <returns></returns>
+Ref<BaseType> getConnectOutputType(Ref<AstNode> pathNode, SemAnalysisState& state)
+{
+	auto			scope = pathNode->getScope();
+
+	auto referred = scope->get(pathNode->child(0)->getName(), true);
+	if (referred.isNull())
+		return Ref<BaseType>();
+
+	auto result = referred->getDataType();
+	auto tuple = result.dynamicCast<TupleType>();
+
+	size_t i = 1;
+	for (; i < pathNode->childCount() && tuple.notNull(); ++i)
+	{
+		auto child = pathNode->child(i);
+		assert(child.notNull() && child->getType() == AST_MEMBER_NAME);
+
+		int index = tuple->findMemberByName(child->getName());
+
+		if (index < 0)
+			return Ref<BaseType>();
+
+		result = tuple->getMemberType(index);
+		tuple = result.dynamicCast<TupleType>();
+	}
+
+	if (i < pathNode->childCount() || result->type() != DT_OUTPUT)
+		return Ref<BaseType>();
+	else
+		return result;
+}
 
 
 /// <summary>

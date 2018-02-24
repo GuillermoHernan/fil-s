@@ -47,7 +47,9 @@ CompileError defaultTypeAssign(Ref<AstNode> node, SemAnalysisState& state);
 
 CompileError actorTypeCheck(Ref<AstNode> node, SemAnalysisState& state);
 CompileError messageTypeCheck(Ref<AstNode> node, SemAnalysisState& state);
+CompileError unnamedInputTypeCheck(Ref<AstNode> node, SemAnalysisState& state);
 CompileError actorInstanceTypeCheck(Ref<AstNode> node, SemAnalysisState& state);
+Ref<BaseType> getConnectOutputType(Ref<AstNode> pathNode, SemAnalysisState& state);
 
 
 Ref<AstNode> tupleRemoveTypedef(Ref<AstNode> node, SemAnalysisState& state);

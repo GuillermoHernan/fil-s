@@ -33,6 +33,8 @@ enum ErrorTypes
 	ETYPE_MISPLACED_ACTOR_INSTANCE,
 	ETYPE_RECURSIVE_ACTOR_INSTANCE,
 	ETYPE_NON_CONST_ACTOR_INSTANCE,
+	ETYPE_UNSPECIFIED_CONNECT_OUTPUT,
+	ETYPE_INVALID_CONNECT_OUTPUT,
 
 	//Add new error types above this line.
 	//REMEMBER to add the description to 'errorTypeTemplate' function.

@@ -117,6 +117,9 @@ const char * errorTypeTemplate(ErrorTypes type)
 		/*ETYPE_MISPLACED_ACTOR_INSTANCE*/"Actor instances can only exist inside other actors",
 		/*ETYPE_RECURSIVE_ACTOR_INSTANCE*/"The actor instance is of the same, or contains, the container actor",
 		/*ETYPE_NON_CONST_ACTOR_INSTANCE*/"Actor instances must be contant ('const')",
+		/*ETYPE_UNSPECIFIED_CONNECT_OUTPUT*/"No output specified in connect expression",
+		/*ETYPE_INVALID_CONNECT_OUTPUT*/"Invalid output for connect expression",
+
 
 
 	};

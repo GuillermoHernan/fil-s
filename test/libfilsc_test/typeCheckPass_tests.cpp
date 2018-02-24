@@ -552,3 +552,56 @@ TEST(TypeCheck, actorInstanceTypeCheck)
 	ASSERT_SEM_ERROR(r);
 	EXPECT_EQ(ETYPE_NON_CONST_ACTOR_INSTANCE, r.errors[0].type());
 }
+
+
+/// <summary>
+/// Tests 'unnamedInputTypeCheck' function.
+/// Also tests 'getConnectOutputType' function
+/// </summary>
+TEST(TypeCheck, unnamedInputTypeCheck)
+{
+	EXPECT_SEM_OK(semAnalysisCheck(
+		"actor A {\n"
+		"  output o1(int)\n"
+		"  input i1(a : int){}\n"
+		"}\n"
+		"\n"
+		"actor B {\n"
+		"  const ai:A\n"
+		"  ai.o1 -> (a: int){}"
+		"}\n"
+	));
+
+	auto r = semAnalysisCheck(
+		"actor A {\n"
+		"  ai.o1 -> (a: int){}"
+		"}\n"
+	);
+	ASSERT_SEM_ERROR(r);
+	EXPECT_EQ(ETYPE_INVALID_CONNECT_OUTPUT, r.errors[0].type());
+
+	r = semAnalysisCheck(
+		"actor A {\n"
+		"  -> (a: int){}"
+		"}\n"
+	);
+	ASSERT_SEM_ERROR(r);
+	EXPECT_EQ(ETYPE_UNSPECIFIED_CONNECT_OUTPUT, r.errors[0].type());
+
+	r = semAnalysisCheck(
+		"actor A {\n"
+		"  output o1(int)\n"
+		"  input i1(a : int){}\n"
+		"}\n"
+		"\n"
+		"actor B {\n"
+		"  const ai:A\n"
+		"  ai.o2 -> (a: int){}\n"
+		"  ai.i1 -> (a: int){}\n"
+		"}\n"
+	);
+	ASSERT_SEM_ERROR(r);
+	ASSERT_LE((size_t)2, r.errors.size());
+	EXPECT_EQ(ETYPE_INVALID_CONNECT_OUTPUT, r.errors[0].type());
+	EXPECT_EQ(ETYPE_INVALID_CONNECT_OUTPUT, r.errors[1].type());
+}
