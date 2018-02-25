@@ -9,9 +9,12 @@
   <ItemGroup>
     <ClInclude Include="targetver.h" />
     <ClInclude Include="filSim_pch.h" />
+    <ClInclude Include="generated_interface.h" />
+    <ClInclude Include="system_interface.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="filSim_pch.cpp" />
     <ClCompile Include="filSim.cpp" />
+    <ClCompile Include="test_actors.c" />
   </ItemGroup>
 </Project>
