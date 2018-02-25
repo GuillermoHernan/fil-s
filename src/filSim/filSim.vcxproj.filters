@@ -11,7 +11,7 @@
     <ClInclude Include="filSim_pch.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="filSim.cpp" />
     <ClCompile Include="filSim_pch.cpp" />
+    <ClCompile Include="filSim.cpp" />
   </ItemGroup>
 </Project>
