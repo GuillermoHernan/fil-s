@@ -44,10 +44,28 @@ string generateCode(Ref<AstNode> node, std::function<bool(Ref<AstNode>)> entryPo
 	if (it != topLevelItems.end())
 		state.setCname(*it, (*it)->getName());
 
+	writeProlog(state.output());
 	codegen(node, state, VoidVariable());
 
 	return output.str();
 }
+
+/// <summary>
+/// Writes prolog code. These are declarations needed by the rest of the code.
+/// </summary>
+/// <param name="output"></param>
+void writeProlog(std::ostream& output)
+{
+	static const char* prolog =
+		"typedef struct {\n"
+		"  void *actorPtr;\n"
+		"  void *inputPtr;\n"
+		"}MessageSlot;\n\n"
+		;
+
+	output << prolog;
+}
+
 
 /// <summary>
 /// Generates code for an AST node. Based on the node type, selects the appropriate 
@@ -98,7 +116,8 @@ void codegen(Ref<AstNode> node, CodeGeneratorState& state, const IVariableInfo& 
 		types[AST_BINARYOP]		= binaryOpCodegen;
 		types[AST_PREFIXOP]		= prefixOpCodegen;
 		types[AST_POSTFIXOP]	= postfixOpCodegen;
-		types[AST_ACTOR]		= invalidNodeCodegen;
+		types[AST_ACTOR]		= actorCodegen;
+		types[AST_OUTPUT]		= outputMessageCodegen;
 		types[AST_DEFAULT_TYPE] = invalidNodeCodegen;
 		types[AST_TYPE_NAME]	= voidCodegen;
 	}
@@ -213,6 +232,54 @@ string genFunctionHeader(Ref<AstNode> node, CodeGeneratorState& state)
 }
 
 /// <summary>
+/// Generates the 'C' header of an input message.
+/// </summary>
+std::string genInputMsgHeader(
+	Ref<AstNode> actor, 
+	Ref<AstNode> input, 
+	CodeGeneratorState& state,
+	const std::string& nameOverride
+	)
+{
+	const string actorCName = state.cname(actor);
+	string fnCName = nameOverride;
+	auto params = input->child(0);
+	string result;
+
+	if (nameOverride == "")
+		fnCName = state.cname(input);
+
+	//Header
+	result = "static void " + fnCName;
+	result += "(" + actorCName + "* _gen_actor";
+
+	if (params->childCount() == 0)
+		result += ")";
+	else
+		result += ", " + state.cname(params) + "* _gen_params)";
+
+	return result;
+}
+
+/// <summary>
+/// Generates a function params structure.
+/// </summary>
+/// <param name="node">Function node. First child must be the parameters tuple</param>
+/// <param name="state"></param>
+/// <param name="commentSufix">Text added to the end of the structure header comment</param>
+void generateParamsStruct(Ref<AstNode> node, CodeGeneratorState& state, const std::string& commentSufix)
+{
+	auto params = node->child(0);
+	if (params->childCount() > 0)
+	{
+		state.output() << "//Parameters for '" << node->getName() << "' "<< commentSufix << "\n";
+		codegen(params, state, VoidVariable());
+	}
+}
+
+
+
+/// <summary>
 /// Generates code for a block of expressions
 /// </summary>
 void blockCodegen(Ref<AstNode> node, CodeGeneratorState& state, const IVariableInfo& resultDest)
@@ -283,7 +350,7 @@ void tupleDefCodegen(Ref<AstNode> node, CodeGeneratorState& state, const IVariab
 {
 	string name = state.cname(node);
 
-	state.output() << "typedef struct " << "{\n";
+	state.output() << "typedef struct {\n";
 
 	nodeListCodegen(node, state, VoidVariable());
 
@@ -294,7 +361,7 @@ void tupleDefCodegen(Ref<BaseType> type, CodeGeneratorState& state)
 	assert(type->type() == DT_TUPLE);
 	string name = state.cname(type);
 
-	state.output() << "typedef struct " << "{\n";
+	state.output() << "typedef struct {\n";
 
 	auto tType = type.staticCast<TupleType>();
 	const int count = tType->memberCount();
@@ -581,6 +648,170 @@ void postfixOpCodegen(Ref<AstNode> node, CodeGeneratorState& state, const IVaria
 }
 
 /// <summary>
+/// Generates the code associated to an actor definition.
+/// </summary>
+void actorCodegen(Ref<AstNode> node, CodeGeneratorState& state, const IVariableInfo& resultDest)
+{
+	generateActorStruct(node, state);
+	generateActorInputs(node, state);
+	generateActorConstructor(node, state);
+}
+
+/// <summary>
+/// Generates code for an output message.
+/// It defines a 'MessageSlot' in which an input message can be registered.
+/// </summary>
+void outputMessageCodegen(Ref<AstNode> node, CodeGeneratorState& state, const IVariableInfo& resultDest)
+{
+	string name = state.cname(node);
+
+	state.output() << "MessageSlot " << name << ";\n";
+}
+
+
+/// <summary>
+/// Generates the data structure which contains the actor data.
+/// </summary>
+/// <param name=""></param>
+/// <param name=""></param>
+void generateActorStruct(Ref<AstNode> node, CodeGeneratorState& state)
+{
+	string name = state.cname(node);
+
+	state.output() << "typedef struct " << "{\n";
+
+	nodeListCodegen(node->child(0), state, VoidVariable());
+
+	const size_t count = node->childCount();
+	size_t i;
+
+	for (i = 1; i < count; ++i)
+	{
+		auto child = node->child(i);
+		auto type = child->getType();
+
+		if (type != AST_INPUT && type != AST_UNNAMED_INPUT)
+			codegen(child, state, VoidVariable());
+	}
+
+	state.output() << "}" << name << ";\n\n";
+}
+
+/// <summary>
+/// Generates the actor constructor function.
+/// </summary>
+/// <param name="node"></param>
+/// <param name="state"></param>
+void generateActorConstructor(Ref<AstNode> node, CodeGeneratorState& state)
+{
+	string actorCName = state.cname(node);
+	string fnCName = actorCName + "_constructor";
+
+	//Necessary because initialization expression may require temporaries.
+	CodegenBlock	functionBlock(state);
+
+	generateParamsStruct(node, state, "actor");
+
+	//Header
+	state.output() << "//Code for '" << node->getName() << "' actor constructor\n";
+	state.output() << genInputMsgHeader(node, node, state, fnCName) << "{\n";
+
+	//Copy parameters
+	auto params = node->child(0);
+	for (auto param : params->children())
+	{
+		string paramName = state.cname(param);
+		state.output() << "_gen_actor->" << paramName << " = _gen_params->" << paramName << ";\n";
+	}
+	state.output() << "\n";
+
+	//Initialice members
+	const size_t count = node->childCount();
+	for (size_t i = 1; i < count; ++i)
+	{
+		auto child = node->child(i);
+		auto childType = child->getType();
+
+		if (childType == AST_DECLARATION)
+		{
+			NamedVariable memberVar(child, state);
+
+			codegen(child->child(2), state, memberVar);
+		}
+		else if (childType == AST_UNNAMED_INPUT)
+		{
+			generateConnection(node, child, state);
+		}
+	}
+
+	state.output() << "}\n\n";
+}
+
+/// <summary>
+/// Generates the code for actor inputs (named and unnamed)
+/// </summary>
+/// <param name="node"></param>
+/// <param name="state"></param>
+void generateActorInputs(Ref<AstNode> node, CodeGeneratorState& state)
+{
+	for (auto child : node->children())
+	{
+		auto type = child->getType();
+		if (type == AST_INPUT || type == AST_UNNAMED_INPUT)
+			generateActorInput(node, child, state);
+	}
+}
+
+/// <summary>
+/// Generates code for an actor input (named and unnamed)
+/// </summary>
+void generateActorInput(Ref<AstNode> actor, Ref<AstNode> input, CodeGeneratorState& state)
+{
+	string actorCName = state.cname(actor);
+	string fnCName = state.cname(input);
+
+	//Declare a block for temporaries.
+	CodegenBlock	functionBlock(state);
+
+	generateParamsStruct(input, state, "input message");
+
+	//Header
+	state.output() << "//Code for '" << input->getName() << "' input message\n";
+	state.output() << genInputMsgHeader(actor, input, state) << "{\n";
+
+	codegen(input->child(0), state, VoidVariable());
+
+	state.output() << "}\n\n";
+}
+
+/// <summary>
+/// Generates the code which connects and output to an input.
+/// </summary>
+void generateConnection(Ref<AstNode> actor, Ref<AstNode> connection, CodeGeneratorState& state)
+{
+	vector<string>	path;
+	Ref<TupleType>	tupleT = actor->getDataType().staticCast<TupleType>();
+
+	for (auto pathNode : connection->child(0)->children())
+	{
+		assert(tupleT.notNull());
+		const int index = tupleT->findMemberByName(pathNode->getName());
+		assert(index >= 0);
+
+		auto node = tupleT->getMemberNode(index);
+		path.push_back(state.cname(node));
+		tupleT = node->getDataType().dynamicCast<TupleType>();
+	}
+
+	string strPath = "_gen_actor->" + join(path, ".");
+
+	state.output() << strPath << ".actorPtr = (void*)_gen_actor;\n";
+	state.output() << strPath << ".inputPtr = (void*)" << state.cname(connection) << ";\n";
+}
+
+
+
+/// <summary>
 /// Generates the expression need to access a variable. 
 /// It returns it, it does not write it on the output
 /// </summary>
@@ -593,7 +824,9 @@ std::string varAccessExpression(Ref<AstNode> node, CodeGeneratorState& state)
 
 	auto referenced = node->getScope()->get(node->getName());
 
-	if (referenced->hasFlag(ASTF_FUNCTION_PARAMETER))
+	if (referenced->hasFlag(ASTF_ACTOR_MEMBER))
+		namePrefix = "_gen_actor->";
+	else if (referenced->hasFlag(ASTF_FUNCTION_PARAMETER))
 		namePrefix = "_gen_params->";
 
 	return namePrefix + state.cname(referenced);

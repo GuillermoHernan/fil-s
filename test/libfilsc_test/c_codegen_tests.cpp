@@ -33,8 +33,18 @@ protected:
 	/// <returns></returns>
 	int runTest(const char* name, const char* code)
 	{
-		auto entryPointFn = [](Ref<AstNode> node) {
-			return (node->getType() == AST_FUNCTION && node->getName() == "test");
+		bool actorMode = false;
+
+		auto entryPointFn = [&actorMode](Ref<AstNode> node) {
+			if (node->getType() == AST_FUNCTION && node->getName() == "test")
+				return true;
+			else if (node->getType() == AST_ACTOR && node->getName() == "Test")
+			{
+				actorMode = true;
+				return true;
+			}
+			else
+				return false;
 		};
 		//clock_t		t0 = clock();
 		auto parseRes = parseScript(code);
@@ -52,7 +62,7 @@ protected:
 
 		string Ccode = generateCode(semanticRes.ast, entryPointFn);
 
-		writeCcode(Ccode, name);
+		writeCcode(Ccode, name, actorMode);
 		_flushall();	//To ensure all generated files are witten to the disk.
 
 		//clock_t t1 = clock();
@@ -113,7 +123,7 @@ private:
 	/// </summary>
 	/// <param name="code"></param>
 	/// <param name="testName"></param>
-	void writeCcode(const std::string& code, const char* testName)
+	void writeCcode(const std::string& code, const char* testName, bool actorMode)
 	{
 		static const char * prolog =
 			"#include <stdio.h>\n"
@@ -131,10 +141,29 @@ private:
 			"	\n"
 			"	return result;\n"
 			"}\n";
+		static const char * epilogActor =
+			"\n//************ Epilog\n"
+			"\n"
+			"Test mainActor;\n"
+			"\n"
+			"int main()\n"
+			"{\n"
+			//"	printf (\"%d\\n\", result);\n"
+			//"	\n"
+			//"	return result;\n"
+			"  return 0;\n"
+			"}\n";
+
+		//TODO: How do we run actors???
 
 		string path = buildOutputFilePath(testName, ".c");
 
-		string fullCode = prolog + code + epilog;
+		string fullCode = prolog + code;
+
+		if (actorMode)
+			fullCode += epilogActor;
+		else
+			fullCode += epilog;
 
 		if (!writeTextFile(path, fullCode))
 		{
@@ -447,6 +476,19 @@ TEST_F(C_CodegenTests, postfixOpCodegen)
 		"  ++y;\n"
 		"  if (y != 5) return 1050\n"
 		"  0\n"
+		"}\n"
+	);
+}
+
+/// <summary>
+/// Test actor code generation
+/// </summary>
+TEST_F(C_CodegenTests, actors)
+{
+	EXPECT_RUN_OK("actors1",
+		"actor Test {\n"
+		"  output o1(int)\n"
+		"  input i1(a: int) {o1(a * 2)}\n"
 		"}\n"
 	);
 }

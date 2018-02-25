@@ -62,7 +62,7 @@ ExprResult parseStatementSeparator(ExprResult prevResult);
 bool followsStatementSeparator(ExprResult prevResult);
 
 
-void markAsParameters(Ref<AstNode> node);
+void addFlagsToChildren(Ref<AstNode> node, int flags);
 
 bool isAssignment(LexToken token);
 bool isBinaryOp(LexToken token);

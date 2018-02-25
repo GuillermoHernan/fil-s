@@ -12,6 +12,7 @@ struct IVariableInfo;
 
 typedef void(*NodeCodegenFN)(Ref<AstNode> node, CodeGeneratorState& state, const IVariableInfo& resultDest);
 
+void writeProlog(std::ostream& output);
 void codegen(Ref<AstNode> node, CodeGeneratorState& state, const IVariableInfo& resultDest);
 
 void voidCodegen(Ref<AstNode> node, CodeGeneratorState& state, const IVariableInfo& resultDest);
@@ -32,10 +33,22 @@ void callCodegen (Ref<AstNode> node, CodeGeneratorState& state, const IVariableI
 void literalCodegen (Ref<AstNode> node, CodeGeneratorState& state, const IVariableInfo& resultDest);
 void varAccessCodegen (Ref<AstNode> node, CodeGeneratorState& state, const IVariableInfo& resultDest);
 void memberAccessCodegen(Ref<AstNode> node, CodeGeneratorState& state, const IVariableInfo& resultDest);
-void memberAccessCodegen(Ref<AstNode> node, CodeGeneratorState& state, const IVariableInfo& variable, bool isWrite);
 void binaryOpCodegen (Ref<AstNode> node, CodeGeneratorState& state, const IVariableInfo& resultDest);
 void prefixOpCodegen (Ref<AstNode> node, CodeGeneratorState& state, const IVariableInfo& resultDest);
 void postfixOpCodegen (Ref<AstNode> node, CodeGeneratorState& state, const IVariableInfo& resultDest);
 
+void actorCodegen(Ref<AstNode> node, CodeGeneratorState& state, const IVariableInfo& resultDest);
+void outputMessageCodegen(Ref<AstNode> node, CodeGeneratorState& state, const IVariableInfo& resultDest);
+void generateActorStruct(Ref<AstNode> node, CodeGeneratorState& state);
+void generateActorConstructor(Ref<AstNode> node, CodeGeneratorState& state);
+void generateActorInputs(Ref<AstNode> node, CodeGeneratorState& state);
+void generateActorInput(Ref<AstNode> actor, Ref<AstNode> input, CodeGeneratorState& state);
+void generateConnection(Ref<AstNode> actor, Ref<AstNode> connection, CodeGeneratorState& state);
+
 std::string genFunctionHeader(Ref<AstNode> node, CodeGeneratorState& state);
+std::string genInputMsgHeader(Ref<AstNode> actor, 
+	Ref<AstNode> input, 
+	CodeGeneratorState& state, 
+	const std::string& nameOverride="");
+void generateParamsStruct(Ref<AstNode> node, CodeGeneratorState& state, const std::string& commentSufix);
 std::string varAccessExpression(Ref<AstNode> node, CodeGeneratorState& state);

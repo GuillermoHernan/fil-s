@@ -796,7 +796,7 @@ ExprResult parseFunctionDef (LexToken token)
 	auto params = r.result;
 
 	if (r.ok())
-		markAsParameters(params);
+		addFlagsToChildren(params, ASTF_FUNCTION_PARAMETER);
 
 	//return type (optional)
 	Ref<AstNode>	returnType;
@@ -873,7 +873,7 @@ ExprResult parseActorDef (LexToken token)
 
 		if (r.ok())
 		{
-			markAsParameters(params);
+			addFlagsToChildren(params, ASTF_FUNCTION_PARAMETER | ASTF_ACTOR_MEMBER);
 			actor->addChild(params);
 		}
 	}
@@ -896,6 +896,7 @@ ExprResult parseActorDef (LexToken token)
 
 		if (r.ok())
 		{
+			r.result->addFlag(ASTF_ACTOR_MEMBER);
 			actor->addChild(r.result);
 
 			if (r.nextText() != "}")
@@ -975,7 +976,7 @@ ExprResult parseMsgHeader(LexToken token)
 	{
 		auto params = r.result;
 		r.result = refFromNew(new AstNamedBranch(AST_LIST, token.getPosition(), name));
-		markAsParameters(params);
+		addFlagsToChildren(params, ASTF_FUNCTION_PARAMETER);
 		r.result->addChild(params);
 	}
 
@@ -1004,7 +1005,7 @@ ExprResult parseUnnamedInput(LexToken token)
 		for (auto pathItem : messageRoute->children())
 			pathItem->changeType(AST_MEMBER_NAME);
 
-		markAsParameters(params);
+		addFlagsToChildren(params, ASTF_FUNCTION_PARAMETER);
 		r.result = astCreateUnnamedInput(token.getPosition(), messageRoute, params, code);
 	}
 
@@ -1056,11 +1057,11 @@ bool followsStatementSeparator(ExprResult r)
 
 
 /// <summary>
-/// Marks all children of 'node' as function parameters.
+/// Adds the given flag to all children of the node.
 /// </summary>
 /// <param name="paramsNode"></param>
-void markAsParameters(Ref<AstNode> node)
+void addFlagsToChildren(Ref<AstNode> node, int flags)
 {
 	for (auto child : node->children())
-		child->addFlag(ASTF_FUNCTION_PARAMETER);
+		child->addFlags(flags);
 }

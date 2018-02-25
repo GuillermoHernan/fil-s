@@ -69,6 +69,7 @@ enum AstFlags
 	ASTF_FUNCTION_PARAMETER = 1,
 	ASTF_CONST = 2,
 	ASTF_VAR = 4,
+	ASTF_ACTOR_MEMBER = 8,
 };
 
 class AstNode;
@@ -253,6 +254,12 @@ public:
 	int addFlag(AstFlags flag)
 	{
 		m_flags |= flag;
+		return m_flags;
+	}
+
+	int addFlags(int flags)
+	{
+		m_flags |= flags;
 		return m_flags;
 	}
 

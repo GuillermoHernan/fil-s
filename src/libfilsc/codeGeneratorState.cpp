@@ -87,6 +87,19 @@ bool CodeGeneratorState::hasName(Ref<BaseType> type)const
 void CodeGeneratorState::setCname(Ref<AstNode> node, const std::string& name)
 {
 	m_objNames[node] = name;
+
+	switch (node->getType())
+	{
+		case AST_TUPLE_DEF:
+		case AST_DEFAULT_TYPE:
+		case AST_TYPE_NAME:
+		case AST_ACTOR:
+			//For this node types, also its data type gets the name.
+			m_objNames[node->getDataType()] = name;
+			break;
+		default:
+			break;
+	}
 }
 
 /// <summary>
