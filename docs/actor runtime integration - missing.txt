@@ -1,0 +1,11 @@
+* Add header 'system_interface' (or its contents)
+* Add 'Timer' actor. It would have some (all?) 'C' code.
+* Input message function will always have the parameters parameter. The dispatcher
+cannot know if it has parameters in advance.
+* Function or actor to write output signals. An actor is preferred.
+* Actor to read input signals.
+* Code generator for message send calls.
+* Separate simulator-specific code from generic runtime code. The generic code shall be written in 'C'.
+
+* As a derivative of these requirements, it is needed the mechanism to write actors
+in 'C'.
