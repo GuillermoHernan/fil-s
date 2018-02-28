@@ -52,7 +52,7 @@ TEST(TupleType, findMemberByName)
 
 	ASSERT_SEM_OK(r);
 
-	auto nodes = findNodes(r.ast, [](Ref<AstNode> node)->bool {
+	auto nodes = findNodes(r.result, [](Ref<AstNode> node)->bool {
 		return node->getType() == AST_TUPLE_DEF;
 	});
 
@@ -79,7 +79,7 @@ TEST(TupleType, toString)
 
 	ASSERT_SEM_OK(r);
 
-	auto tupleNode = r.ast->child(0);
+	auto tupleNode = r.result->child(0);
 
 	ASSERT_EQ(AST_TUPLE_DEF, tupleNode->getType());
 
@@ -95,14 +95,14 @@ TEST(FunctionType, create)
 {
 	auto r = semAnalysisCheck("function test (a: int, b: bool):int { if (b) a else a*2 }");
 	ASSERT_SEM_OK(r);
-	auto fnNode = r.ast->child(0);
+	auto fnNode = r.result->child(0);
 	ASSERT_EQ(AST_FUNCTION, fnNode->getType());
 	auto fnType = fnNode->getDataType();
 	ASSERT_STREQ("function(int,bool):int", fnType->toString().c_str());
 
 	r = semAnalysisCheck("function test (a: int, b: bool) { if (b) a else b }");
 	ASSERT_SEM_OK(r);
-	fnNode = r.ast->child(0);
+	fnNode = r.result->child(0);
 	ASSERT_EQ(AST_FUNCTION, fnNode->getType());
 	fnType = fnNode->getDataType();
 	ASSERT_STREQ("function(int,bool):()", fnType->toString().c_str());
@@ -110,7 +110,7 @@ TEST(FunctionType, create)
 	//TODO: This test should work, but it is not a bug on 'FunctionType' class.
 	/*r = semAnalysisCheck("function test (a: int, b: int):(int, int) { (a*a, b*b) }");
 	ASSERT_SEM_OK(r);
-	fnNode = r.ast->child(0);
+	fnNode = r.result->child(0);
 	ASSERT_EQ(AST_FUNCTION, fnNode->getType());
 	fnType = fnNode->getDataType();
 	ASSERT_STREQ("function(int,int):(int,int)", fnType->toString().c_str());*/

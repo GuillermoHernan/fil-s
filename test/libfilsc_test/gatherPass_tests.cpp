@@ -36,7 +36,7 @@ protected:
 		if (!result.ok())
 			return result;
 
-		node = result.ast;
+		node = result.result;
 		return symbolGatherPass(node, *m_pState);
 	}
 
@@ -99,7 +99,7 @@ TEST_F(GatherPassTests, defaultToConst)
 	auto r = runGatherPass("function test(a: int, var b:int, const c:int){a*b*c}");
 	ASSERT_SEM_OK(r);
 
-	auto nodes = findNodes(r.ast, [](Ref<AstNode> node) {
+	auto nodes = findNodes(r.result, [](Ref<AstNode> node) {
 		return node->getType() == AST_DECLARATION;
 	});
 

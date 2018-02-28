@@ -58,9 +58,9 @@ protected:
 		if (!semanticRes.ok())
 			throw semanticRes.errors[0];	//Just the first error, as it is not the tested subsystem.
 
-		writeAST(semanticRes.ast, name);
+		writeAST(semanticRes.result, name);
 
-		string Ccode = generateCode(semanticRes.ast, entryPointFn);
+		string Ccode = generateCode(semanticRes.result, entryPointFn);
 
 		writeCcode(Ccode, name, actorMode);
 		_flushall();	//To ensure all generated files are witten to the disk.
@@ -108,7 +108,7 @@ private:
 	/// <param name="testName"></param>
 	void writeAST(Ref<AstNode> node, const char* testName)
 	{
-		string path = buildOutputFilePath(testName, ".ast");
+		string path = buildOutputFilePath(testName, ".result");
 		string content = printAST(node);
 
 		if (!writeTextFile(path, content))

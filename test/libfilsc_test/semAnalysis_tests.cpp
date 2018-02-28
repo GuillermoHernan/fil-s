@@ -62,7 +62,7 @@ TEST(SemanticAnalysis, semInOrderWalk)
 		return SemanticResult(node);
 	};
 
-	result = semInOrderWalk(nodeFn, state, result.ast);
+	result = semInOrderWalk(nodeFn, state, result.result);
 	ASSERT_SEM_OK(result);
 	ASSERT_EQ(expected, nodeTypes);
 }
@@ -101,7 +101,7 @@ TEST(SemanticAnalysis, semPreOrderWalk)
 		return SemanticResult(node);
 	};
 
-	result = semPreOrderWalk(nodeFn, state, result.ast);
+	result = semPreOrderWalk(nodeFn, state, result.result);
 	ASSERT_SEM_OK(result);
 	ASSERT_EQ(expected, nodeTypes);
 }

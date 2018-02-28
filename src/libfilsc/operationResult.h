@@ -61,7 +61,6 @@ public:
 			return r2;
 	}
 
-	const ResultType	result;
-	const ErrorList		errors;
-
+	ResultType	result;
+	ErrorList	errors;
 };

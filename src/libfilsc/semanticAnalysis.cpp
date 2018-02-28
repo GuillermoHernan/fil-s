@@ -19,20 +19,19 @@ using namespace std;
 SemanticResult semanticAnalysis(Ref<AstNode> node)
 {
 	const auto &		passes = getSemAnalysisPasses();
-	SemanticResult		result(node);
 	SemAnalysisState	state;
 
 	for (auto pass : passes)
 	{
-		result = pass(node, state);
+		auto result = pass(node, state);
 
 		if (!result.ok())
 			return result;
 		else
-			node = result.ast;
+			node = result.result;
 	}
 
-	return result;
+	return SemanticResult(node);
 }
 
 /// <summary>
@@ -107,7 +106,7 @@ SemanticResult semInOrderWalk(PassFunction fn, SemAnalysisState& state, Ref<AstN
 			if (!result.ok())
 				errors.insert(errors.end(), result.errors.begin(), result.errors.end());
 			else
-				node->setChild(i, result.ast);
+				node->setChild(i, result.result);
 		}
 	}
 	state.popParent();
@@ -154,7 +153,7 @@ SemanticResult semPreOrderWalk(PassFunction fn, SemAnalysisState& state, Ref<Ast
 	if (!result.ok())
 		errors.insert(errors.end(), result.errors.begin(), result.errors.end());
 	else
-		node = result.ast;
+		node = result.result;
 
 	state.pushParent(node);
 	//Walk children after root
@@ -169,7 +168,7 @@ SemanticResult semPreOrderWalk(PassFunction fn, SemAnalysisState& state, Ref<Ast
 			if (!childResult.ok())
 				errors.insert(errors.end(), childResult.errors.begin(), childResult.errors.end());
 			else
-				node->setChild(i, childResult.ast);
+				node->setChild(i, childResult.result);
 		}
 	}
 	state.popParent();
@@ -196,24 +195,4 @@ CompileError semError(Ref<AstNode> node, ErrorTypes type, ...)
 	va_end(aptr);
 
 	return result;
-}
-
-/// <summary>Combines two semantic results. </summary>
-/// <remarks>
-/// * If any of the two result contains errors, it yields a result which combines both error lists.
-/// * If both are ok, the resulting AST node is from result 'r2'
-/// </remarks>
-/// <param name="r2"></param>
-/// <returns></returns>
-SemanticResult SemanticResult::combineWith(const SemanticResult& r2)const
-{
-	if (!this->ok())
-	{
-		std::vector<CompileError>	newErrList = this->errors;
-
-		newErrList.insert(newErrList.end(), r2.errors.begin(), r2.errors.end());
-		return SemanticResult(newErrList);
-	}
-	else
-		return r2;
 }

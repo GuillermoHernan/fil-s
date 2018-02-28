@@ -5,9 +5,8 @@
 
 #pragma once
 
-#include "ast.h"
+#include "semanticAnalysis.h"
 
-class SemanticResult;
 class SemAnalysisState;
 
 SemanticResult scopeCreationPass(Ref<AstNode> node, SemAnalysisState& state);

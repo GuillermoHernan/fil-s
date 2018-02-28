@@ -1,9 +1,9 @@
 #pragma once
 
 #include "ast.h"
+#include "semanticAnalysis.h"
 
 class SemAnalysisState;
-class SemanticResult;
 class CompileError;
 
 /// <summary>

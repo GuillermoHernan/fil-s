@@ -3,8 +3,8 @@
 /// </summary>
 #pragma once
 
-#include "ast.h"
-class SemanticResult;
+#include "semanticAnalysis.h"
+
 class SemAnalysisState;
 class CompileError;
 class BaseType;

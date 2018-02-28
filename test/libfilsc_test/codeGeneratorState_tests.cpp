@@ -24,19 +24,19 @@ TEST(CodeGeneratorState, cname)
 	);
 	ASSERT_SEM_OK(r);
 
-	//printAST(r.ast);
+	//printAST(r.result);
 
 	auto intType = DefaultType::createInt().staticCast<BaseType>();	//I don't know why the compiler says the
 																	//call is ambigous if I do not cast it to BaseType...
 																	//'template' limitations?
 	EXPECT_STREQ("int", state.cname(intType).c_str());
 	
-	auto node = findNode(r.ast, "entero");
+	auto node = findNode(r.result, "entero");
 	ASSERT_TRUE(node.notNull());
 	EXPECT_STREQ("int", state.cname(node).c_str());
 	EXPECT_STREQ("int", state.cname(node->getDataType()).c_str());
 
-	node = findNode(r.ast, "testValue");
+	node = findNode(r.result, "testValue");
 	ASSERT_TRUE(node.notNull());
 	string cname = state.cname(node);
 	EXPECT_TRUE(cname.find("testValue") != string::npos);
@@ -45,7 +45,7 @@ TEST(CodeGeneratorState, cname)
 	string cname2 = state.cname(node);
 	EXPECT_STREQ(cname.c_str(), cname2.c_str());
 
-	node = findNode(r.ast, "TestTuple");
+	node = findNode(r.result, "TestTuple");
 	ASSERT_TRUE(node.notNull());
 	cname = state.cname(node);
 	EXPECT_TRUE(cname.find("TestTuple") != string::npos);

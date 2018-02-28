@@ -8,6 +8,7 @@
 #include "parser.h"
 #include <functional>
 #include "dataTypes.h"
+#include "semanticAnalysis.h"
 
 #define EXPECT_PARSE_OK(x) EXPECT_TRUE(checkExprOk((x)))
 #define EXPECT_PARSE_ERROR(x) EXPECT_TRUE(checkExprError(x))
@@ -20,8 +21,6 @@
 #define ASSERT_SEM_ERROR(x) ASSERT_TRUE(checkSemError(x))
 
 typedef ExprResult::ParseFunction ParseFunction;
-
-class SemanticResult;
 
 ::testing::AssertionResult checkExprOk(const ExprResult& res);
 ::testing::AssertionResult checkExprError(const ExprResult& res);
