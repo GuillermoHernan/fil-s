@@ -63,7 +63,7 @@ protected:
 		string Ccode = generateCode(semanticRes.result, entryPointFn);
 
 		writeCcode(Ccode, name, actorMode);
-		_flushall();	//To ensure all generated files are witten to the disk.
+		_flushall();	//To ensure all generated files are written to the disk.
 
 		//clock_t t1 = clock();
 		//cout << "FIL-S compile time: " << double(t1 - t0)*1000 / CLOCKS_PER_SEC << " msegs.\n";
