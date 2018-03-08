@@ -25,6 +25,8 @@
 #include <cstdlib>
 #include <cstdio>
 #include <limits>
+#include <iomanip>
+#include <sstream>
 
 namespace json11 {
 
@@ -56,10 +58,12 @@ static void dump(NullStruct, string &out) {
 
 static void dump(double value, string &out) {
     if (std::isfinite(value)) {
-        char buf[32];
-        snprintf(buf, sizeof buf, "%.17g", value);
-        out += buf;
-    } else {
+		std::stringstream ss;
+		ss.imbue(std::locale::classic());
+		ss.precision(std::numeric_limits<double>::digits10);
+		ss << value;
+		out += ss.str();
+	} else {
         out += "null";
     }
 }
@@ -618,8 +622,14 @@ struct JsonParser final {
                 i++;
         }
 
-        return std::strtod(str.c_str() + start_pos, nullptr);
-    }
+		std::stringstream ss(str.c_str() + start_pos);
+		ss.imbue(std::locale::classic());
+		ss.precision(std::numeric_limits<double>::digits10);
+		double value = 0;
+		ss >> value;
+		
+		return value;
+	}
 
     /* expect(str, res)
      *
