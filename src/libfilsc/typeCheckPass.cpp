@@ -400,7 +400,7 @@ CompileError memberAccessTypeCheck(Ref<AstNode> node, SemAnalysisState& state)
 /// <summary>Type check for binary operators</summary>
 CompileError binaryOpTypeCheck(Ref<AstNode> node, SemAnalysisState& state)
 {
-	string op = node.staticCast<AstOperator>()->operation;
+	string op = node->getValue();
 
 	if (op == "+" || op == "-" ||op == "*" || op == "/" || op == "%")
 		return mathOperatorTypeCheck(node, state);
@@ -417,7 +417,7 @@ CompileError binaryOpTypeCheck(Ref<AstNode> node, SemAnalysisState& state)
 /// <summary>Type check for prefix operators</summary>
 CompileError prefixOpTypeCheck(Ref<AstNode> node, SemAnalysisState& state)
 {
-	string op = node.staticCast<AstOperator>()->operation;
+	string op = node->getValue();
 	auto childType = node->child(0)->getDataType();
 
 	node->setDataType(childType);

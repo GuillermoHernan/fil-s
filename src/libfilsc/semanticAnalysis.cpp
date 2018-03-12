@@ -250,7 +250,8 @@ CompileError semError(Ref<AstNode> node, ErrorTypes type, ...)
 /// <returns></returns>
 SemanticResult buildModuleNode(const AstStr2NodesMap& nodes)
 {
-	auto moduleNode = astCreateModule();
+	//TODO: set real module name
+	auto moduleNode = astCreateModule("");
 
 	for (auto& nodeEntry : nodes)
 		moduleNode->addChild(nodeEntry.second);

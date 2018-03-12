@@ -128,7 +128,7 @@ bool isPostfixOp(LexToken token)
 ExprResult parseList(LexToken token, ExprResult::ParseFunction itemParseFn,
 	const char* beginTok, const char* endTok, const char* separator)
 {
-	auto		result = refFromNew(new AstNamedBranch(AST_LIST, token.getPosition(), ""));
+	auto		result = AstNode::create(AST_LIST, token.getPosition(), "");
 	ExprResult	r = ExprResult::ok(token, result);
 
 	if (*beginTok)
@@ -192,7 +192,8 @@ ExprResult parseScript(const char* script)
  */
 ExprResult parseScript(LexToken token)
 {
-    auto		script = astCreateScript(token.getPosition());
+	//TODO: Set script name
+    auto		script = astCreateScript(token.getPosition(), "");
 
 	if (token.eof())
 		return ExprResult::ok(token, script);
@@ -694,21 +695,21 @@ ExprResult parseCallExpr(LexToken token, Ref<AstNode> fnExpr)
 /// <returns></returns>
 ExprResult parseLiteral(LexToken token)
 {
-	Ref<AstLiteral>		value;
+	Ref<AstNode>		value;
 
 	switch ((int)token.type())
 	{
 	case LEX_RESERVED:
 		if (token.text() == "true")
-			value = AstLiteral::createBool(token.getPosition(), true);
+			value = astCreateBool(token.getPosition(), true);
 		else if (token.text() == "false")
-			value = AstLiteral::createBool(token.getPosition(), false);
+			value = astCreateBool(token.getPosition(), false);
 		break;
 
 	case LEX_FLOAT:
 	case LEX_INT:
 	case LEX_STR:
-		value = AstLiteral::create(token);
+		value = astCreateLiteral(token);
 		break;
 
 	default:
@@ -781,8 +782,11 @@ ExprResult parseIdentifier (LexToken token)
 {
     ExprResult  r = ExprResult::require(LEX_ID, token);
     
-    if (r.ok())
-        r.result = AstIdentifier::create(token);
+	if (r.ok())
+	{
+		string name = token.text();
+		r.result = AstNode::create(AST_IDENTIFIER, token.getPosition(), name, name);
+	}
     
     return r.final();
 }
@@ -987,7 +991,7 @@ ExprResult parseMsgHeader(LexToken token)
 	if (r.ok())
 	{
 		auto params = r.result;
-		r.result = refFromNew(new AstNamedBranch(AST_LIST, token.getPosition(), name));
+		r.result = AstNode::create(AST_LIST, token.getPosition(), name);
 		addFlagsToChildren(params, ASTF_FUNCTION_PARAMETER);
 		r.result->addChild(params);
 	}

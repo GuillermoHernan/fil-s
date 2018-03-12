@@ -450,11 +450,10 @@ void returnCodegen(Ref<AstNode> node, CodeGeneratorState& state, const IVariable
 /// </summary>
 void assignmentCodegen(Ref<AstNode> node, CodeGeneratorState& state, const IVariableInfo& resultDest)
 {
-	auto	assignment = node.staticCast<AstOperator>();
-	auto	lexpr = assignment->child(0);
-	auto	rexpr = assignment->child(1);
+	auto	lexpr = node->child(0);
+	auto	rexpr = node->child(1);
 
-	assert(assignment->operation == "=");
+	assert(node->getValue() == "=");
 
 	TempVariable	lRef(lexpr, state, true);
 	TempVariable	rResult(rexpr, state, false);
@@ -603,7 +602,7 @@ void binaryOpCodegen(Ref<AstNode> node, CodeGeneratorState& state, const IVariab
 
 	auto leftExpr = node->child(0);
 	auto rightExpr = node->child(1);
-	auto operation = node.staticCast<AstOperator>()->operation;
+	auto operation = node->getValue();
 
 	TempVariable	leftTmp(leftExpr, state, false);
 	TempVariable	rightTmp(rightExpr, state, false);
@@ -622,7 +621,7 @@ void binaryOpCodegen(Ref<AstNode> node, CodeGeneratorState& state, const IVariab
 void prefixOpCodegen(Ref<AstNode> node, CodeGeneratorState& state, const IVariableInfo& resultDest)
 {
 	auto child = node->child(0);
-	auto operation = node.staticCast<AstOperator>()->operation;
+	auto operation = node->getValue();
 	bool needsRef = (operation == "++" || operation == "--");
 
 	TempVariable	temp(child, state, needsRef);
@@ -645,7 +644,7 @@ void prefixOpCodegen(Ref<AstNode> node, CodeGeneratorState& state, const IVariab
 void postfixOpCodegen(Ref<AstNode> node, CodeGeneratorState& state, const IVariableInfo& resultDest)
 {
 	auto child = node->child(0);
-	auto operation = node.staticCast<AstOperator>()->operation;
+	auto operation = node->getValue();
 
 	TempVariable	temp(child, state, true);
 

@@ -81,15 +81,8 @@ std::string astTypeToString(AstNodeTypes type);
 AstNodeTypes astTypeFromString(const std::string& str);
 
 //Constructor functions
-Ref<AstNode> astGenericCreate(
-	ScriptPosition pos,
-	AstNodeTypes type,
-	const std::string& name,
-	const std::string& value,
-	int flags
-	);
-Ref<AstNode> astCreateModule();
-Ref<AstNode> astCreateScript(ScriptPosition pos);
+Ref<AstNode> astCreateModule(const std::string& name);
+Ref<AstNode> astCreateScript(ScriptPosition pos, const std::string& name);
 Ref<AstNode> astCreateTypedef(ScriptPosition pos, const std::string& name, Ref<AstNode> typeDesc);
 Ref<AstNode> astCreateDeclaration(LexToken token,
 	Ref<AstNode> typeDesc,
@@ -132,7 +125,6 @@ Ref<AstNode> astCreateBinaryOp(LexToken token,
                                  Ref<AstNode> lexpr, 
                                  Ref<AstNode> rexpr);
 Ref<AstNode> astCreateFnCall(ScriptPosition pos, Ref<AstNode> fnExpr, Ref<AstNode> params);
-//Ref<AstNode> astToNewCall(Ref<AstNode> callExpr);
 Ref<AstNode> astCreateArray(ScriptPosition pos);
 Ref<AstNode> astCreateArrayAccess(ScriptPosition pos,
                                   Ref<AstNode> arrayExpr, 
@@ -145,49 +137,60 @@ Ref<AstNode> astCreateActor(ScriptPosition pos, const std::string& name);
 
 Ref<AstNode> astCreateInputMsg(ScriptPosition pos, const std::string& name);
 Ref<AstNode> astCreateOutputMsg(ScriptPosition pos, const std::string& name);
+Ref<AstNode> astCreateLiteral(LexToken token);
+Ref<AstNode> astCreateBool(ScriptPosition pos, bool value);
 Ref<AstNode> astCreateDefaultType(Ref<DefaultType> type);
 Ref<AstNode> astCreateUnnamedInput(ScriptPosition pos, 
 	Ref<AstNode> outputPath, 
 	Ref<AstNode> params,
 	Ref<AstNode> code);
 
+
+
 class AstSerializeContext;
 
 /**
  * Base class for AST nodes
  */
+
+/// <summary>
+/// Abstract syntax tree node class. 
+/// These nodes form a tree which is the internal representation of the language from the 
+/// parsing phase onwards.
+/// </summary>
 class AstNode : public RefCountObj
 {
 public:
 
-    virtual const AstNodeList& children()const
+    const AstNodeList& children()const
     {
-        return ms_noChildren;
+        return m_children;
     }
 
-	virtual const std::string getName()const
+	const std::string& getName()const
 	{
-		return "";
+		return m_name;
 	}
 
 	virtual void setName(const std::string& name)
 	{
-		assert(!"setName unsupported");
+		m_name = name;
 	}
 
-    virtual std::string getValue()const
+    const std::string& getValue()const
     {
-        return "";
+        return m_value;
     }
     
 	virtual void addChild(Ref<AstNode> child)
 	{
-		assert(!"addChildren unsupported");
+		m_children.push_back(child);
 	}
 
 	virtual void setChild(unsigned index, Ref<AstNode> node)
 	{
-		assert(!"setChild unsupported");
+		assert(index < m_children.size());
+		m_children[index] = node;
 	}
 
 	virtual void destroy();
@@ -221,8 +224,6 @@ public:
     {
         return m_position;
     }
-
-    //virtual ASValue toJS()const;
 
     AstNodeTypes getType()const
     {
@@ -268,13 +269,20 @@ public:
 		return ms_nodeCount;
 	}
 
-protected:
-    static const AstNodeList    ms_noChildren;
-    
-    const ScriptPosition m_position;
-    AstNodeTypes m_type;
+	static Ref<AstNode> create(
+		AstNodeTypes type,
+		ScriptPosition pos,
+		const std::string& name = "",
+		const std::string& value = "",
+		int flags = 0
+	);
 
-	AstNode(AstNodeTypes type, const ScriptPosition& pos);
+protected:
+	AstNode(AstNodeTypes type, 
+		const ScriptPosition& pos, 
+		const std::string& name,
+		const std::string& value,
+		int flags);
 
     virtual ~AstNode()
     {
@@ -282,160 +290,17 @@ protected:
     }
 
 private:
-	Ref<RefCountObj>	m_scope;
-	Ref<RefCountObj>	m_dataType;
-	int					m_flags = 0;
+	const ScriptPosition	m_position;
+	std::string				m_name;
+	std::string				m_value;
+	AstNodeList				m_children;
+
+	Ref<RefCountObj>		m_scope;
+	Ref<RefCountObj>		m_dataType;
+	int						m_flags = 0;
+	AstNodeTypes			m_type;
 
 	static int ms_nodeCount;
-};
-
-/**
- * Base class for AST nodes which contain children nodes.
- */
-class AstBranchNode : public AstNode
-{
-public:
-
-    virtual const AstNodeList& children()const
-    {
-        return m_children;
-    }
-    
-    virtual void addChild(Ref<AstNode> child)
-    {
-        m_children.push_back(child);
-    }
-
-	virtual void setChild(unsigned index, Ref<AstNode> node)
-	{
-		assert(index < m_children.size());
-		m_children[index] = node;
-	}
-
-    
-    AstBranchNode(AstNodeTypes type, const ScriptPosition& pos) : AstNode(type, pos)
-    {
-    }
-protected:
-    
-    AstNodeList     m_children;
-    
-};
-
-/**
- * Class for branch nodes which are also named
- */
-class AstNamedBranch : public AstBranchNode
-{
-public:
-
-    virtual const std::string getName()const
-    {
-        return m_name;
-    }
-
-	virtual void setName(const std::string& name)
-	{
-		m_name = name;
-	}
-
-    AstNamedBranch(AstNodeTypes type, const ScriptPosition& pos, const std::string& _name)
-    : AstBranchNode(type, pos), m_name(_name)
-    {
-    }
-    
-protected:
-
-    std::string m_name;
-};
-
-/**
- * Base class for all AST nodes which represent operators.
- */
-class AstOperator : public AstBranchNode
-{
-public:
-    const std::string operation;
-    
-    //virtual ASValue toJS()const;
-
-	virtual std::string getValue()const
-	{
-		return operation;
-	}
-
-    
-    AstOperator (AstNodeTypes type, ScriptPosition position, const std::string& opText) : 
-    AstBranchNode (type, position), operation(opText)
-    {
-    }
-};
-
-/**
- * AST node for primitive types literals (Number, String, Boolean)
- */
-class AstLiteral : public AstNode
-{
-public:
-    static Ref<AstLiteral> create(LexToken token);
-	static Ref<AstLiteral> create(ScriptPosition pos, int value);
-	static Ref<AstLiteral> createBool(ScriptPosition pos, bool value);
-    
-
-	virtual std::string getValue()const
-	{
-		return m_strValue;
-	}
-
-    AstLiteral (ScriptPosition position, AstNodeTypes type, const std::string& value = "") : 
-    AstNode(type, position), m_strValue(value)
-    {
-    }
-
-private:
-	std::string			m_strValue;
-};
-
-/**
- * AST node for identifiers (variable names, function names, members...)
- */
-class AstIdentifier : public AstNode
-{
-public:
-    static Ref<AstIdentifier> create(LexToken token)
-    {
-        return refFromNew(new AstIdentifier(token));
-    }
-    
-    virtual const std::string getName()const
-    {
-        return m_name;
-    }
-
-	virtual void setName(const std::string& name)
-	{
-		m_name = name;
-	}
-
-	virtual std::string getValue()const
-	{
-		return m_name;
-	}
-
-	AstIdentifier(ScriptPosition pos, const std::string& name) :
-		AstNode(AST_IDENTIFIER, pos),
-		m_name(name)
-	{
-	}
-
-protected:
-    AstIdentifier (LexToken token) : 
-    AstNode(AST_IDENTIFIER, token.getPosition()),
-        m_name (token.text())
-    {        
-    }
-
-    std::string   m_name;
 };
 
 #endif	/* AST_H */

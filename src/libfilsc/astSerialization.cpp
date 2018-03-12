@@ -297,7 +297,7 @@ Ref<AstNode> parseAstNode(const Json& jsNode, const Id2TypeMap& types)
 	string	dataTypeRef = jsNode["dataType"].string_value();
 	auto	dataType = resolveTypeRef(dataTypeRef, types);
 
-	auto astNode = astGenericCreate(ScriptPosition(), type, name, value, flags);
+	auto astNode = AstNode::create(type, ScriptPosition(), name, value, flags);
 
 	astNode->setDataType(dataType);
 

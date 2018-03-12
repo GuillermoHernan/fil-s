@@ -9,15 +9,37 @@
 
 using namespace std;
 
-//Empty children list constant
-const AstNodeList AstNode::ms_noChildren;
-
 //Global AST node count.
 int AstNode::ms_nodeCount = 0;
 
+/// <summary>
+/// Creates an AST node.
+/// </summary>
+/// <param name="type">Node type.</param>
+/// <param name="pos">Position of source code which originated the node.</param>
+/// <param name="name">Node name (can be empty)</param>
+/// <param name="value">Node value (can be empty)</param>
+/// <param name="flags">Node flags.</param>
+/// <returns></returns>
+Ref<AstNode> AstNode::create(
+	AstNodeTypes type,
+	ScriptPosition pos,
+	const std::string& name,
+	const std::string& value,
+	int flags
+)
+{
+	return refFromNew(new AstNode(type, pos, name, value, flags));
+}
 
-AstNode::AstNode(AstNodeTypes type, const ScriptPosition& pos) :
-	m_position(pos), m_type(type)
+
+AstNode::AstNode(
+	AstNodeTypes type,
+	const ScriptPosition& pos,
+	const std::string& name,
+	const std::string& value,
+	int flags)
+	:m_position(pos), m_type(type), m_name(name), m_value(value), m_flags(flags)
 {
 	m_dataType = DefaultType::createVoid();
 	++ms_nodeCount;
@@ -61,99 +83,19 @@ void AstNode::setDataType(Ref<BaseType> dataType)
 }
 
 
-//  Constructor functions.
+//  Functions to create specific AST node types.
 //
 ////////////////////////////////
 
-/// <summary>
-/// Generic AST node constructor.
-/// </summary>
-/// <param name="pos"></param>
-/// <param name="type"></param>
-/// <param name="name"></param>
-/// <param name="value"></param>
-/// <param name="flags"></param>
-/// <returns></returns>
-Ref<AstNode> astGenericCreate(
-	ScriptPosition pos,
-	AstNodeTypes type,
-	const std::string& name,
-	const std::string& value,
-	int flags
-)
+
+Ref<AstNode> astCreateModule(const std::string& name)
 {
-	AstNode*	node = nullptr;
-
-	switch (type)
-	{
-	case AST_MODULE:
-	case AST_SCRIPT:
-	case AST_BLOCK:
-	case AST_TUPLE:
-	case AST_TUPLE_ADAPTER:
-	case AST_IF:
-	case AST_FOR:
-	case AST_FOR_EACH:
-	case AST_RETURN:
-	case AST_FNCALL:
-	case AST_MEMBER_ACCESS:
-	case AST_ACTOR:
-	case AST_UNNAMED_INPUT:
-	case AST_IMPORT:
-		node = new AstBranchNode(type, pos);
-		break;
-
-	case AST_TYPEDEF:
-	case AST_LIST:
-	case AST_DECLARATION:
-	case AST_TUPLE_DEF:
-	case AST_FUNCTION:
-	case AST_DEFAULT_TYPE:
-	case AST_INPUT:
-	case AST_OUTPUT:
-		node = new AstNamedBranch(type, pos, name);
-		break;
-
-	case AST_ASSIGNMENT:
-	case AST_BINARYOP:
-	case AST_PREFIXOP:
-	case AST_POSTFIXOP:
-		node = new AstOperator(type, pos, value);
-		break;
-
-	case AST_INTEGER:
-	case AST_FLOAT:
-	case AST_STRING:
-	case AST_BOOL:
-		node = new AstLiteral(pos, type, value);
-		break;
-
-	case AST_IDENTIFIER:
-	case AST_MEMBER_NAME:
-	case AST_TYPE_NAME:
-		node = new AstIdentifier(pos, name);
-		node->changeType(type);
-		break;
-
-	case AST_ARRAY:
-	case AST_ARRAY_ACCESS:
-	default:
-		assert(!"Invalid type value!");
-	}
-
-	node->addFlags(flags);
-	return refFromNew(node);
+	return AstNode::create (AST_MODULE, ScriptPosition(), name, "");
 }
 
-
-Ref<AstNode> astCreateModule()
+Ref<AstNode> astCreateScript(ScriptPosition pos, const std::string& name)
 {
-	return refFromNew(new AstBranchNode(AST_MODULE, ScriptPosition()));
-}
-
-Ref<AstNode> astCreateScript(ScriptPosition pos)
-{
-	return refFromNew(new AstBranchNode(AST_SCRIPT, pos));
+	return AstNode::create(AST_SCRIPT, pos, name, "");
 }
 
 /// <summary>
@@ -184,9 +126,7 @@ Ref<AstNode> astCreateDeclaration(ScriptPosition pos,
 	Ref<AstNode> typeDesc,
 	Ref<AstNode> initExpr)
 {
-	auto result = refFromNew(
-		new AstNamedBranch(AST_DECLARATION, pos, name)
-	);
+	auto result = AstNode::create(AST_DECLARATION, pos, name, "");
 
 	result->addChild(typeDesc);
 	result->addChild(initExpr);
@@ -203,9 +143,7 @@ Ref<AstNode> astCreateDeclaration(ScriptPosition pos,
 /// <returns></returns>
 Ref<AstNode> astCreateTypedef(ScriptPosition pos, const std::string& name, Ref<AstNode> typeDesc)
 {
-	auto result = refFromNew(
-		new AstNamedBranch(AST_TYPEDEF, pos, name)
-	);
+	auto result = AstNode::create(AST_TYPEDEF, pos, name, "");
 
 	result->addChild(typeDesc);
 	return result;
@@ -227,7 +165,7 @@ Ref<AstNode> astCreateFunction(ScriptPosition pos,
 	Ref<AstNode> returnType,
 	Ref<AstNode> bodyExpr)
 {
-	auto result = refFromNew(new AstNamedBranch(AST_FUNCTION, pos, name));
+	auto result = AstNode::create(AST_FUNCTION, pos, name, "");
 
 	result->addChild(params);
 	result->addChild(returnType);
@@ -239,22 +177,22 @@ Ref<AstNode> astCreateFunction(ScriptPosition pos,
 
 Ref<AstNode> astCreateBlock(LexToken token)
 {
-	return refFromNew(new AstBranchNode(AST_BLOCK, token.getPosition()));
+	return AstNode::create(AST_BLOCK, token.getPosition(), "", "");
 }
 
 Ref<AstNode> astCreateTuple(LexToken token)
 {
-	return refFromNew(new AstBranchNode(AST_TUPLE, token.getPosition()));
+	return AstNode::create(AST_TUPLE, token.getPosition(), "", "");
 }
 
 Ref<AstNode> astCreateTupleDef(ScriptPosition pos, const std::string& name)
 {
-	return refFromNew(new AstNamedBranch(AST_TUPLE_DEF, pos, name));
+	return AstNode::create(AST_TUPLE, pos, name, "");
 }
 
 Ref<AstNode> astCreateTupleAdapter(Ref<AstNode> tupleNode)
 {
-	auto result = refFromNew(new AstBranchNode(AST_TUPLE_ADAPTER, tupleNode->position()));
+	auto result = AstNode::create(AST_TUPLE_ADAPTER, tupleNode->position(), "", "");
 
 	result->addChild(tupleNode);
 	return result;
@@ -266,9 +204,8 @@ Ref<AstNode> astCreateIf (ScriptPosition pos,
                           Ref<AstNode> thenSt,
                           Ref<AstNode> elseSt)
 {
-    
-    auto result = refFromNew( new AstBranchNode(AST_IF, pos));
-    
+	auto result = AstNode::create(AST_IF, pos, "", "");
+
     result->addChild(condition);
     result->addChild(thenSt);
     result->addChild(elseSt);
@@ -282,7 +219,7 @@ Ref<AstNode> astCreateFor (ScriptPosition pos,
                           Ref<AstNode> incrementSt,
                           Ref<AstNode> body)
 {    
-    auto result = refFromNew( new AstBranchNode(AST_FOR, pos));
+	auto result = AstNode::create(AST_FOR, pos, "", "");
     
     result->addChild(initSt);
     result->addChild(condition);
@@ -297,8 +234,8 @@ Ref<AstNode> astCreateForEach (ScriptPosition pos,
                           Ref<AstNode> sequenceExpr,
                           Ref<AstNode> body)
 {
-    auto result = refFromNew( new AstBranchNode(AST_FOR_EACH, pos));
-    
+	auto result = AstNode::create(AST_FOR_EACH, pos, "", "");
+
     result->addChild(itemDeclaration);
     result->addChild(sequenceExpr);
     result->addChild(body);
@@ -309,7 +246,7 @@ Ref<AstNode> astCreateForEach (ScriptPosition pos,
 
 Ref<AstNode> astCreateReturn (ScriptPosition pos, Ref<AstNode> expr)
 {
-    auto result = refFromNew( new AstBranchNode(AST_RETURN, pos));
+	auto result = AstNode::create(AST_RETURN, pos, "", "");
     
     result->addChild(expr);
     return result;
@@ -326,9 +263,7 @@ Ref<AstNode> astCreateAssignment(LexToken opToken,
                                  Ref<AstNode> lexpr, 
                                  Ref<AstNode> rexpr)
 {
-    auto result = refFromNew( 
-		new AstOperator(AST_ASSIGNMENT, opToken.getPosition(), opToken.text())
-	);
+	auto result = AstNode::create(AST_ASSIGNMENT, opToken.getPosition(), "", opToken.text());
     
     result->addChild(lexpr);
     result->addChild(rexpr);
@@ -337,9 +272,7 @@ Ref<AstNode> astCreateAssignment(LexToken opToken,
 
 Ref<AstNode> astCreatePrefixOp(LexToken token, Ref<AstNode> rexpr)
 {
-    auto result = refFromNew( new AstOperator(AST_PREFIXOP, 
-                                              token.getPosition(),
-                                              token.text()));
+	auto result = AstNode::create(AST_PREFIXOP, token.getPosition(), "", token.text());
     
     result->addChild(rexpr);
     return result;
@@ -347,9 +280,7 @@ Ref<AstNode> astCreatePrefixOp(LexToken token, Ref<AstNode> rexpr)
 
 Ref<AstNode> astCreatePostfixOp(LexToken token, Ref<AstNode> lexpr)
 {
-    auto result = refFromNew( new AstOperator(AST_POSTFIXOP, 
-                                              token.getPosition(),
-                                              token.text()));
+	auto result = AstNode::create(AST_POSTFIXOP, token.getPosition(), "", token.text());
     
     result->addChild(lexpr);
     return result;
@@ -359,9 +290,7 @@ Ref<AstNode> astCreateBinaryOp(LexToken token,
                                  Ref<AstNode> lexpr, 
                                  Ref<AstNode> rexpr)
 {
-    auto result = refFromNew( new AstOperator(AST_BINARYOP, 
-                                              token.getPosition(),
-                                              token.text()));
+	auto result = AstNode::create(AST_BINARYOP, token.getPosition(), "", token.text());
     
     result->addChild(lexpr);
     result->addChild(rexpr);
@@ -370,7 +299,7 @@ Ref<AstNode> astCreateBinaryOp(LexToken token,
 
 Ref<AstNode> astCreateFnCall(ScriptPosition pos, Ref<AstNode> fnExpr, Ref<AstNode> params)
 {
-    auto result = refFromNew( new AstBranchNode(AST_FNCALL, pos));
+	auto result = AstNode::create(AST_FNCALL, pos);
     
 	result->addChild(fnExpr);
 	result->addChild(params);
@@ -384,15 +313,15 @@ Ref<AstNode> astCreateFnCall(ScriptPosition pos, Ref<AstNode> fnExpr, Ref<AstNod
  */
 Ref<AstNode> astCreateArray(ScriptPosition pos)
 {
-    return refFromNew( new AstBranchNode(AST_ARRAY, pos));
+	return AstNode::create(AST_ARRAY, pos);
 }
 
 Ref<AstNode> astCreateArrayAccess(ScriptPosition pos,
                                   Ref<AstNode> arrayExpr, 
                                   Ref<AstNode> indexExpr)
 {    
-    auto result = refFromNew( new AstBranchNode(AST_ARRAY_ACCESS, pos));
-    
+	auto result = AstNode::create(AST_ARRAY_ACCESS, pos);
+
     result->addChild(arrayExpr);
     result->addChild(indexExpr);
 
@@ -403,7 +332,7 @@ Ref<AstNode> astCreateMemberAccess(ScriptPosition pos,
                                   Ref<AstNode> objExpr, 
                                   Ref<AstNode> identifier)
 {    
-    auto result = refFromNew( new AstBranchNode(AST_MEMBER_ACCESS, pos));
+	auto result = AstNode::create(AST_MEMBER_ACCESS, pos);
     
     result->addChild(objExpr);
     result->addChild(identifier);
@@ -413,113 +342,44 @@ Ref<AstNode> astCreateMemberAccess(ScriptPosition pos,
 
 Ref<AstNode> astCreateActor(ScriptPosition pos, const std::string& name)
 {
-    return refFromNew(new AstNamedBranch(AST_ACTOR, pos, name));
+	return AstNode::create(AST_ACTOR, pos, name);
 }
 
 Ref<AstNode> astCreateInputMsg(ScriptPosition pos, const std::string& name)
 {
-    return refFromNew(new AstNamedBranch(AST_INPUT, pos, name));
+	return AstNode::create(AST_INPUT, pos, name);
 }
 
 Ref<AstNode> astCreateOutputMsg(ScriptPosition pos, const std::string& name)
 {
-    return refFromNew(new AstNamedBranch(AST_OUTPUT, pos, name));
+	return AstNode::create(AST_OUTPUT, pos, name);
 }
 
-//Ref<AstNode> astCreateConnect(ScriptPosition pos,
-//                                 Ref<AstNode> lexpr, 
-//                                 Ref<AstNode> rexpr)
-//{
-//    auto result = refFromNew (new AstOperator(AST_CONNECT, pos, LEX_CONNECT));
-//    
-//    result->addChild(lexpr);
-//    result->addChild(rexpr);
-//    return result;
-//}
-//
-//Ref<AstNode> astCreateSend(ScriptPosition pos,
-//                            Ref<AstNode> lexpr, 
-//                            Ref<AstNode> rexpr)
-//{
-//    auto result = refFromNew (new AstOperator(AST_BINARYOP, pos, LEX_SEND));
-//    
-//    result->addChild(lexpr);
-//    result->addChild(rexpr);
-//    return result;
-//}
-//
-//Ref<AstNode> astCreateExtends (ScriptPosition pos,
-//                                const std::string& parentName)
-//{
-//    return refFromNew (new AstNamedBranch(AST_EXTENDS, pos, parentName));
-//}
-//
-//Ref<AstNode> astCreateExport (ScriptPosition pos, Ref<AstNode> child)
-//{
-//    auto result = refFromNew(new AstBranchNode(AST_EXPORT, pos));
-//    
-//    result->addChild(child);
-//    return result;
-//}
-//
-//Ref<AstNode> astCreateImport (ScriptPosition pos, Ref<AstNode> param)
-//{
-//    auto result = refFromNew(new AstBranchNode(AST_IMPORT, pos));
-//    
-//    result->addChild(param);
-//    return result;
-//}
-//
-///**
-// * Gets the 'extends' node of a class node.
-// * @param node
-// * @return 
-// */
-//Ref<AstNode> astGetExtends(Ref<AstNode> node)
-//{
-//    ASSERT (node->getType() == AST_CLASS);
-//    if (!node->childExists(0))
-//        return Ref<AstNode>();
-//    
-//    auto child = node->children().front();
-//    if (child->getType() != AST_EXTENDS)
-//        return Ref<AstNode>();
-//    else
-//        return child;    
-//}
-//
 /**
  * Creates an 'AstLiteral' object from a source token.
  * @param token
  * @return 
  */
-Ref<AstLiteral> AstLiteral::create(LexToken token)
+Ref<AstNode> astCreateLiteral(LexToken token)
 {
-	Ref<AstLiteral> result;
-	auto			pos = token.getPosition();
-    
+	string	value;
+	auto	pos = token.getPosition();
+
+	if (token.type() == LEX_STR)
+		value = token.strValue();
+	else
+		value = token.text();
+
     switch (token.type())
     {
-    case LEX_STR:
-
-		result = refFromNew(new AstLiteral(pos, AST_STRING));
-		result->m_strValue = token.strValue();
-		return result;
-
-    case LEX_INT:        
-		result = refFromNew(new AstLiteral(pos, AST_INTEGER));
-		break;
-
-	case LEX_FLOAT:
-		result = refFromNew(new AstLiteral(pos, AST_FLOAT));
-		break;
+	case LEX_STR:	return AstNode::create(AST_STRING, pos, "", value);
+    case LEX_INT:	return AstNode::create(AST_INTEGER, pos, "", value);
+	case LEX_FLOAT:	return AstNode::create(AST_FLOAT, pos, "", value);
         
     default:
         assert(!"Invalid token for a literal");
+		return Ref<AstNode>();
     }
-    
-	result->m_strValue = token.text();
-	return result;
 }
 
 /// <summary>
@@ -528,173 +388,45 @@ Ref<AstLiteral> AstLiteral::create(LexToken token)
 /// <param name="pos"></param>
 /// <param name="value"></param>
 /// <returns></returns>
-Ref<AstLiteral> AstLiteral::createBool(ScriptPosition pos, bool value)
+Ref<AstNode> astCreateBool(ScriptPosition pos, bool value)
 {
-	auto result = refFromNew(new AstLiteral(pos, AST_BOOL));
-
-	result->m_strValue = value ? "1" : "0";
-	return result;
+	const char* strValue = value ? "1" : "0";
+	return AstNode::create ( AST_BOOL, pos, "", strValue);
 }
 
+/// <summary>
+/// Creates an AST node for a default (predefined) data type.
+/// </summary>
+/// <returns></returns>
+Ref<AstNode> astCreateDefaultType(Ref<DefaultType> type)
+{
+	auto node = AstNode::create(AST_DEFAULT_TYPE, ScriptPosition(), type->getName());
 
-///**
-// * Creates a literal from an integer
-// * @param pos
-// * @param value
-// * @return 
-// */
-//Ref<AstLiteral> AstLiteral::create(ScriptPosition pos, int value)
-//{
-//    return refFromNew(new AstLiteral(pos, jsInt(value)));
-//}
-//
-///**
-// * Creates a 'null' literal
-// * @param pos
-// * @return 
-// */
-//Ref<AstLiteral> AstLiteral::createNull(ScriptPosition pos)
-//{
-//    return refFromNew(new AstLiteral(pos, jsNull()));
-//}
-//
-///**
-// * Gets the 'extends' node of a class. The 'extends' node contains inheritance 
-// * information.
-// * @return The node or a NULL pointer if not present.
-// */
-//Ref<AstNamedBranch> AstClassNode::getExtendsNode()const
-//{
-//    if (this->childExists(0))
-//    {
-//        auto child = this->children().front();
-//        
-//        if (child->getType() == AST_EXTENDS)
-//            return child.staticCast<AstNamedBranch>();
-//    }
-//    
-//    return Ref<AstNamedBranch>();
-//}
-//
-///**
-// * Transforms an AST statement into a Javascript object. 
-// * This particular version creates an object containing all its children
-// * @return 
-// */
-//ASValue AstNode::toJS()const
-//{
-//    Ref<JSObject>   obj = JSObject::create();
-//    
-//    obj->writeField("a_type", jsString(astTypeToString(getType())), false);
-//
-//    const string name = getName();
-//    if (!name.empty())
-//        obj->writeField("b_name", jsString(name), false);
-//    
-//    const AstNodeList&  c = children();
-//    if (!c.empty())
-//        obj->writeField("z_children", toJSArray(c)->value(), false);
-//
-//    const auto value = getValue();
-//    if (!value.isNull())
-//        obj->writeField("v_value", value, false);
-//
-//    return obj->value();
-//}
-//
-//
-///**
-// * Function declaration to JSValue
-// * @return 
-// */
-//ASValue AstFunction::toJS()const
-//{
-//    Ref<JSObject>   obj = AstNode::toJS().staticCast<JSObject>();
-//    
-//    obj->writeField("c_parameters", JSArray::createStrArray(m_params)->value(), false);
-//    if (m_code.notNull())
-//        obj->writeField("d_code", m_code->toJS(), false);
-//    
-//    return obj->value();
-//}
-//
-///**
-// * Class node to javascript object
-// * @return 
-// */
-//ASValue AstClassNode::toJS()const
-//{
-//    Ref<JSObject>   obj = AstNamedBranch::toJS().staticCast<JSObject>();
-//    
-//    obj->writeField("c_parameters", JSArray::createStrArray(m_params)->value(), false);
-//    
-//    return obj->value();
-//}
-//
-///**
-// * Actor node to javascript object
-// * @return 
-// */
-//ASValue AstActor::toJS()const
-//{
-//    Ref<JSObject>   obj = AstNamedBranch::toJS().staticCast<JSObject>();
-//    
-//    obj->writeField("c_parameters", JSArray::createStrArray(m_params)->value(), false);
-//    
-//    return obj->value();
-//}
-//
-///**
-// * Operator to JSValue
-// * @return 
-// */
-//ASValue AstOperator::toJS()const
-//{
-//    Ref<JSObject>   obj = AstBranchNode::toJS().staticCast<JSObject>();
-//
-//    obj->writeField("d_operator", jsString(getTokenStr(code)), false);
-//    return obj->value();
-//}
-//
-///**
-// * Object literal to JSValue
-// * @return 
-// */
-//ASValue AstObject::toJS()const
-//{
-//    Ref<JSObject>   obj = JSObject::create();
-//    Ref<JSObject>   props = JSObject::create();
-//    
-//    obj->writeField("a_type", jsString(astTypeToString(getType())), false);
-//    obj->writeField("b_properties", props->value(), false);
-//    
-//    PropertyList::const_iterator it;
-//    for (it = m_properties.begin(); it != m_properties.end(); ++it)
-//        props->writeField(it->name, it->expr->toJS(), false);
-//    
-//    return obj->value();
-//}
-//
-///**
-// * Transforms a list of AstNodes into a Javascript Array.
-// * @param statements
-// * @return 
-// */
-//Ref<JSArray> toJSArray (const AstNodeList& statements)
-//{
-//    Ref<JSArray>    result = JSArray::create();
-//    
-//    for (size_t i = 0; i < statements.size(); ++i)
-//    {
-//        if (statements[i].notNull())
-//            result->push( statements[i]->toJS() );
-//        else
-//            result->push(jsNull());
-//    }
-//    
-//    return result;
-//}
-//
+	node->setDataType(type);
+	return node;
+}
+
+/// <summary>
+/// Creates an unnamed input AST node.
+/// </summary>
+/// <param name="pos"></param>
+/// <param name="outputPath"></param>
+/// <param name="params"></param>
+/// <param name="code"></param>
+/// <returns></returns>
+Ref<AstNode> astCreateUnnamedInput(ScriptPosition pos,
+	Ref<AstNode> outputPath,
+	Ref<AstNode> params,
+	Ref<AstNode> code)
+{
+	auto result = AstNode::create(AST_UNNAMED_INPUT, pos);
+
+	result->addChild(outputPath);
+	result->addChild(params);
+	result->addChild(code);
+
+	return result;
+}
 
 /// <summary>
 /// Gets the string representation of an AST type
@@ -819,37 +551,4 @@ AstNodeTypes astTypeFromString(const std::string& str)
 		string message = "Unknown AST type string: " + str;
 		throw exception(message.c_str());
 	}
-}
-
-/// <summary>
-/// Creates an AST node for a default (predefined) data type.
-/// </summary>
-/// <returns></returns>
-Ref<AstNode> astCreateDefaultType(Ref<DefaultType> type)
-{
-	auto node = refFromNew(new AstNamedBranch(AST_DEFAULT_TYPE, ScriptPosition(), type->getName()));
-	node->setDataType(type);
-	return node;
-}
-
-/// <summary>
-/// Creates an unnamed input AST node.
-/// </summary>
-/// <param name="pos"></param>
-/// <param name="outputPath"></param>
-/// <param name="params"></param>
-/// <param name="code"></param>
-/// <returns></returns>
-Ref<AstNode> astCreateUnnamedInput(ScriptPosition pos,
-	Ref<AstNode> outputPath,
-	Ref<AstNode> params,
-	Ref<AstNode> code)
-{
-	auto result = refFromNew(new AstBranchNode(AST_UNNAMED_INPUT, pos));
-
-	result->addChild(outputPath);
-	result->addChild(params);
-	result->addChild(code);
-
-	return result;
 }
