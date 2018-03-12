@@ -18,5 +18,6 @@
     <ClCompile Include="dataTypes_tests.cpp" />
     <ClCompile Include="codeGeneratorState_tests.cpp" />
     <ClCompile Include="builder_tests.cpp" />
+    <ClCompile Include="ast_tests.cpp" />
   </ItemGroup>
 </Project>

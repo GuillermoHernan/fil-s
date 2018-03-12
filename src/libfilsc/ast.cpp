@@ -484,10 +484,8 @@ std::string astTypeToString(AstNodeTypes type)
     
 	if (it != types.end())
 		return it->second;
-	else if (type > AST_TYPES_COUNT)
-		return "BAD_AST_TYPE";
 	else
-		return "AST type number: " + to_string(type);
+		return "BAD_AST_TYPE";
 }
 
 /// <summary>
