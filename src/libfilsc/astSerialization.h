@@ -11,14 +11,6 @@ std::ostream& operator << (std::ostream& output, Ref<AstNode> node);
 
 Ref<AstNode>	parseAST(const char* text);
 
-struct ParseTypeResult
-{
-	std::string		id;
-	Ref<BaseType>	type;
-	LexToken		nextToken;
-};
-ParseTypeResult	parseType(LexToken tok);
-
 namespace json11
 {
 	class Json;
