@@ -33,14 +33,14 @@ private:
 
 	json11::Json	serializeTypes();
 	json11::Json	serializeNode(const AstNode* root);
-	json11::Json	serializeType(const BaseType* type);
+	json11::Json	serializeType(BaseType* type);
 
 private:
-	int generateIds(const BaseType* type, int nextId);
+	int generateIds(BaseType* type, int nextId);
 
 private:
 	std::ostream&	m_output;
 
-	std::map <const BaseType*, int>	m_typeIds;
-	std::map <const AstNode*, int>	m_nodeIds;
+	std::map <BaseType*, int>	m_typeIds;
+	std::map <AstNode*, int>	m_nodeIds;
 };

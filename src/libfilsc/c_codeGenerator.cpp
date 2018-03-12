@@ -45,6 +45,13 @@ string generateCode(Ref<AstNode> node, std::function<bool(Ref<AstNode>)> entryPo
 		state.setCname(*it, (*it)->getName());
 
 	writeProlog(state.output());
+	
+	//Generate types.
+	auto types = astGatherTypes(node);
+	for (auto& type : types)
+		dataTypeCodegen(ref(type), state);
+
+	//Generate code for AST, starting at the root node.
 	codegen(node, state, VoidVariable());
 
 	return output.str();
@@ -128,6 +135,30 @@ void codegen(Ref<AstNode> node, CodeGeneratorState& state, const IVariableInfo& 
 }
 
 /// <summary>
+/// Generates code for a data type.
+/// </summary>
+/// <param name="type"></param>
+/// <param name="state"></param>
+void dataTypeCodegen(Ref<BaseType> type, CodeGeneratorState& state)
+{
+	switch (type->type())
+	{
+	case DT_TUPLE:
+		tupleDefCodegen(type, state);
+		break;
+
+	case DT_ACTOR:
+		generateActorStruct(type, state);
+		break;
+
+	default:
+		//The default behaviour is to not generate nothing.
+		break;
+	}
+}
+
+
+/// <summary>
 /// Code generation function for nodes which do not require code generation
 /// </summary>
 void voidCodegen(Ref<AstNode> node, CodeGeneratorState& state, const IVariableInfo& resultDest)
@@ -169,19 +200,20 @@ void functionCodegen(Ref<AstNode> node, CodeGeneratorState& state, const IVariab
 	auto fnCode = node->child(2);
 	auto returnType = node->getDataType().staticCast<FunctionType>()->getReturnType();
 
-	if (params->childCount() > 0)
-	{
-		state.output() << "//Parameters for '" << node->getName() << "' function\n";
-		codegen(params, state, VoidVariable());
-	}
+	//TODO: this is already done in struct creation pass. Delete when the change is consolidated.
+	//if (params->childCount() > 0)
+	//{
+	//	state.output() << "//Parameters for '" << node->getName() << "' function\n";
+	//	codegen(params, state, VoidVariable());
+	//}
 
-	if (returnType->type() == DT_TUPLE)
-	{
-		state.output() << "//Return value for '" << node->getName() << "' function\n";
+	//if (returnType->type() == DT_TUPLE)
+	//{
+	//	state.output() << "//Return value for '" << node->getName() << "' function\n";
 
-		//TODO: This may not work for inferred return types.
-		codegen(retTuple, state, VoidVariable());
-	}
+	//	//TODO: This may not work for inferred return types.
+	//	codegen(retTuple, state, VoidVariable());
+	//}
 
 	state.output() << "//Code for '" << node->getName() << "' function\n";
 	state.output() << genFunctionHeader(node, state);
@@ -660,7 +692,7 @@ void postfixOpCodegen(Ref<AstNode> node, CodeGeneratorState& state, const IVaria
 /// </summary>
 void actorCodegen(Ref<AstNode> node, CodeGeneratorState& state, const IVariableInfo& resultDest)
 {
-	generateActorStruct(node, state);
+	//generateActorStruct(node, state);
 	generateActorInputs(node, state);
 	generateActorConstructor(node, state);
 }
@@ -680,26 +712,31 @@ void outputMessageCodegen(Ref<AstNode> node, CodeGeneratorState& state, const IV
 /// <summary>
 /// Generates the data structure which contains the actor data.
 /// </summary>
-/// <param name=""></param>
-/// <param name=""></param>
-void generateActorStruct(Ref<AstNode> node, CodeGeneratorState& state)
+void generateActorStruct(Ref<BaseType> type, CodeGeneratorState& state)
 {
-	string name = state.cname(node);
+	string name = state.cname(type);
 
 	state.output() << "typedef struct " << "{\n";
 
-	nodeListCodegen(node->child(0), state, VoidVariable());
+	auto params = type->getParameters();
 
-	const size_t count = node->childCount();
-	size_t i;
-
-	for (i = 1; i < count; ++i)
+	if (params->memberCount() > 0)
 	{
-		auto child = node->child(i);
-		auto type = child->getType();
+		string paramsTypeName = state.cname(params.staticCast<BaseType>());
+		state.output() << paramsTypeName << " params;\n";
+	}
 
-		if (type != AST_INPUT && type != AST_UNNAMED_INPUT)
-			codegen(child, state, VoidVariable());
+	auto actorType = type.staticCast<ActorType>();
+	for (int i = 0; i < actorType->memberCount(); ++i)
+	{
+		auto child = actorType->getMemberType(i);
+		if (child->type() != DT_INPUT)
+		{
+			string childName = state.tupleMemberCName(actorType, i);
+			string childTypeName = state.cname(child);
+			
+			state.output() << childTypeName << " "<< childName << ";\n";
+		}
 	}
 
 	state.output() << "}" << name << ";\n\n";

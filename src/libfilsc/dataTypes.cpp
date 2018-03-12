@@ -125,12 +125,12 @@ Ref<BaseType> BaseType::getReturnType()const
 /// <param name="recursive">Set to true to recursively scan for the comprehensive list 
 /// of dependencies. If false, just gets the direct dependencies</param>
 /// <returns></returns>
-std::vector<const BaseType*> BaseType::getDependencies(bool recursive)const
+std::vector<BaseType*> BaseType::getDependencies(bool recursive)
 {
-	set<const BaseType*>	deps;
+	set<BaseType*>	deps;
 	getDependencies(deps, recursive, false);
 
-	return vector<const BaseType*>(deps.begin(), deps.end());
+	return vector<BaseType*>(deps.begin(), deps.end());
 }
 
 /// <summary>
@@ -140,9 +140,12 @@ std::vector<const BaseType*> BaseType::getDependencies(bool recursive)const
 /// <param name="recursive">Set to true to recursively scan for the comprehensive list 
 /// of dependencies. If false, just gets the direct dependencies</param>
 /// <param name="addSelf">Set to 'true' to add this type to the list.</param>
-void BaseType::getDependencies(std::set<const BaseType*>& typeSet, bool recursive, bool addSelf)const
+void BaseType::getDependencies(std::set<BaseType*>& typeSet, bool recursive, bool addSelf)
 {
-	if (typeSet.count(this) > 0)
+	//'Void' type shall not be included in the dependency list.
+	if (type() == DT_VOID)
+		return;
+	else if (typeSet.count(this) > 0)
 		return;
 	else if (addSelf)
 	{
@@ -288,16 +291,16 @@ void TupleType::walkMembers(std::function<void(BaseType*, const std::string&)> n
 }
 
 /// <summary>
-/// Gets the depdendences of the tuple.
+/// Gets the dependencies of the tuple.
 /// </summary>
 /// <param name="typeSet"></param>
 /// <param name="recursive"></param>
 /// <param name="addSelf"></param>
 void TupleType::getDependencies(
-	std::set<const BaseType*>& typeSet,
+	std::set<BaseType*>& typeSet,
 	bool recursive,
 	bool addSelf
-)const
+)
 {
 	BaseType::getDependencies(typeSet, recursive, addSelf);
 

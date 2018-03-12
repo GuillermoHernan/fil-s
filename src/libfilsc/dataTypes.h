@@ -63,8 +63,8 @@ public:
 	virtual Ref<TupleType> getParameters()const;
 	virtual Ref<BaseType> getReturnType()const;
 
-	std::vector<const BaseType*> getDependencies(bool recursive)const;
-	virtual void getDependencies(std::set<const BaseType*>& typeSet, bool recursive, bool addSelf)const;
+	std::vector<BaseType*> getDependencies(bool recursive);
+	virtual void getDependencies(std::set<BaseType*>& typeSet, bool recursive, bool addSelf);
 
 protected:
 	BaseType(const std::string & name) : m_name(name) {}
@@ -120,10 +120,10 @@ public:
 	void				walkMembers(std::function<void(BaseType*, const std::string&)> nodeFn)const;
 
 	virtual void	getDependencies(
-		std::set<const BaseType*>& typeSet, 
+		std::set<BaseType*>& typeSet, 
 		bool recursive, 
 		bool addSelf
-	)const override;
+	)override;
 
 	void			addMember(Ref<BaseType> type, const std::string& name);
 

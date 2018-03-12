@@ -6,6 +6,7 @@
 #include "ast.h"
 #include "SymbolScope.h"
 #include "dataTypes.h"
+#include "dependencySolver.h"
 
 using namespace std;
 
@@ -427,6 +428,36 @@ Ref<AstNode> astCreateUnnamedInput(ScriptPosition pos,
 
 	return result;
 }
+
+static void astGatherTypes(Ref<AstNode> root, set<BaseType*>& types)
+{
+	root->getDataType()->getDependencies(types, true, true);
+	for (auto child : root->children())
+	{
+		if (child.notNull())
+			astGatherTypes(child, types);
+	}
+}
+
+/// <summary>
+/// Gathers all types referenced from an AST tree.
+/// Returns them in dependency order.
+/// </summary>
+/// <param name="root"></param>
+/// <returns></returns>
+std::vector<BaseType*> astGatherTypes(Ref<AstNode> root)
+{
+	set<BaseType*>	types;
+
+	astGatherTypes(root, types);
+
+	vector<BaseType*> typesV(types.begin(), types.end());
+
+	return dependencySort<BaseType*>(typesV, [](BaseType* type) {
+		return type->getDependencies(false);
+	});
+}
+
 
 /// <summary>
 /// Gets the string representation of an AST type

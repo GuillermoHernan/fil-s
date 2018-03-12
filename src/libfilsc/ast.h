@@ -145,13 +145,9 @@ Ref<AstNode> astCreateUnnamedInput(ScriptPosition pos,
 	Ref<AstNode> params,
 	Ref<AstNode> code);
 
-
+std::vector<BaseType*> astGatherTypes(Ref<AstNode> root);
 
 class AstSerializeContext;
-
-/**
- * Base class for AST nodes
- */
 
 /// <summary>
 /// Abstract syntax tree node class. 

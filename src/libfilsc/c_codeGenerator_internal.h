@@ -15,6 +15,8 @@ typedef void(*NodeCodegenFN)(Ref<AstNode> node, CodeGeneratorState& state, const
 void writeProlog(std::ostream& output);
 void codegen(Ref<AstNode> node, CodeGeneratorState& state, const IVariableInfo& resultDest);
 
+void dataTypeCodegen(Ref<BaseType> type, CodeGeneratorState& state);
+
 void voidCodegen(Ref<AstNode> node, CodeGeneratorState& state, const IVariableInfo& resultDest);
 void invalidNodeCodegen(Ref<AstNode> node, CodeGeneratorState& state, const IVariableInfo& resultDest);
 void nodeListCodegen (Ref<AstNode> node, CodeGeneratorState& state, const IVariableInfo& resultDest);
@@ -39,7 +41,7 @@ void postfixOpCodegen (Ref<AstNode> node, CodeGeneratorState& state, const IVari
 
 void actorCodegen(Ref<AstNode> node, CodeGeneratorState& state, const IVariableInfo& resultDest);
 void outputMessageCodegen(Ref<AstNode> node, CodeGeneratorState& state, const IVariableInfo& resultDest);
-void generateActorStruct(Ref<AstNode> node, CodeGeneratorState& state);
+void generateActorStruct(Ref<BaseType> type, CodeGeneratorState& state);
 void generateActorConstructor(Ref<AstNode> node, CodeGeneratorState& state);
 void generateActorInputs(Ref<AstNode> node, CodeGeneratorState& state);
 void generateActorInput(Ref<AstNode> actor, Ref<AstNode> input, CodeGeneratorState& state);

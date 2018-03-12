@@ -73,7 +73,7 @@ int AstSerializeContext::generateIds(AstNode* root, int nextId)
 /// <param name="type"></param>
 /// <param name="nextId"></param>
 /// <returns></returns>
-int AstSerializeContext::generateIds(const BaseType* type, int nextId)
+int AstSerializeContext::generateIds(BaseType* type, int nextId)
 {
 	if (m_typeIds.count(type) > 0)
 		return nextId;
@@ -96,7 +96,7 @@ int AstSerializeContext::generateIds(const BaseType* type, int nextId)
 std::string AstSerializeContext::datatypeRef(const BaseType* type)
 {
 	int value = 0;
-	auto it = m_typeIds.find(type);
+	auto it = m_typeIds.find(const_cast<BaseType*>(type));
 
 	if (it == m_typeIds.end())
 		return "";
@@ -114,13 +114,13 @@ std::string AstSerializeContext::datatypeRef(const BaseType* type)
 /// AST nodes and data types.</remarks>
 Json AstSerializeContext::serializeTypes()
 {
-	Json::object				result;
-	vector <const BaseType*>	types;
+	Json::object		result;
+	vector <BaseType*>	types;
 
 	for (auto& dtEntry : m_typeIds)
 		types.push_back(dtEntry.first);
 
-	types = dependencySort<const BaseType*>(types, [](auto type){
+	types = dependencySort<BaseType*>(types, [](auto type){
 		return type->getDependencies(false);
 	});
 
@@ -165,7 +165,7 @@ Json AstSerializeContext::serializeNode(const AstNode* node)
 /// </summary>
 /// <param name="type"></param>
 /// <returns></returns>
-Json AstSerializeContext::serializeType(const BaseType* type)
+Json AstSerializeContext::serializeType(BaseType* type)
 {
 	Json::object		result;
 
