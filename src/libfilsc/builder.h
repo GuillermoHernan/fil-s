@@ -4,18 +4,8 @@
 
 #pragma once
 #include <string>
+#include "operationResult.h"
 
-class BuildResult;
+typedef OperationResult<bool> BuildResult;
 
-BuildResult buildModule(const std::string& modulePath);
-
-/// <summary>
-/// Result from a build module operation
-/// </summary>
-class BuildResult
-{
-public:
-	static BuildResult error(const char* format, ...);
-
-	bool ok()const;
-};
+BuildResult buildModule(const std::string& modulePath, const std::string& builderPath);

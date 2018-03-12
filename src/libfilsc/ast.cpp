@@ -64,9 +64,96 @@ void AstNode::setDataType(Ref<BaseType> dataType)
 //  Constructor functions.
 //
 ////////////////////////////////
+
+/// <summary>
+/// Generic AST node constructor.
+/// </summary>
+/// <param name="pos"></param>
+/// <param name="type"></param>
+/// <param name="name"></param>
+/// <param name="value"></param>
+/// <param name="flags"></param>
+/// <returns></returns>
+Ref<AstNode> astGenericCreate(
+	ScriptPosition pos,
+	AstNodeTypes type,
+	const std::string& name,
+	const std::string& value,
+	int flags
+)
+{
+	AstNode*	node = nullptr;
+
+	switch (type)
+	{
+	case AST_MODULE:
+	case AST_SCRIPT:
+	case AST_BLOCK:
+	case AST_TUPLE:
+	case AST_TUPLE_ADAPTER:
+	case AST_IF:
+	case AST_FOR:
+	case AST_FOR_EACH:
+	case AST_RETURN:
+	case AST_FNCALL:
+	case AST_MEMBER_ACCESS:
+	case AST_ACTOR:
+	case AST_UNNAMED_INPUT:
+	case AST_IMPORT:
+		node = new AstBranchNode(type, pos);
+		break;
+
+	case AST_TYPEDEF:
+	case AST_LIST:
+	case AST_DECLARATION:
+	case AST_TUPLE_DEF:
+	case AST_FUNCTION:
+	case AST_DEFAULT_TYPE:
+	case AST_INPUT:
+	case AST_OUTPUT:
+		node = new AstNamedBranch(type, pos, name);
+		break;
+
+	case AST_ASSIGNMENT:
+	case AST_BINARYOP:
+	case AST_PREFIXOP:
+	case AST_POSTFIXOP:
+		node = new AstOperator(type, pos, value);
+		break;
+
+	case AST_INTEGER:
+	case AST_FLOAT:
+	case AST_STRING:
+	case AST_BOOL:
+		node = new AstLiteral(pos, type, value);
+		break;
+
+	case AST_IDENTIFIER:
+	case AST_MEMBER_NAME:
+	case AST_TYPE_NAME:
+		node = new AstIdentifier(pos, name);
+		node->changeType(type);
+		break;
+
+	case AST_ARRAY:
+	case AST_ARRAY_ACCESS:
+	default:
+		assert(!"Invalid type value!");
+	}
+
+	node->addFlags(flags);
+	return refFromNew(node);
+}
+
+
+Ref<AstNode> astCreateModule()
+{
+	return refFromNew(new AstBranchNode(AST_MODULE, ScriptPosition()));
+}
+
 Ref<AstNode> astCreateScript(ScriptPosition pos)
 {
-    return refFromNew( new AstBranchNode(AST_SCRIPT, pos));    
+	return refFromNew(new AstBranchNode(AST_SCRIPT, pos));
 }
 
 /// <summary>
@@ -621,6 +708,7 @@ std::string astTypeToString(AstNodeTypes type)
     
     if (types.empty())
     {
+		types[AST_MODULE] = "AST_MODULE";
 		types[AST_SCRIPT] = "AST_SCRIPT";
 		types[AST_TYPEDEF] = "AST_TYPEDEF";
 		types[AST_LIST] = "AST_LIST";
@@ -654,6 +742,7 @@ std::string astTypeToString(AstNodeTypes type)
 		types[AST_INPUT] = "AST_INPUT";
 		types[AST_OUTPUT] = "AST_OUTPUT";
 		types[AST_UNNAMED_INPUT] = "AST_UNNAMED_INPUT";
+		types[AST_IMPORT] = "AST_IMPORT";
 		//types[AST_TYPES_COUNT] = "AST_TYPES_COUNT";
 
 		assert(types.size() == AST_TYPES_COUNT);
@@ -667,6 +756,69 @@ std::string astTypeToString(AstNodeTypes type)
 		return "BAD_AST_TYPE";
 	else
 		return "AST type number: " + to_string(type);
+}
+
+/// <summary>
+/// Gets an AST node type from its string representation
+/// </summary>
+/// <param name="str"></param>
+/// <returns></returns>
+AstNodeTypes astTypeFromString(const std::string& str)
+{
+	typedef map<string, AstNodeTypes>   TypesMap;
+	static TypesMap types;
+
+	if (types.empty())
+	{
+		types["AST_MODULE"] = AST_MODULE;
+		types["AST_SCRIPT"] = AST_SCRIPT;
+		types["AST_TYPEDEF"] = AST_TYPEDEF;
+		types["AST_LIST"] = AST_LIST;
+		types["AST_BLOCK"] = AST_BLOCK;
+		types["AST_TUPLE"] = AST_TUPLE;
+		types["AST_DECLARATION"] = AST_DECLARATION;
+		types["AST_TUPLE_DEF"] = AST_TUPLE_DEF;
+		types["AST_TUPLE_ADAPTER"] = AST_TUPLE_ADAPTER;
+		types["AST_IF"] = AST_IF;
+		types["AST_FOR"] = AST_FOR;
+		types["AST_FOR_EACH"] = AST_FOR_EACH;
+		types["AST_RETURN"] = AST_RETURN;
+		types["AST_FUNCTION"] = AST_FUNCTION;
+		types["AST_ASSIGNMENT"] = AST_ASSIGNMENT;
+		types["AST_FNCALL"] = AST_FNCALL;
+		types["AST_INTEGER"] = AST_INTEGER;
+		types["AST_FLOAT"] = AST_FLOAT;
+		types["AST_STRING"] = AST_STRING;
+		types["AST_BOOL"] = AST_BOOL;
+		types["AST_IDENTIFIER"] = AST_IDENTIFIER;
+		types["AST_ARRAY"] = AST_ARRAY;
+		types["AST_ARRAY_ACCESS"] = AST_ARRAY_ACCESS;
+		types["AST_MEMBER_ACCESS"] = AST_MEMBER_ACCESS;
+		types["AST_MEMBER_NAME"] = AST_MEMBER_NAME;
+		types["AST_BINARYOP"] = AST_BINARYOP;
+		types["AST_PREFIXOP"] = AST_PREFIXOP;
+		types["AST_POSTFIXOP"] = AST_POSTFIXOP;
+		types["AST_ACTOR"] = AST_ACTOR;
+		types["AST_DEFAULT_TYPE"] = AST_DEFAULT_TYPE;
+		types["AST_TYPE_NAME"] = AST_TYPE_NAME;
+		types["AST_INPUT"] = AST_INPUT;
+		types["AST_OUTPUT"] = AST_OUTPUT;
+		types["AST_UNNAMED_INPUT"] = AST_UNNAMED_INPUT;
+		types["AST_IMPORT"] = AST_IMPORT;
+		//types[AST_TYPES_COUNT"] = AST_TYPES_COUNT";
+
+		assert(types.size() == AST_TYPES_COUNT);
+	}
+
+	auto it = types.find(str);
+
+	if (it != types.end())
+		return it->second;
+	else
+	{
+		string message = "Unknown AST type string: " + str;
+		throw exception(message.c_str());
+	}
 }
 
 /// <summary>

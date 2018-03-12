@@ -19,7 +19,7 @@ public:
 
 	/// <summary>Successful result constructor</summary>
 	/// <param name="r">Result item, which will copied into 'result' field.</param>
-	OperationResult(ResultType r) : result(r)
+	OperationResult(ResultType r) : result(std::move(r))
 	{}
 
 	/// <summary>Single error constructor.</summary>
@@ -61,6 +61,23 @@ public:
 			return r2;
 	}
 
+	/// <summary>Adds the errors to an external error list.</summary>
+	/// <param name="errList"></param>
+	void appendErrorsTo(ErrorList& errList)const
+	{
+		errList.insert(errList.end(), errors.begin(), errors.end());
+	}
+
 	ResultType	result;
 	ErrorList	errors;
 };
+
+/// <summary>
+/// Function that yield a sucessful result of the given type. 
+/// </summary>
+/// <remarks>Needed because the compiler cannot infer template type in constructors.</remarks>
+template <class ResultType>
+OperationResult<ResultType> SuccessfulResult(ResultType r)
+{
+	return OperationResult<ResultType>(std::move(r));
+}

@@ -34,7 +34,7 @@ TEST(TupleType, creation)
 	EXPECT_EQ(DT_VOID, tuple->type());
 	EXPECT_TRUE(tuple->getName().empty());
 
-	tuple->addMember(astCreateDeclaration(ScriptPosition(), "m1", Ref<AstNode>(), Ref<AstNode>()));
+	tuple->addMember(DefaultType::createInt(), "m1");
 	EXPECT_EQ(DT_TUPLE, tuple->type());
 	EXPECT_EQ(1, tuple->memberCount());
 

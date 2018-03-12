@@ -30,7 +30,7 @@ void replace(std::string &str, char textFrom, const char *textTo);
 
 bool startsWith (const std::string& str, const std::string& prefix);
 StringVector split (const std::string& str, const std::string& separator);
-std::string join(const StringVector& strings, const std::string& separator);
+std::string join(const StringVector& strings, const std::string& separator, size_t firstLine = 0);
 std::string trim(const std::string& inputStr, const std::string& trimChars = " \t\n\r");
 
 int copyWhile(char* dest, const char* src, bool (*conditionFN)(char), int maxLen);
@@ -61,4 +61,14 @@ std::string joinPaths (const std::string& base, const std::string& relative);
 bool isPathRelative (const std::string& path);
 
 std::string getCurrentDirectory();
+
+/// <summary>
+/// Gets compile-time size of a static array.
+/// </summary>
+template<class T, size_t N>
+constexpr size_t arrCount(T(&arr)[N])
+{
+	return N;
+}
+
 

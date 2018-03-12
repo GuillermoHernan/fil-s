@@ -159,6 +159,18 @@ ExprResult parseList(LexToken token, ExprResult::ParseFunction itemParseFn,
 	return r;
 }
 
+/// <summary>
+/// Parses a script, reading it from a file.
+/// </summary>
+/// <param name="path"></param>
+/// <returns></returns>
+ExprResult parseFile(const std::string& path)
+{
+	std::string content = readTextFile(path);
+
+	return parseScript(content.c_str());
+}
+
 
 /// <summary>
 /// Parses a script.

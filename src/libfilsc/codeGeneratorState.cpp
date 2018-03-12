@@ -66,6 +66,28 @@ std::string CodeGeneratorState::cname(Ref<BaseType> type)
 }
 
 /// <summary>
+/// Gets the name in 'C' source for the given member of a tuple type.
+/// </summary>
+/// <param name="tuple">Tuple type</param>
+/// <param name="index">Member index in the tuple</param>
+/// <returns></returns>
+std::string CodeGeneratorState::tupleMemberCName(Ref<TupleType> tuple, int index)
+{
+	auto key = make_tuple(tuple, index);
+	auto it = m_tupleMemberNames.find(key);
+
+	if (it != m_tupleMemberNames.end())
+		return it->second;
+	else
+	{
+		string name = allocCName(tuple->getMemberName(index));
+
+		m_tupleMemberNames[key] = name;
+		return name;
+	}
+}
+
+/// <summary>
 /// Checks if the type already has an assigned 'C' name. 
 /// It does not try to create a name if it does not exist.
 /// </summary>
@@ -342,7 +364,7 @@ TupleField::TupleField(const IVariableInfo& tuple, int fieldIndex, CodeGenerator
 	assert(fieldIndex < tupleType->memberCount());
 
 	m_type = tupleType->getMemberType(fieldIndex);
-	m_cName = tuple.cname() + "." + state.cname(tupleType->getMemberNode(fieldIndex));
+	m_cName = tuple.cname() + "." + state.tupleMemberCName(tupleType, fieldIndex);
 }
 
 const std::string& TupleField::cname()const

@@ -12,7 +12,9 @@
 class SemAnalysisState
 {
 public:
-	const Ref<SymbolScope>	rootScope;
+	const Ref<SymbolScope>					rootScope;
+	std::map < std::string, Ref<AstNode>>	modules;
+	std::string								currentFile;
 
 	SemAnalysisState();
 

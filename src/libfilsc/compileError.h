@@ -22,6 +22,7 @@ public:
 	}
 
 	static CompileError create(const ScriptPosition& pos, ErrorTypes type, va_list args);
+	static CompileError create(const ScriptPosition& pos, ErrorTypes type, ...);
 	static CompileError ok();
 
 	const ScriptPosition& position()const

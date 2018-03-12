@@ -19,10 +19,16 @@ enum EDataType
 	DT_FUNCTION,
 	DT_ACTOR,
 	DT_INPUT,
-	DT_OUTPUT
+	DT_OUTPUT,
+
+	DT_COUNT		//Should be allways the last entry.
 };
 
+std::string toString(EDataType type);
+EDataType	eDataTypeFromString(const std::string& str);
+
 class TupleType;
+class AstSerializeContext;
 
 /// <summary>
 /// Base class for types.
@@ -30,6 +36,13 @@ class TupleType;
 class BaseType : public RefCountObj
 {
 public:
+	static Ref<BaseType> create (
+		EDataType type, 
+		const std::string& name,
+		Ref<TupleType> params,
+		Ref<BaseType> retType
+	);
+
 	virtual ~BaseType() {}
 
 	virtual EDataType	type()const=0;
@@ -49,6 +62,9 @@ public:
 	}
 	virtual Ref<TupleType> getParameters()const;
 	virtual Ref<BaseType> getReturnType()const;
+
+	std::vector<const BaseType*> getDependencies(bool recursive)const;
+	virtual void getDependencies(std::set<const BaseType*>& typeSet, bool recursive, bool addSelf)const;
 
 protected:
 	BaseType(const std::string & name) : m_name(name) {}
@@ -98,20 +114,29 @@ public:
 		return (int)m_members.size();
 	}
 
-	int				findMemberByName(const std::string& name)const;
+	int					findMemberByName(const std::string& name)const;
+	Ref<BaseType>		getMemberType(int index)const;
+	const std::string&	getMemberName(int index)const;
+	void				walkMembers(std::function<void(BaseType*, const std::string&)> nodeFn)const;
 
-	Ref<AstNode>	getMemberNode(int index)const;
-	Ref<BaseType>	getMemberType(int index)const;
+	virtual void	getDependencies(
+		std::set<const BaseType*>& typeSet, 
+		bool recursive, 
+		bool addSelf
+	)const override;
 
-	void			addMember(Ref<AstNode> node);
-
-	void			walkMembers(std::function<void(Ref<AstNode>)> nodeFn);
+	void			addMember(Ref<BaseType> type, const std::string& name);
 
 protected:
 	TupleType(const std::string& name):BaseType(name) {}
 
 private:
-	std::vector<Ref<AstNode>>	m_members;
+	struct MemberInfo
+	{
+		Ref<BaseType>	type;
+		std::string		name;
+	};
+	std::vector<MemberInfo>		m_members;
 	std::map<std::string, int>	m_names;
 };
 
@@ -122,6 +147,11 @@ class FunctionType : public BaseType
 {
 public:
 	static Ref<FunctionType> create(Ref<AstNode> node);
+	static Ref<FunctionType> create(
+		const std::string& name, 
+		Ref<TupleType> params, 
+		Ref<BaseType> retType
+	);
 
 	virtual EDataType type()const override
 	{
@@ -165,6 +195,7 @@ class ActorType : public TupleType
 {
 public:
 	static Ref<ActorType> create(Ref<AstNode> node);
+	static Ref<ActorType> create(const std::string& name, Ref<TupleType> params);
 
 	virtual EDataType type()const override
 	{
@@ -193,6 +224,7 @@ class MessageType : public BaseType
 {
 public:
 	static Ref<MessageType> create(Ref<AstNode> node);
+	static Ref<MessageType> create(EDataType type, const std::string& name, Ref<TupleType> params);
 
 	virtual EDataType type()const override
 	{

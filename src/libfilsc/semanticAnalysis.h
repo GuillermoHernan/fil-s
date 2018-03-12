@@ -11,3 +11,5 @@
 typedef OperationResult<Ref<AstNode>> SemanticResult;
 
 SemanticResult semanticAnalysis(Ref<AstNode> node);
+
+SemanticResult semanticAnalysis(const AstStr2NodesMap& sources, const AstStr2NodesMap& modules);

@@ -141,7 +141,7 @@ CompileError tupleDefTypeCheck(Ref<AstNode> node, SemAnalysisState& state)
 	auto	tupleType = TupleType::create(node->getName());
 
 	for (auto child : node->children())
-		tupleType->addMember(child);
+		tupleType->addMember(child->getDataType(), child->getName());
 
 	node->setDataType(tupleType);
 
@@ -180,11 +180,7 @@ CompileError tupleTypeCheck(Ref<AstNode> node, SemAnalysisState& state)
 	auto	tupleDataType = TupleType::create();
 
 	for (auto child : node->children())
-	{
-		auto newDeclNode = astCreateDeclaration(child->position(), "", Ref<AstNode>(), Ref<AstNode>());
-		newDeclNode->setDataType(child->getDataType());
-		tupleDataType->addMember(newDeclNode);
-	}
+		tupleDataType->addMember(child->getDataType(), "");
 
 	node->setDataType(tupleDataType);
 
@@ -895,7 +891,11 @@ Ref<AstNode> buildTupleDefFromTupleType(Ref<TupleType> tuple, const ScriptPositi
 
 	int count = tuple->memberCount();
 	for (int i = 0; i < count; ++i)
-		result->addChild(tuple->getMemberNode(i));
+	{
+		auto declNode = astCreateDeclaration(pos, "", Ref<AstNode>(), Ref<AstNode>());
+		declNode->addFlag(ASTF_CONST);
+		result->addChild(declNode);
+	}
 
 	result->setDataType(tuple);
 

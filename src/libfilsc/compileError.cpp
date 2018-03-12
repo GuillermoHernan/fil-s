@@ -49,6 +49,25 @@ CompileError CompileError::create(const ScriptPosition& pos, ErrorTypes type, va
 }
 
 /// <summary>
+/// Creates an error message object located at the given position. 
+/// </summary>
+/// <param name="pos"></param>
+/// <param name="type"></param>
+/// <param name=""></param>
+/// <returns></returns>
+CompileError CompileError::create(const ScriptPosition& pos, ErrorTypes type, ...)
+{
+	va_list aptr;
+
+	va_start(aptr, type);
+	auto result = create(pos, type, aptr);
+	va_end(aptr);
+
+	return result;
+}
+
+
+/// <summary>
 /// Creates a non-error compile error.
 /// </summary>
 /// <returns></returns>
@@ -56,8 +75,6 @@ CompileError CompileError::ok()
 {
 	return CompileError("", ScriptPosition(), ETYPE_OK);
 }
-
-
 
 /// <summary>
 /// Generates an error message located at the given position
@@ -119,9 +136,13 @@ const char * errorTypeTemplate(ErrorTypes type)
 		/*ETYPE_NON_CONST_ACTOR_INSTANCE*/"Actor instances must be contant ('const')",
 		/*ETYPE_UNSPECIFIED_CONNECT_OUTPUT*/"No output specified in connect expression",
 		/*ETYPE_INVALID_CONNECT_OUTPUT*/"Invalid output for connect expression",
-
-
-
+		/*ETYPE_CIRCULAR_MODULE_REFERENCE_1*/"Circular module reference detected in module '%s'",
+		/*ETYPE_MODULE_NOT_FOUND_1*/	"Module '%s' not found",
+		/*ETYPE_WRITING_RESULT_FILE_2*/	"Error writing results file (%s): %s",
+		/*ETYPE_ERROR_COMPILING_C_1*/	"Error compiling 'C' code in module: %s",
+		/*ETYPE_INVALID_COMPILE_SCRIPT_TEMPLATE_1*/"Invalid 'C' compile script template: %s",
+		/*ETYPE_COMPILE_SCRIPT_TEMPLATE_NOT_FOUND_1*/"Cannot find 'C' compile script template at: %s",
+		/*ETYPE_ERROR_LOADING_COMPILED_MODULE_1*/"Error loading compiled module at: %s",
 	};
 
 	return templates[type];

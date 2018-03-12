@@ -33,6 +33,10 @@
     <ClInclude Include="dataTypes.h" />
     <ClInclude Include="builder.h" />
     <ClInclude Include="operationResult.h" />
+    <ClInclude Include="DependencyTree.h" />
+    <ClInclude Include="builder_internal.h" />
+    <ClInclude Include="astSerialization.h" />
+    <ClInclude Include="dependencySolver.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp" />
@@ -54,5 +58,7 @@
     <ClCompile Include="codeGeneratorState.cpp" />
     <ClCompile Include="dataTypes.cpp" />
     <ClCompile Include="builder.cpp" />
+    <ClCompile Include="DependencyTree.cpp" />
+    <ClCompile Include="astSerialization.cpp" />
   </ItemGroup>
 </Project>

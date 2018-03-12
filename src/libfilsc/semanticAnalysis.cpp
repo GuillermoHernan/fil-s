@@ -35,6 +35,45 @@ SemanticResult semanticAnalysis(Ref<AstNode> node)
 }
 
 /// <summary>
+/// Semantic analysis entry point, when modules are used.
+/// </summary>
+/// <param name="sources">Map of source file names to its parsed ASTs. These ASTs are
+/// parsed, but not semantically analyzed.</param>
+/// <param name="modules">Compiled modules map. These are the modules on which the current 
+/// module depends. These ASTs are already semantically analyzed.</param>
+/// <returns></returns>
+SemanticResult semanticAnalysis(const AstStr2NodesMap& sources, const AstStr2NodesMap& modules)
+{
+	const auto &		passes = getSemAnalysisPasses();
+	SemAnalysisState	state;
+	AstStr2NodesMap		resultNodes = sources;
+
+	state.modules = modules;
+
+	for (auto pass : passes)
+	{
+		SemanticResult::ErrorList	errors;
+
+		for (auto& src : sources)
+		{
+			state.currentFile = src.first;
+			auto result = pass(resultNodes[src.first], state);
+
+			if (!result.ok())
+				result.appendErrorsTo(errors);
+			else
+				resultNodes[src.first] = result.result;
+		}
+
+		if (!errors.empty())
+			return SemanticResult(errors);
+	}
+
+	return buildModuleNode(resultNodes);
+}
+
+
+/// <summary>
 /// Gets the list of semantic analysis passes to execute.
 /// The list is in execution ordenr
 /// </summary>
@@ -195,4 +234,26 @@ CompileError semError(Ref<AstNode> node, ErrorTypes type, ...)
 	va_end(aptr);
 
 	return result;
+}
+
+/// <summary>
+/// Builds an 'AST_SCRIPT' node from the nodes present in 
+/// </summary>
+/// <param name="state"></param>
+/// <returns></returns>
+/// 
+
+/// <summary>
+/// Builds an 'AST_MODULE' node from the node map.
+/// </summary>
+/// <param name="nodes"></param>
+/// <returns></returns>
+SemanticResult buildModuleNode(const AstStr2NodesMap& nodes)
+{
+	auto moduleNode = astCreateModule();
+
+	for (auto& nodeEntry : nodes)
+		moduleNode->addChild(nodeEntry.second);
+
+	return SemanticResult(moduleNode);
 }

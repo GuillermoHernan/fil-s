@@ -20,7 +20,8 @@ class DefaultType;
  */
 enum AstNodeTypes
 {
-    AST_SCRIPT
+	AST_MODULE
+    ,AST_SCRIPT
 	,AST_TYPEDEF
 	,AST_LIST
     ,AST_BLOCK
@@ -35,10 +36,9 @@ enum AstNodeTypes
     ,AST_FUNCTION
     ,AST_ASSIGNMENT
     ,AST_FNCALL
-    //,AST_NEWCALL
-	, AST_INTEGER
-	, AST_FLOAT
-	, AST_STRING
+	,AST_INTEGER
+	,AST_FLOAT
+	,AST_STRING
 	,AST_BOOL
 	,AST_IDENTIFIER
     ,AST_ARRAY
@@ -54,8 +54,9 @@ enum AstNodeTypes
 	,AST_INPUT
 	,AST_OUTPUT
 	,AST_UNNAMED_INPUT
+	,AST_IMPORT
 
-	//Remember to add new entries to 'astTypeToString' function!
+	//Remember to add new entries to 'astTypeToString' and 'astTypeFromString' functions!
 
 	,AST_TYPES_COUNT
 };
@@ -73,17 +74,21 @@ enum AstFlags
 };
 
 class AstNode;
-class AstFunction;
-class JSArray;
-typedef std::vector <Ref<AstNode> > AstNodeList;
-
-//AST conversion functions (mainly for AST /parser debugging)
-Ref<JSArray> toJSArray (const AstNodeList& statements);
-std::string toJSON (const AstNodeList& statements);
+typedef std::vector <Ref<AstNode> >				AstNodeList;
+typedef std::map<std::string, Ref<AstNode>>		AstStr2NodesMap;
 
 std::string astTypeToString(AstNodeTypes type);
+AstNodeTypes astTypeFromString(const std::string& str);
 
 //Constructor functions
+Ref<AstNode> astGenericCreate(
+	ScriptPosition pos,
+	AstNodeTypes type,
+	const std::string& name,
+	const std::string& value,
+	int flags
+	);
+Ref<AstNode> astCreateModule();
 Ref<AstNode> astCreateScript(ScriptPosition pos);
 Ref<AstNode> astCreateTypedef(ScriptPosition pos, const std::string& name, Ref<AstNode> typeDesc);
 Ref<AstNode> astCreateDeclaration(LexToken token,
@@ -108,10 +113,6 @@ Ref<AstNode> astCreateIf (ScriptPosition pos,
                           Ref<AstNode> condition,
                           Ref<AstNode> thenSt,
                           Ref<AstNode> elseSt);
-Ref<AstNode> astCreateConditional ( ScriptPosition pos, 
-                                    Ref<AstNode> condition,
-                                    Ref<AstNode> thenExpr,
-                                    Ref<AstNode> elseExpr);
 Ref<AstNode> astCreateFor (ScriptPosition pos, 
                           Ref<AstNode> initSt,
                           Ref<AstNode> condition,
@@ -144,25 +145,13 @@ Ref<AstNode> astCreateActor(ScriptPosition pos, const std::string& name);
 
 Ref<AstNode> astCreateInputMsg(ScriptPosition pos, const std::string& name);
 Ref<AstNode> astCreateOutputMsg(ScriptPosition pos, const std::string& name);
-Ref<AstNode> astCreateConnect(ScriptPosition pos,
-                                 Ref<AstNode> lexpr, 
-                                 Ref<AstNode> rexpr);
-Ref<AstNode> astCreateSend (ScriptPosition pos,
-                                 Ref<AstNode> lexpr, 
-                                 Ref<AstNode> rexpr);
-
-Ref<AstNode> astCreateExtends (ScriptPosition pos,
-                                const std::string& parentName);
-Ref<AstNode> astCreateExport (ScriptPosition pos, Ref<AstNode> child);
-Ref<AstNode> astCreateImport (ScriptPosition pos, Ref<AstNode> param);
-
-Ref<AstNode> astGetExtends(Ref<AstNode> node);
-
 Ref<AstNode> astCreateDefaultType(Ref<DefaultType> type);
 Ref<AstNode> astCreateUnnamedInput(ScriptPosition pos, 
 	Ref<AstNode> outputPath, 
 	Ref<AstNode> params,
 	Ref<AstNode> code);
+
+class AstSerializeContext;
 
 /**
  * Base class for AST nodes
@@ -266,6 +255,11 @@ public:
 	bool hasFlag(AstFlags flag)const
 	{
 		return (m_flags & flag) != 0;
+	}
+
+	int getFlags()const
+	{
+		return m_flags;
 	}
 
 	//Ref<AstNode> findChildByName(const std::string& name);
@@ -386,7 +380,6 @@ public:
     static Ref<AstLiteral> create(LexToken token);
 	static Ref<AstLiteral> create(ScriptPosition pos, int value);
 	static Ref<AstLiteral> createBool(ScriptPosition pos, bool value);
-	static Ref<AstLiteral> createNull(ScriptPosition pos);
     
 
 	virtual std::string getValue()const
@@ -394,9 +387,8 @@ public:
 		return m_strValue;
 	}
 
-protected:
-    AstLiteral (ScriptPosition position, AstNodeTypes type) : 
-    AstNode(type, position)
+    AstLiteral (ScriptPosition position, AstNodeTypes type, const std::string& value = "") : 
+    AstNode(type, position), m_strValue(value)
     {
     }
 
@@ -428,6 +420,12 @@ public:
 	virtual std::string getValue()const
 	{
 		return m_name;
+	}
+
+	AstIdentifier(ScriptPosition pos, const std::string& name) :
+		AstNode(AST_IDENTIFIER, pos),
+		m_name(name)
+	{
 	}
 
 protected:

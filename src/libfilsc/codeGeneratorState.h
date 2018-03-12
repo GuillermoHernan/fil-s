@@ -24,6 +24,7 @@ public:
 
 	std::string cname(Ref<AstNode> node);
 	std::string cname(Ref<BaseType> type);
+	std::string tupleMemberCName(Ref<TupleType> tuple, int index);
 	bool hasName(Ref<BaseType> type)const;
 
 	void setCname(Ref<AstNode> node, const std::string& name);
@@ -62,10 +63,15 @@ private:
 		std::vector<TempVarInfo>	tempVars;
 	};
 
+	typedef std::tuple< Ref<TupleType>, int>	TupleMemberKey;
+
 	std::ostream*								m_output;
+	//TODO: Remove this callback. Is a horrible hack that is already causing problems.
+	//Replace it by a pass which declares all necessary structures.
 	TypeCodegenFN								m_typeGenFN;
 	std::vector<BlockInfo>						m_blockStack;
 	std::map< Ref<RefCountObj>, std::string>	m_objNames;
+	std::map< TupleMemberKey, std::string>		m_tupleMemberNames;
 	int											m_nextSymbolId = 0;
 
 	std::string		allocCName(std::string base);

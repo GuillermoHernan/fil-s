@@ -129,13 +129,13 @@ StringVector split (const std::string& str, const std::string& separator)
  * @param separator
  * @return 
  */
-std::string join (const StringVector& strings, const std::string& separator)
+std::string join (const StringVector& strings, const std::string& separator, size_t firstLine)
 {
     ostringstream output;
     const size_t n = strings.size();
-    for (size_t i = 0; i < n; i++)
+    for (size_t i = firstLine; i < n; i++)
     {
-        if (i > 0) 
+        if (i > firstLine) 
             output << separator;
         output << strings[i];
     }

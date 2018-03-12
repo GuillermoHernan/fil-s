@@ -90,6 +90,7 @@ void codegen(Ref<AstNode> node, CodeGeneratorState& state, const IVariableInfo& 
 		//by not keeping this list updated ;-)
 		fill_n(types, AST_TYPES_COUNT, invalidNodeCodegen);
 
+		types[AST_MODULE]		= nodeListCodegen;
 		types[AST_SCRIPT]		= nodeListCodegen;
 		types[AST_TYPEDEF]		= voidCodegen;
 		types[AST_LIST]			= invalidNodeCodegen;
@@ -319,7 +320,6 @@ void tupleCodegen(
 
 	for (size_t i = 0; i < expressions.size(); ++i)
 	{
-		auto		childNode = tupleType->getMemberNode((unsigned)i);
 		TupleField	field(resultDest, i, state);
 
 		codegen(expressions[i], state, field);
@@ -333,6 +333,7 @@ void varCodegen(Ref<AstNode> node, CodeGeneratorState& state, const IVariableInf
 {
 	auto	typeNode = node->getDataType();
 	
+	//TODO: This should be done in a previous, strucutre declaration pass.
 	if (typeNode->type() == DT_TUPLE && state.hasName(typeNode) == false)
 		tupleDefCodegen(typeNode, state);
 
@@ -356,6 +357,11 @@ void tupleDefCodegen(Ref<AstNode> node, CodeGeneratorState& state, const IVariab
 
 	state.output() << "}" << name << ";\n\n";
 }
+
+/// <summary>
+/// Generates code for a tuple definition.
+/// Generates it from a data type, instead of an AST node. For not declared, inferred types.
+/// </summary>
 void tupleDefCodegen(Ref<BaseType> type, CodeGeneratorState& state)
 {
 	assert(type->type() == DT_TUPLE);
@@ -366,7 +372,10 @@ void tupleDefCodegen(Ref<BaseType> type, CodeGeneratorState& state)
 	auto tType = type.staticCast<TupleType>();
 	const int count = tType->memberCount();
 	for (int i = 0; i < count; ++i)
-		codegen(tType->getMemberNode(i), state, VoidVariable());
+	{
+		state.output() << state.cname(tType->getMemberType(i)) << " ";
+		state.output() << state.tupleMemberCName(tType, i) << ";\n";
+	}
 
 	state.output() << "}" << name << ";\n\n";
 }
@@ -559,7 +568,7 @@ void memberAccessCodegen(
 			if (index < 0)
 				errorAt(node->position(), ETYPE_MEMBER_NOT_FOUND_2, fieldName.c_str(), tType->toString().c_str());
 
-			nameStack.push_back(state.cname(tType->getMemberNode(index)));
+			nameStack.push_back(state.tupleMemberCName(tType, index));
 			curNode = tuple;
 		}
 		else
@@ -798,9 +807,10 @@ void generateConnection(Ref<AstNode> actor, Ref<AstNode> connection, CodeGenerat
 		const int index = tupleT->findMemberByName(pathNode->getName());
 		assert(index >= 0);
 
-		auto node = tupleT->getMemberNode(index);
-		path.push_back(state.cname(node));
-		tupleT = node->getDataType().dynamicCast<TupleType>();
+		path.push_back(state.tupleMemberCName(tupleT, index));
+
+		auto memberType = tupleT->getMemberType(index);
+		tupleT = memberType.dynamicCast<TupleType>();
 	}
 
 	string strPath = "_gen_actor->" + join(path, ".");

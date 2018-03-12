@@ -90,6 +90,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <AdditionalIncludeDirectories>..\..\lib\json11</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -104,6 +105,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <AdditionalIncludeDirectories>..\..\lib\json11</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -120,6 +122,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <AdditionalIncludeDirectories>..\..\lib\json11</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -138,6 +141,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <AdditionalIncludeDirectories>..\..\lib\json11</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -148,12 +152,16 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="ast.h" />
+    <ClInclude Include="astSerialization.h" />
     <ClInclude Include="builder.h" />
+    <ClInclude Include="builder_internal.h" />
     <ClInclude Include="codeGeneratorState.h" />
     <ClInclude Include="compileError.h" />
     <ClInclude Include="c_codeGenerator.h" />
     <ClInclude Include="c_codeGenerator_internal.h" />
     <ClInclude Include="dataTypes.h" />
+    <ClInclude Include="dependencySolver.h" />
+    <ClInclude Include="DependencyTree.h" />
     <ClInclude Include="errorTypes.h" />
     <ClInclude Include="gatherPass.h" />
     <ClInclude Include="lexer.h" />
@@ -176,11 +184,13 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ast.cpp" />
+    <ClCompile Include="astSerialization.cpp" />
     <ClCompile Include="builder.cpp" />
     <ClCompile Include="codeGeneratorState.cpp" />
     <ClCompile Include="compileError.cpp" />
     <ClCompile Include="c_codeGenerator.cpp" />
     <ClCompile Include="dataTypes.cpp" />
+    <ClCompile Include="DependencyTree.cpp" />
     <ClCompile Include="gatherPass.cpp" />
     <ClCompile Include="lexer.cpp" />
     <ClCompile Include="parser.cpp" />
@@ -199,6 +209,11 @@
     <ClCompile Include="SymbolScope.cpp" />
     <ClCompile Include="typeCheckPass.cpp" />
     <ClCompile Include="utils.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\lib\json11\json11.vcxproj">
+      <Project>{fa22a9cc-10ee-4fb4-9274-3bc40b97d40e}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
