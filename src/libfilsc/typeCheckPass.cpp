@@ -384,6 +384,7 @@ CompileError memberAccessTypeCheck(Ref<AstNode> node, SemAnalysisState& state)
 	else
 	{
 		auto memberType = leftType->child(index)->getDataType();
+		node->setDataType(memberType);
 		return CompileError::ok();
 	}
 }
