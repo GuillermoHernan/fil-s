@@ -42,7 +42,8 @@ AstNode::AstNode(
 	:m_position(pos), m_type(type), m_name(name), m_value(value), m_flags(flags)
 {
 	//TODO: This has been done to prevent an infinite loop. Find another solution...
-	if (type == AST_TUPLE_DEF)
+	//Also to fix the data type of default types...
+	if (type == AST_TUPLE_DEF || type == AST_DEFAULT_TYPE)
 		m_dataType = this;
 	else
 		m_dataType = astGetVoid();
@@ -772,43 +773,3 @@ int astFindMemberByName(AstNode* node, const std::string& name)
 
 	return -1;
 }
-
-///// <summary>
-///// Gets the dependent data types of a given datatype
-///// </summary>
-///// <param name="node"></param>
-///// <param name="recursive"></param>
-///// <returns></returns>
-//std::vector<AstNode*> astGetTypeDependencies(AstNode* node, bool recursive)
-//{
-//	set<AstNode*>	deps;
-//	astGetTypeDependencies(node, deps, recursive);
-//
-//	return vector<AstNode*>(deps.begin(), deps.end());
-//}
-//
-///// <summary>
-///// Gets the dependent data types of a given datatype
-///// </summary>
-///// <param name="node"></param>
-///// <param name="nodeSet"></param>
-///// <param name="recursive"></param>
-//void astGetTypeDependencies(AstNode* node, std::set<AstNode*>& nodeSet, bool recursive)
-//{
-//	//'Void' type shall not be included in the dependency list.
-//	if (astIsVoidType(node))
-//		return;
-//	else if (nodeSet.count(node) > 0)
-//		return;
-//
-//	if (recursive)
-//	auto params = getParameters();
-//	auto retType = getReturnType();
-//
-//	if (params.notNull())
-//		params->getDependencies(typeSet, recursive, true);
-//
-//	if (retType.notNull())
-//		retType->getDependencies(typeSet, recursive, true);
-//
-//}
