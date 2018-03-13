@@ -737,15 +737,21 @@ void generateActorStruct(AstNode* type, CodeGeneratorState& state)
 		state.output() << paramsTypeName << " params;\n";
 	}
 
-	for (size_t i = 0; i < type->childCount(); ++i)
+	for (size_t i = 1; i < type->childCount(); ++i)
 	{
 		auto child = type->child(i);
-		if (child->getType() != AST_INPUT)
+		if (child->getType() == AST_DECLARATION)
 		{
 			string childName = state.cname(child);
 			string childTypeName = state.cname(child->getDataType());
 			
 			state.output() << childTypeName << " "<< childName << ";\n";
+		}
+		else if (child->getType() == AST_OUTPUT)
+		{
+			string childName = state.cname(child);
+
+			state.output() << "MessageSlot " << childName << ";\n";
 		}
 	}
 
@@ -828,7 +834,8 @@ void generateActorInput(Ref<AstNode> actor, Ref<AstNode> input, CodeGeneratorSta
 	//Declare a block for temporaries.
 	CodegenBlock	functionBlock(state);
 
-	generateParamsStruct(input, state, "input message");
+	//TODO: Already don in struct creation pass. Confirm and delete.
+	//generateParamsStruct(input, state, "input message");
 
 	//Header
 	state.output() << "//Code for '" << input->getName() << "' input message\n";
