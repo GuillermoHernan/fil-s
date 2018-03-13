@@ -75,8 +75,8 @@ TEST(TypeCheck, blockTypeCheck)
 	});
 
 	ASSERT_EQ(2, nodes.size());
-	EXPECT_TRUE (astIsVoidType ( nodes[0].getPointer()));
-	EXPECT_TRUE (astIsVoidType ( nodes[1].getPointer()));
+	EXPECT_TRUE (astIsVoidType ( nodes[0]->getDataType()));
+	EXPECT_TRUE (astIsVoidType ( nodes[1]->getDataType()));
 
 	r = semAnalysisCheck("const a = {const b = (1*4)+9; (b,false)}");
 
