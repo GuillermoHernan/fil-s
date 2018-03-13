@@ -512,7 +512,7 @@ void callCodegen(Ref<AstNode> node, CodeGeneratorState& state, const IVariableIn
 	auto fnExpr = node->child(0);
 	auto paramsExpr = node->child(1);
 
-	//By the moment, only direct function invocation is sopported
+	//By the moment, only direct function invocation is supported
 	assert(fnExpr->getType() == AST_IDENTIFIER);
 
 	auto	fnNode = node->getScope()->get(fnExpr->getName(), true);
