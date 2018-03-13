@@ -887,7 +887,12 @@ std::string varAccessExpression(Ref<AstNode> node, CodeGeneratorState& state)
 	auto referenced = node->getScope()->get(node->getName());
 
 	if (referenced->hasFlag(ASTF_ACTOR_MEMBER))
-		namePrefix = "_gen_actor->";
+	{
+		if (referenced->hasFlag(ASTF_FUNCTION_PARAMETER))
+			namePrefix = "_gen_actor->params.";
+		else
+			namePrefix = "_gen_actor->";
+	}
 	else if (referenced->hasFlag(ASTF_FUNCTION_PARAMETER))
 		namePrefix = "_gen_params->";
 
