@@ -652,20 +652,20 @@ AstNode* getConnectOutputType(Ref<AstNode> pathNode, SemAnalysisState& state)
 		return nullptr;
 
 	auto result = referred->getDataType();
-	auto tuple = result;
+	auto actor = result;
 
 	size_t i = 1;
-	for (; i < pathNode->childCount() && astIsTupleType(tuple); ++i)
+	for (; i < pathNode->childCount() && actor->getType() == AST_ACTOR; ++i)
 	{
 		auto child = pathNode->child(i);
 		assert(child.notNull() && child->getType() == AST_MEMBER_NAME);
 
-		int index = astFindMemberByName(tuple, child->getName());
+		int index = astFindMemberByName(actor, child->getName());
 
 		if (index < 0)
 			return nullptr;
 
-		result = tuple = tuple->child(index)->getDataType();
+		result = actor = actor->child(index)->getDataType();
 	}
 
 	if (i < pathNode->childCount() || result->getType() != AST_OUTPUT)
