@@ -305,7 +305,7 @@ CompileError functionDefTypeCheck(Ref<AstNode> node, SemAnalysisState& state)
 	}
 	else
 	{
-		auto declaredType = node->child(2).getPointer();
+		auto declaredType = node->child(1)->getDataType();
 
 		//If void is declared explicitly, then any type is valid for the body.
 		if (astIsVoidType(declaredType))
