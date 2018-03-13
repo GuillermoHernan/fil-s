@@ -41,9 +41,40 @@ Ref<AstNode> SemAnalysisState::findParent(std::function<bool(Ref<AstNode>)> pred
 	return Ref<AstNode>();
 }
 
-
-
 SemAnalysisState::SemAnalysisState()
 	:rootScope (SymbolScope::create(Ref<SymbolScope>()))
 {
+}
+
+/// <summary>
+/// Gets the scope assigned to a node.
+/// </summary>
+/// <param name="node"></param>
+/// <returns></returns>
+Ref<SymbolScope> SemAnalysisState::getScope(const AstNode* node)const
+{
+	auto it = m_scopesMap.find(node);
+
+	assert(it != m_scopesMap.end());
+	return it->second;
+}
+
+/// <summary>
+/// Gets the scope assigned to a node.
+/// </summary>
+/// <param name="node"></param>
+/// <returns></returns>
+Ref<SymbolScope> SemAnalysisState::getScope(Ref<AstNode> node)const
+{
+	return getScope(node.getPointer());
+}
+
+/// <summary>
+/// Assigns a scope to a node.
+/// </summary>
+/// <param name="node"></param>
+/// <param name=""></param>
+void SemAnalysisState::setScope(Ref<AstNode> node, Ref<SymbolScope> scope)
+{
+	m_scopesMap[node.getPointer()] = scope;
 }

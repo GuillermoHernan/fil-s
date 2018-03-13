@@ -55,7 +55,7 @@ CompileError gatherSymbol(Ref<AstNode> node, SemAnalysisState& state)
 	auto parent = state.parent();
 	const bool checkParents = parent->getType() != AST_TUPLE_DEF;
 
-	return gatherSymbol(node, parent->getScope(), checkParents);
+	return gatherSymbol(node, state.getScope(parent), checkParents);
 }
 
 /// <summary>
@@ -95,7 +95,7 @@ CompileError gatherParameters(Ref<AstNode> node, SemAnalysisState& state)
 		return CompileError::ok();
 	else
 	{
-		auto scope = state.parent(1)->getScope();
+		auto scope = state.getScope(state.parent(1));
 
 		if (scope->contains(name, true))
 			return semError(node, ETYPE_SYMBOL_ALREADY_DEFINED_1, name.c_str());

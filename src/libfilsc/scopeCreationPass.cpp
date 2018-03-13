@@ -11,7 +11,7 @@
 
 
 bool needsOwnScope(Ref<AstNode> node);
-void buildScope(Ref<AstNode> node, Ref<SymbolScope> currentScope);
+void buildScope(Ref<AstNode> node, Ref<SymbolScope> currentScope, SemAnalysisState& state);
 
 /// <summary>
 /// 'Pass' function which performs scope creation.
@@ -21,7 +21,7 @@ void buildScope(Ref<AstNode> node, Ref<SymbolScope> currentScope);
 /// <returns></returns>
 SemanticResult scopeCreationPass(Ref<AstNode> node, SemAnalysisState& state)
 {
-	buildScope(node, state.rootScope);
+	buildScope(node, state.rootScope, state);
 
 	return SemanticResult(node);
 }
@@ -31,23 +31,19 @@ SemanticResult scopeCreationPass(Ref<AstNode> node, SemAnalysisState& state)
 /// </summary>
 /// <param name="node"></param>
 /// <param name="currentScope"></param>
-void buildScope(Ref<AstNode> node, Ref<SymbolScope> currentScope)
+void buildScope(Ref<AstNode> node, Ref<SymbolScope> currentScope, SemAnalysisState& state)
 {
 	if (node.isNull())
 		return;
 
 	if (needsOwnScope(node))
-	{
-		auto newScope = SymbolScope::create(currentScope);
+		currentScope = SymbolScope::create(currentScope);
 
-		node->setScope(newScope);
-	}
-	else
-		node->setScope(currentScope);
+	state.setScope(node, currentScope);
 
 	//Walk children
 	for (auto child : node->children())
-		buildScope(child, node->getScope());
+		buildScope(child, currentScope, state);
 }
 
 /// <summary>

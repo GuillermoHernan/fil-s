@@ -9,7 +9,6 @@
 #include "pch.h"
 #include "c_codeGenerator_internal.h"
 #include "compileError.h"
-#include "SymbolScope.h"
 #include "utils.h"
 #include "codeGeneratorState.h"
 
@@ -515,7 +514,7 @@ void callCodegen(Ref<AstNode> node, CodeGeneratorState& state, const IVariableIn
 	//By the moment, only direct function invocation is supported
 	assert(fnExpr->getType() == AST_IDENTIFIER);
 
-	auto	fnNode = node->getScope()->get(fnExpr->getName(), true);
+	auto	fnNode = fnExpr->getReference();
 	string	fnCName = state.cname(fnNode);
 
 	if (paramsExpr->childCount() == 0)
@@ -884,7 +883,7 @@ std::string varAccessExpression(Ref<AstNode> node, CodeGeneratorState& state)
 {
 	string namePrefix = "";
 
-	auto referenced = node->getScope()->get(node->getName());
+	auto referenced = node->getReference();
 
 	if (referenced->hasFlag(ASTF_ACTOR_MEMBER))
 	{

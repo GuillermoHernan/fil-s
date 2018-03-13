@@ -99,7 +99,9 @@ SemanticResult preTypeCheckPass(Ref<AstNode> node, SemAnalysisState& state)
 /// </summary>
 CompileError recursiveSymbolReferenceCheck(Ref<AstNode> node, SemAnalysisState& state)
 {
-	auto referenced = node->getScope()->get(node->getName(), false);
+	//auto referenced = node->getScope()->get(node->getName(), false);
+	auto referenced = state.getScope(node)->get(node->getName(), false);
+	//auto referenced = node->getReference();
 	int i = 0;
 
 	for (; state.parent(i).notNull(); ++i)
@@ -117,7 +119,7 @@ CompileError recursiveSymbolReferenceCheck(Ref<AstNode> node, SemAnalysisState& 
 /// </summary>
 CompileError typeExistsCheck(Ref<AstNode> node, SemAnalysisState& state)
 {
-	auto	scope = node->getScope();
+	auto	scope = state.getScope(node);
 	string	name = node->getName();
 
 	auto typeNode = scope->get(name, true);
@@ -344,7 +346,7 @@ CompileError callTypeCheck(Ref<AstNode> node, SemAnalysisState& state)
 /// <returns></returns>
 CompileError varReadTypeCheck(Ref<AstNode> node, SemAnalysisState& state)
 {
-	auto scope = node->getScope();
+	auto scope = state.getScope(node);
 
 	auto referenced = scope->get(node->getName(), true);
 
@@ -352,15 +354,9 @@ CompileError varReadTypeCheck(Ref<AstNode> node, SemAnalysisState& state)
 		return semError(node, ETYPE_NON_EXISTENT_SYMBOL_1, node->getName().c_str());
 	else
 	{
-		//TODO: There is a problem. the referenced node may not have an assigned type
-		//at this moment. May this be the main problem for type inference?
-		//Without type inference, we may just assign the types for declarations in a previous pass,
-		//and perform expression type checking in a later pass.
-		//Perhaps, a possible solution may be walking the tree on a different way...
-		if (astIsVoidType (referenced->getDataType()))
-			return semError(node, ETYPE_NOT_IMPLEMENTED_1, "Resolving data types for later defined symbols");
-
-		node->setDataType(referenced->getDataType());
+		//TODO: If the referenced node has not been type-checked at this moment, 
+		//the type of the reference node may be still void when this function returns.
+		node->setReference(referenced.getPointer());
 		return CompileError::ok();
 	}
 }
@@ -645,7 +641,7 @@ CompileError actorInstanceTypeCheck(Ref<AstNode> node, SemAnalysisState& state)
 /// <returns></returns>
 AstNode* getConnectOutputType(Ref<AstNode> pathNode, SemAnalysisState& state)
 {
-	auto			scope = pathNode->getScope();
+	auto			scope = state.getScope(pathNode);
 
 	auto referred = scope->get(pathNode->child(0)->getName(), true);
 	if (referred.isNull())

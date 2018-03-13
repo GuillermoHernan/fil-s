@@ -25,6 +25,12 @@ public:
 
 	Ref<AstNode>		findParent(std::function<bool(Ref<AstNode>)> pred)const;
 
+	Ref<SymbolScope>	getScope(const AstNode* node)const;
+	Ref<SymbolScope>	getScope(Ref<AstNode> node)const;
+
+	void				setScope(Ref<AstNode> node, Ref<SymbolScope> scope);
+
 private:
-	std::vector<Ref<AstNode>>	m_parents;
+	std::vector<Ref<AstNode>> m_parents;
+	std::map < const AstNode*, Ref<SymbolScope>> m_scopesMap;
 };

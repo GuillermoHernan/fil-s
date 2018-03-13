@@ -4,7 +4,6 @@
 
 #include "pch.h"
 #include "ast.h"
-#include "SymbolScope.h"
 #include "dependencySolver.h"
 
 using namespace std;
@@ -32,7 +31,14 @@ Ref<AstNode> AstNode::create(
 	return refFromNew(new AstNode(type, pos, name, value, flags));
 }
 
-
+/// <summary>
+/// Ast node constructor.
+/// </summary>
+/// <param name="type">Type of AstNode</param>
+/// <param name="pos">Position in the source code.</param>
+/// <param name="name">Node name (can be empty)</param>
+/// <param name="value">Node value (can be empty)</param>
+/// <param name="flags">Flags. See 'AstFlags' enum</param>
 AstNode::AstNode(
 	AstNodeTypes type,
 	const ScriptPosition& pos,
@@ -44,38 +50,44 @@ AstNode::AstNode(
 	//TODO: This has been done to prevent an infinite loop. Find another solution...
 	//Also to fix the data type of default types...
 	if (type == AST_TUPLE_DEF || type == AST_DEFAULT_TYPE)
-		m_dataType = this;
+		m_reference = this;
 	else
-		m_dataType = astGetVoid();
+		m_reference = astGetVoid();
 
 	++ms_nodeCount;
 }
 
 /// <summary>
-/// Removes the references to the objects which may create circular refrences to the AST 
-/// tree. At this moment, is only the 'scope' reference.
+/// Gets the node assigned data type.
 /// </summary>
-void AstNode::destroy()
+/// <returns></returns>
+AstNode* AstNode::getDataType()const
 {
-	m_scope.reset();
-
-	for (auto child : children())
-	{
-		if (child.notNull())
-			child->destroy();
-	}
+	if (getType() == AST_IDENTIFIER)
+		return m_reference->getDataType();
+	else
+		return m_reference;
 }
 
-Ref<SymbolScope> AstNode::getScope()const
+/// <summary>
+/// Changes the data type assigned to the node.
+/// </summary>
+/// <param name="dataType"></param>
+void AstNode::setDataType(AstNode* dataType)
 {
-	return m_scope.staticCast<SymbolScope>();
+	assert(getType() != AST_IDENTIFIER);
+	m_reference = dataType;
 }
 
-void AstNode::setScope(Ref<SymbolScope> scope)
+/// <summary>
+/// Sets the referenced node. Only for identifiers
+/// </summary>
+/// <param name="node"></param>
+void AstNode::setReference(AstNode* node)
 {
-	m_scope = scope.staticCast<SymbolScope>();
+	assert(getType() == AST_IDENTIFIER);
+	m_reference = node;
 }
-
 
 //  Functions to create specific AST node types.
 //

@@ -11,8 +11,6 @@
 #include "scriptPosition.h"
 #include "lexer.h"
 
-class SymbolScope;
-
 /**
  * AST node types enumeration
  */
@@ -182,7 +180,7 @@ public:
 		return m_name;
 	}
 
-	virtual void setName(const std::string& name)
+	void setName(const std::string& name)
 	{
 		m_name = name;
 	}
@@ -192,18 +190,16 @@ public:
         return m_value;
     }
     
-	virtual void addChild(Ref<AstNode> child)
+	void addChild(Ref<AstNode> child)
 	{
 		m_children.push_back(child);
 	}
 
-	virtual void setChild(unsigned index, Ref<AstNode> node)
+	void setChild(unsigned index, Ref<AstNode> node)
 	{
 		assert(index < m_children.size());
 		m_children[index] = node;
 	}
-
-	virtual void destroy();
 
     bool childExists(size_t index)const
     {
@@ -245,17 +241,14 @@ public:
 		m_type = type;
 	}
 
-	Ref<SymbolScope> getScope()const;
-	void setScope(Ref<SymbolScope> scope);
+	AstNode* getDataType()const;
+	void setDataType(AstNode* dataType);
 
-	AstNode* getDataType()const
+	AstNode* getReference()const
 	{
-		return m_dataType;
+		return m_reference;
 	}
-	void setDataType(AstNode* dataType)
-	{
-		m_dataType = dataType;
-	}
+	void setReference(AstNode* node);
 
 	int addFlag(AstFlags flag)
 	{
@@ -311,8 +304,9 @@ private:
 	std::string				m_value;
 	AstNodeList				m_children;
 
-	Ref<RefCountObj>		m_scope;
-	AstNode*				m_dataType;
+	//Reference for other node. On most nodes, it is its data type. On 'AST_IDENTIFIER',
+	//it is the referenced declaration.
+	AstNode*				m_reference;
 	int						m_flags = 0;
 	AstNodeTypes			m_type;
 
