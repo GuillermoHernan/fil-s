@@ -398,6 +398,10 @@ void tupleDefCodegen(Ref<AstNode> node, CodeGeneratorState& state, const IVariab
 void tupleDefCodegen(AstNode* type, CodeGeneratorState& state)
 {
 	assert(astIsTupleType(type));
+
+	if (type->childCount() == 0)
+		return;		//Empty tuples shall not be generated
+
 	string name = state.cname(type);
 
 	state.output() << "typedef struct {\n";
