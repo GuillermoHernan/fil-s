@@ -331,7 +331,8 @@ CompileError callTypeCheck(Ref<AstNode> node, SemAnalysisState& state)
 	auto type = node->child(0)->getDataType();
 	auto paramsType = node->child(1)->getDataType();
 
-	assert(astCanBeCalled(type));
+	if (!astCanBeCalled(type))
+		return semError(node, ETYPE_NOT_CALLABLE);
 
 	node->setDataType(astGetReturnType(type));
 	return areTypesCompatible(astGetParameters(type), paramsType, node);

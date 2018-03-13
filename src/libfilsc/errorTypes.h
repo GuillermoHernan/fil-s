@@ -42,6 +42,7 @@ enum ErrorTypes
 	ETYPE_INVALID_COMPILE_SCRIPT_TEMPLATE_1,
 	ETYPE_COMPILE_SCRIPT_TEMPLATE_NOT_FOUND_1,
 	ETYPE_ERROR_LOADING_COMPILED_MODULE_1,
+	ETYPE_NOT_CALLABLE,
 
 	//Add new error types above this line.
 	//REMEMBER to add the description to 'errorTypeTemplate' function.
