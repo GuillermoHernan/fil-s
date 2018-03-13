@@ -12,8 +12,6 @@
 #include "lexer.h"
 
 class SymbolScope;
-class BaseType;
-class DefaultType;
 
 /**
  * AST node types enumeration
@@ -80,6 +78,22 @@ typedef std::map<std::string, Ref<AstNode>>		AstStr2NodesMap;
 std::string astTypeToString(AstNodeTypes type);
 AstNodeTypes astTypeFromString(const std::string& str);
 
+AstNode*		astGetVoid();
+AstNode*		astGetBool();
+AstNode*		astGetInt();
+
+std::string		astTypeToString(AstNode* typeNode);
+AstNode*		astGetParameters(AstNode* node);
+AstNode*		astGetReturnType(AstNode* node);
+
+bool			astIsTupleType(const AstNode* node);
+bool			astCanBeCalled(const AstNode* node);
+bool			astIsBoolType(const AstNode* type);
+bool			astIsIntType(const AstNode* type);
+bool			astIsVoidType(const AstNode* type);
+
+int				astFindMemberByName(AstNode* node, const std::string& name);
+
 //Constructor functions
 Ref<AstNode> astCreateModule(const std::string& name);
 Ref<AstNode> astCreateScript(ScriptPosition pos, const std::string& name);
@@ -139,13 +153,13 @@ Ref<AstNode> astCreateInputMsg(ScriptPosition pos, const std::string& name);
 Ref<AstNode> astCreateOutputMsg(ScriptPosition pos, const std::string& name);
 Ref<AstNode> astCreateLiteral(LexToken token);
 Ref<AstNode> astCreateBool(ScriptPosition pos, bool value);
-Ref<AstNode> astCreateDefaultType(Ref<DefaultType> type);
+//Ref<AstNode> astCreateDefaultType(Ref<DefaultType> type);
 Ref<AstNode> astCreateUnnamedInput(ScriptPosition pos, 
 	Ref<AstNode> outputPath, 
 	Ref<AstNode> params,
 	Ref<AstNode> code);
 
-std::vector<BaseType*> astGatherTypes(Ref<AstNode> root);
+std::vector<AstNode*> astGatherTypes(Ref<AstNode> root);
 
 class AstSerializeContext;
 
@@ -234,8 +248,14 @@ public:
 	Ref<SymbolScope> getScope()const;
 	void setScope(Ref<SymbolScope> scope);
 
-	Ref<BaseType> getDataType()const;
-	void setDataType(Ref<BaseType> dataType);
+	AstNode* getDataType()const
+	{
+		return m_dataType;
+	}
+	void setDataType(AstNode* dataType)
+	{
+		m_dataType = dataType;
+	}
 
 	int addFlag(AstFlags flag)
 	{
@@ -292,7 +312,7 @@ private:
 	AstNodeList				m_children;
 
 	Ref<RefCountObj>		m_scope;
-	Ref<RefCountObj>		m_dataType;
+	AstNode*				m_dataType;
 	int						m_flags = 0;
 	AstNodeTypes			m_type;
 

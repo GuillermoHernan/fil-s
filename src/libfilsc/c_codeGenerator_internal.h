@@ -7,7 +7,6 @@
 #include "c_codeGenerator.h"
 
 class CodeGeneratorState;
-class TupleType;
 struct IVariableInfo;
 
 typedef void(*NodeCodegenFN)(Ref<AstNode> node, CodeGeneratorState& state, const IVariableInfo& resultDest);
@@ -15,7 +14,7 @@ typedef void(*NodeCodegenFN)(Ref<AstNode> node, CodeGeneratorState& state, const
 void writeProlog(std::ostream& output);
 void codegen(Ref<AstNode> node, CodeGeneratorState& state, const IVariableInfo& resultDest);
 
-void dataTypeCodegen(Ref<BaseType> type, CodeGeneratorState& state);
+void dataTypeCodegen(AstNode* type, CodeGeneratorState& state);
 
 void voidCodegen(Ref<AstNode> node, CodeGeneratorState& state, const IVariableInfo& resultDest);
 void invalidNodeCodegen(Ref<AstNode> node, CodeGeneratorState& state, const IVariableInfo& resultDest);
@@ -26,7 +25,7 @@ void blockCodegen (Ref<AstNode> node, CodeGeneratorState& state, const IVariable
 void tupleCodegen(Ref<AstNode> node, CodeGeneratorState& state, const IVariableInfo& resultDest);
 void varCodegen (Ref<AstNode> node, CodeGeneratorState& state, const IVariableInfo& resultDest);
 void tupleDefCodegen(Ref<AstNode> node, CodeGeneratorState& state, const IVariableInfo& resultDest);
-void tupleDefCodegen(Ref<BaseType> type, CodeGeneratorState& state);
+void tupleDefCodegen(AstNode* type, CodeGeneratorState& state);
 void tupleAdapterCodegen(Ref<AstNode> node, CodeGeneratorState& state, const IVariableInfo& resultDest);
 void ifCodegen (Ref<AstNode> node, CodeGeneratorState& state, const IVariableInfo& resultDest);
 void returnCodegen (Ref<AstNode> node, CodeGeneratorState& state, const IVariableInfo& resultDest);
@@ -41,7 +40,7 @@ void postfixOpCodegen (Ref<AstNode> node, CodeGeneratorState& state, const IVari
 
 void actorCodegen(Ref<AstNode> node, CodeGeneratorState& state, const IVariableInfo& resultDest);
 void outputMessageCodegen(Ref<AstNode> node, CodeGeneratorState& state, const IVariableInfo& resultDest);
-void generateActorStruct(Ref<BaseType> type, CodeGeneratorState& state);
+void generateActorStruct(AstNode* type, CodeGeneratorState& state);
 void generateActorConstructor(Ref<AstNode> node, CodeGeneratorState& state);
 void generateActorInputs(Ref<AstNode> node, CodeGeneratorState& state);
 void generateActorInput(Ref<AstNode> actor, Ref<AstNode> input, CodeGeneratorState& state);

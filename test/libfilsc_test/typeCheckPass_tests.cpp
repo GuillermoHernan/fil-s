@@ -6,7 +6,6 @@
 #include "typeCheckPass.h"
 #include "semAnalysisState.h"
 #include "semanticAnalysis.h"
-#include "dataTypes.h"
 
 using namespace std;
 
@@ -60,8 +59,8 @@ TEST(TypeCheck, tupleDefTypeCheck)
 	ASSERT_TRUE(node.notNull());
 
 	auto dataType = node->getDataType();
-	EXPECT_EQ(DT_TUPLE, dataType->type());
-	EXPECT_STREQ("(int,bool,(int,int))", dataType->toString().c_str());
+	EXPECT_TRUE( astIsTupleType (dataType));
+	EXPECT_DATATYPE_STR("(int,bool,(int,int))", dataType);
 }
 
 /// <summary>Tests 'blockTypeCheck' function.</summary>
@@ -76,8 +75,8 @@ TEST(TypeCheck, blockTypeCheck)
 	});
 
 	ASSERT_EQ(2, nodes.size());
-	EXPECT_DATATYPE(DT_VOID, nodes[0]);
-	EXPECT_DATATYPE(DT_VOID, nodes[1]);
+	EXPECT_TRUE (astIsVoidType ( nodes[0].getPointer()));
+	EXPECT_TRUE (astIsVoidType ( nodes[1].getPointer()));
 
 	r = semAnalysisCheck("const a = {const b = (1*4)+9; (b,false)}");
 
@@ -88,8 +87,8 @@ TEST(TypeCheck, blockTypeCheck)
 	});
 
 	ASSERT_TRUE(node.notNull());
-	EXPECT_DATATYPE(DT_TUPLE, node);
-	EXPECT_STREQ("(int,bool)", node->getDataType()->toString().c_str());
+	EXPECT_TRUE(astIsTupleType(node->getDataType()));
+	EXPECT_DATATYPE_STR("(int,bool)", node->getDataType());
 
 	//printAST(r.result, cout);
 }
@@ -106,9 +105,9 @@ TEST(TypeCheck, tupleTypeCheck)
 	});
 
 	ASSERT_TRUE(node.notNull());
-	EXPECT_DATATYPE(DT_TUPLE, node);
+	EXPECT_TRUE(astIsTupleType(node->getDataType()));
 
-	EXPECT_STREQ("(int,int,bool)", node->getDataType()->toString().c_str());
+	EXPECT_DATATYPE_STR("(int,int,bool)", node->getDataType());
 
 	//printAST(r.result, cout);
 }
@@ -125,7 +124,7 @@ TEST(TypeCheck, declarationTypeCheck)
 
 	ASSERT_SEM_OK(r);
 	auto decl = findDeclaration(r.result);
-	EXPECT_DATATYPE_STR("int", decl);
+	EXPECT_DATATYPE_STR("int", decl->getDataType());
 
 	EXPECT_SEM_OK(semAnalysisCheck("const a:int = 5;"));
 	EXPECT_SEM_ERROR(semAnalysisCheck("const a:int = true;"));
@@ -135,7 +134,7 @@ TEST(TypeCheck, declarationTypeCheck)
 
 	ASSERT_SEM_OK(r);
 	decl = findDeclaration(r.result);
-	EXPECT_DATATYPE_STR("(bool,int)", decl);
+	EXPECT_DATATYPE_STR("(bool,int)", decl->getDataType());
 
 	r = semAnalysisCheck("const a;");
 	ASSERT_SEM_ERROR(r);
@@ -155,19 +154,19 @@ TEST(TypeCheck, ifTypeCheck)
 
 	ASSERT_SEM_OK(r);
 	auto node = findNode(r.result, AST_IF);
-	EXPECT_DATATYPE_STR("(int,int)", node);
+	EXPECT_DATATYPE_STR("(int,int)", node->getDataType());
 
 	r = semAnalysisCheck("const a = if (false) (4,5) else (false,7);");
 
 	ASSERT_SEM_OK(r);
 	node = findNode(r.result, AST_IF);
-	EXPECT_DATATYPE_STR("()", node);
+	EXPECT_DATATYPE_STR("()", node->getDataType());
 
 	r = semAnalysisCheck("const a = if (true) 4;");
 
 	ASSERT_SEM_OK(r);
 	node = findNode(r.result, AST_IF);
-	EXPECT_DATATYPE_STR("()", node);
+	EXPECT_DATATYPE_STR("()", node->getDataType());
 
 	r = semAnalysisCheck("const a = if (0) 3 else 5;");
 
@@ -182,13 +181,13 @@ TEST(TypeCheck, returnTypeAssign)
 
 	ASSERT_SEM_OK(r);
 	auto node = findNode(r.result, AST_RETURN);
-	EXPECT_DATATYPE_STR("(int,int)", node);
+	EXPECT_DATATYPE_STR("(int,int)", node->getDataType());
 
 	r = semAnalysisCheck("function f() {return;}");
 
 	ASSERT_SEM_OK(r);
 	node = findNode(r.result, AST_RETURN);
-	EXPECT_DATATYPE_STR("()", node);
+	EXPECT_DATATYPE_STR("()", node->getDataType());
 }
 
 /// <summary>Tests 'functionDefTypeCheck' function.</summary>
@@ -203,7 +202,7 @@ TEST(TypeCheck, functionDefTypeCheck)
 	//printAST(r.result, cout, 0);
 	ASSERT_SEM_OK(r);
 	auto node = findNode(r.result, AST_FUNCTION);
-	EXPECT_DATATYPE_STR("function(int,int):(int,int)", node);
+	EXPECT_DATATYPE_STR("function(int,int):(int,int)", node->getDataType());
 
 	//Function with declared type and mismatching body type.
 	r = semAnalysisCheck("function div(a: int, b: int):int {\n"
@@ -222,7 +221,7 @@ TEST(TypeCheck, functionDefTypeCheck)
 
 	ASSERT_SEM_OK(r);
 	node = findNode(r.result, AST_FUNCTION);
-	EXPECT_DATATYPE_STR("function(int,int):(int,int,bool)", node);
+	EXPECT_DATATYPE_STR("function(int,int):(int,int,bool)", node->getDataType());
 }
 
 /// <summary>Tests 'assignmentTypeCheck' function.</summary>
@@ -233,7 +232,7 @@ TEST(TypeCheck, assignmentTypeCheck)
 
 	auto node = findNode(r.result, AST_ASSIGNMENT);
 	ASSERT_TRUE(node.notNull());
-	EXPECT_DATATYPE_STR("int", node);
+	EXPECT_DATATYPE_STR("int", node->getDataType());
 
 	ASSERT_SEM_ERROR ( semAnalysisCheck("function f() {var a:bool; a = 7;}"));
 }
@@ -249,7 +248,7 @@ TEST(TypeCheck, callTypeCheck)
 
 	auto node = findNode(r.result, AST_FNCALL);
 	ASSERT_TRUE(node.notNull());
-	EXPECT_DATATYPE_STR("int", node);
+	EXPECT_DATATYPE_STR("int", node->getDataType());
 }
 
 /// <summary>Tests 'memberAccessTypeCheck' function.</summary>
@@ -267,8 +266,8 @@ TEST(TypeCheck, memberAccessTypeCheck)
 
 	auto node = findNode(r.result, AST_MEMBER_ACCESS);
 	ASSERT_TRUE(node.notNull());
-	EXPECT_DATATYPE_STR("int", node);
-	EXPECT_DATATYPE_STR("(int,int)", node->child(0));
+	EXPECT_DATATYPE_STR("int", node->getDataType());
+	EXPECT_DATATYPE_STR("(int,int)", node->child(0)->getDataType());
 
 	r = semAnalysisCheck(
 		"type TestTuple is (a:int, n:int)\n"

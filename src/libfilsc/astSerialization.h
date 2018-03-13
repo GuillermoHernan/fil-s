@@ -2,8 +2,6 @@
 
 #include "ast.h"
 
-class BaseType;
-
 void serializeAST(const std::string& path, Ref<AstNode> node);
 Ref<AstNode> deSerializeAST(const std::string& path);
 
@@ -18,7 +16,6 @@ namespace json11
 
 /// <summary>
 /// Stores information needed during AST tree serialization process.
-/// For example, the list of datatypes.
 /// </summary>
 class AstSerializeContext
 {
@@ -26,21 +23,29 @@ public:
 	AstSerializeContext(std::ostream& output);
 
 	void			serializeAST(AstNode* root);
-	std::string		datatypeRef(const BaseType* type);
+	std::string		getNodeRef(const AstNode* node);
 
 private:
-	int generateIds(AstNode* root, int nextId = 1);
-
-	json11::Json	serializeTypes();
 	json11::Json	serializeNode(const AstNode* root);
-	json11::Json	serializeType(BaseType* type);
-
-private:
-	int generateIds(BaseType* type, int nextId);
 
 private:
 	std::ostream&	m_output;
 
-	std::map <BaseType*, int>	m_typeIds;
-	std::map <AstNode*, int>	m_nodeIds;
+	std::map <const AstNode*, int>	m_nodeIds;
+	int								m_nextId = 1;
+};
+
+/// <summary>
+/// Stores information needed during AST tree deserialization process.
+/// For example, the list of datatypes.
+/// </summary>
+class AstDeserializeContext
+{
+public:
+	void		registerNode(AstNode* node, const std::string& id, const std::string& dataTypeId);
+	AstNode*	getDataType(AstNode* node);
+
+private:
+	std::map<std::string, AstNode*>	m_id2Node;
+	std::map<AstNode*, std::string>	m_node2TypeId;
 };

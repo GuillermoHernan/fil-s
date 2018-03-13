@@ -164,7 +164,6 @@
     <ClCompile Include="builder_tests.cpp" />
     <ClCompile Include="codeGeneratorState_tests.cpp" />
     <ClCompile Include="c_codegen_tests.cpp" />
-    <ClCompile Include="dataTypes_tests.cpp" />
     <ClCompile Include="gatherPass_tests.cpp" />
     <ClCompile Include="lexer_tests.cpp" />
     <ClCompile Include="libfilsc_test.cpp" />

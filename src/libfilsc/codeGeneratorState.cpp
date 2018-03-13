@@ -45,7 +45,7 @@ std::string CodeGeneratorState::cname(Ref<AstNode> node)
 /// </summary>
 /// <param name="type"></param>
 /// <returns></returns>
-std::string CodeGeneratorState::cname(Ref<BaseType> type)
+std::string CodeGeneratorState::cname(AstNode* type)
 {
 	auto it = m_objNames.find(type);
 
@@ -55,7 +55,7 @@ std::string CodeGeneratorState::cname(Ref<BaseType> type)
 	{
 		string name;
 
-		if (type->type() == DT_BOOL || type->type() == DT_INT)
+		if (type->getType() == AST_DEFAULT_TYPE)
 			name = type->getName();
 		else
 			name = allocCName(type->getName());
@@ -65,27 +65,28 @@ std::string CodeGeneratorState::cname(Ref<BaseType> type)
 	}
 }
 
-/// <summary>
-/// Gets the name in 'C' source for the given member of a tuple type.
-/// </summary>
-/// <param name="tuple">Tuple type</param>
-/// <param name="index">Member index in the tuple</param>
-/// <returns></returns>
-std::string CodeGeneratorState::tupleMemberCName(Ref<TupleType> tuple, int index)
-{
-	auto key = make_tuple(tuple, index);
-	auto it = m_tupleMemberNames.find(key);
-
-	if (it != m_tupleMemberNames.end())
-		return it->second;
-	else
-	{
-		string name = allocCName(tuple->getMemberName(index));
-
-		m_tupleMemberNames[key] = name;
-		return name;
-	}
-}
+//TODO: PRobably, this function is no longer necessary.
+///// <summary>
+///// Gets the name in 'C' source for the given member of a tuple type.
+///// </summary>
+///// <param name="tuple">Tuple type</param>
+///// <param name="index">Member index in the tuple</param>
+///// <returns></returns>
+//std::string CodeGeneratorState::tupleMemberCName(AstNode* tuple, int index)
+//{
+//	auto key = make_tuple(tuple, index);
+//	auto it = m_tupleMemberNames.find(key);
+//
+//	if (it != m_tupleMemberNames.end())
+//		return it->second;
+//	else
+//	{
+//		string name = allocCName(tuple->getMemberName(index));
+//
+//		m_tupleMemberNames[key] = name;
+//		return name;
+//	}
+//}
 
 /// <summary>
 /// Checks if the type already has an assigned 'C' name. 
@@ -93,9 +94,9 @@ std::string CodeGeneratorState::tupleMemberCName(Ref<TupleType> tuple, int index
 /// </summary>
 /// <param name="type"></param>
 /// <returns></returns>
-bool CodeGeneratorState::hasName(Ref<BaseType> type)const
+bool CodeGeneratorState::hasName(AstNode* type)const
 {
-	if (type->type() < DT_TUPLE)
+	if (type->getType() == AST_DEFAULT_TYPE)
 		return true;
 	else
 		return m_objNames.count(type) > 0;
@@ -130,7 +131,7 @@ void CodeGeneratorState::setCname(Ref<AstNode> node, const std::string& name)
 /// </summary>
 /// <param name="type"></param>
 /// <param name="state"></param>
-void CodeGeneratorState::typeCodegen(Ref<BaseType> type, CodeGeneratorState& state)
+void CodeGeneratorState::typeCodegen(AstNode* type, CodeGeneratorState& state)
 {
 	m_typeGenFN(type, state);
 }
@@ -284,7 +285,7 @@ std::ostream& operator << (std::ostream& output, const IVariableInfo& var)
 /// </summary>
 /// <param name="type"></param>
 /// <param name="state"></param>
-TempVariable::TempVariable(Ref<BaseType> type, CodeGeneratorState& state, bool ref)
+TempVariable::TempVariable(AstNode* type, CodeGeneratorState& state, bool ref)
 	: IVariableInfo(ref), m_state(state), m_dataType(type)
 {
 	//If the datatype has not been declared in 'C' source, declare it.
@@ -331,9 +332,9 @@ const std::string& VoidVariable::cname()const
 	return empty;
 }
 
-Ref<BaseType> VoidVariable::dataType()const
+AstNode* VoidVariable::dataType()const
 {
-	return DefaultType::createVoid();
+	return astGetVoid();
 }
 
 NamedVariable::NamedVariable(Ref<AstNode> node, CodeGeneratorState& state)
@@ -345,7 +346,7 @@ const std::string& NamedVariable::cname()const
 {
 	return m_cName;
 }
-Ref<BaseType> NamedVariable::dataType()const
+AstNode* NamedVariable::dataType()const
 {
 	return m_node->getDataType();
 }
@@ -358,20 +359,20 @@ TupleField::TupleField(const IVariableInfo& tuple, int fieldIndex, CodeGenerator
 {
 	auto type = tuple.dataType();
 
-	assert(type->type() == DT_TUPLE);
-	auto	tupleType = type.staticCast<TupleType>();
+	assert(astIsTupleType (type));
 
-	assert(fieldIndex < tupleType->memberCount());
+	assert(fieldIndex < (int)type->childCount());
 
-	m_type = tupleType->getMemberType(fieldIndex);
-	m_cName = tuple.cname() + "." + state.tupleMemberCName(tupleType, fieldIndex);
+	auto fieldNode = type->child(fieldIndex);
+	m_type = fieldNode->getDataType();
+	m_cName = tuple.cname() + "." + state.cname(fieldNode);
 }
 
 const std::string& TupleField::cname()const
 {
 	return m_cName;
 }
-Ref<BaseType> TupleField::dataType()const
+AstNode* TupleField::dataType()const
 {
 	return m_type;
 }

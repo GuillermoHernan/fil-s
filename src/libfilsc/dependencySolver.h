@@ -11,7 +11,7 @@ bool solveDependencies(
 	Type item,
 	std::map<Type, int>& solvedMap,
 	std::set<Type>& circularGuard,
-	std::function < std::vector<Type>(const Type&)> depFN
+	std::function < std::set<Type>(const Type&)> depFN
 )
 {
 	//Already solved.
@@ -47,7 +47,7 @@ bool solveDependencies(
 template <class Type>
 std::vector<Type> dependencySort(
 	const std::vector<Type>& items, 
-	std::function < std::vector<Type>(const Type&)> depFN)
+	std::function < std::set<Type>(const Type&)> depFN)
 {
 	typedef std::vector<Type>		ItemVector;
 	typedef std::set<Type>			ItemSet;

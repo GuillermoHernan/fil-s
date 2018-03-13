@@ -3,7 +3,6 @@
 #include "semanticAnalysis_internal.h"
 #include "symbolScope.h"
 #include "passOperations.h"
-#include "dataTypes.h"
 #include "semAnalysisState.h"
 
 using namespace std;
@@ -137,13 +136,8 @@ CompileError typeExistsCheck(Ref<AstNode> node, SemAnalysisState& state)
 /// <summary>Type checking on a tuple definition.</summary>
 CompileError tupleDefTypeCheck(Ref<AstNode> node, SemAnalysisState& state)
 {
-	auto	scope = node->getScope();
-	auto	tupleType = TupleType::create(node->getName());
-
-	for (auto child : node->children())
-		tupleType->addMember(child->getDataType(), child->getName());
-
-	node->setDataType(tupleType);
+	//The data type of a tuple definition is itself.
+	node->setDataType(node.getPointer());
 
 	return CompileError::ok();
 }
@@ -177,12 +171,8 @@ CompileError typedefTypeCheck(Ref<AstNode> node, SemAnalysisState& state)
 /// </summary>
 CompileError tupleTypeCheck(Ref<AstNode> node, SemAnalysisState& state)
 {
-	auto	tupleDataType = TupleType::create();
-
-	for (auto child : node->children())
-		tupleDataType->addMember(child->getDataType(), "");
-
-	node->setDataType(tupleDataType);
+	//The type of a tuple node is itself.
+	node->setDataType(node.getPointer());
 
 	return CompileError::ok();
 }
@@ -197,7 +187,7 @@ CompileError declarationTypeCheck(Ref<AstNode> node, SemAnalysisState& state)
 	{
 		auto declaredType = node->child(0)->getDataType();
 
-		if (declaredType->type() == DT_ACTOR)
+		if (declaredType->getType() == AST_ACTOR)
 			return actorInstanceTypeCheck(node, state);
 
 		node->setDataType(declaredType);
@@ -225,8 +215,12 @@ CompileError ifTypeCheck(Ref<AstNode> node, SemAnalysisState& state)
 {
 	auto conditionType = node->child(0)->getDataType();
 
-	if (!isBoolType(conditionType))
-		return semError(node->child(0), ETYPE_WRONG_IF_CONDITION_TYPE_1, conditionType->toString().c_str());
+	if (!astIsBoolType(conditionType))
+	{
+		return semError(node->child(0), 
+			ETYPE_WRONG_IF_CONDITION_TYPE_1, 
+			astTypeToString(conditionType).c_str());
+	}
 
 	auto thenType = node->child(1)->getDataType();
 
@@ -237,7 +231,7 @@ CompileError ifTypeCheck(Ref<AstNode> node, SemAnalysisState& state)
 		auto elseType = node->child(2)->getDataType();
 		auto common = getCommonType(thenType, elseType, state);
 
-		if (common.notNull())
+		if (common != nullptr)
 			node->setDataType(common);
 		else
 		{
@@ -279,13 +273,13 @@ CompileError returnTypeCheck(Ref<AstNode> node, SemAnalysisState& state)
 	if (functionNode.isNull())
 		return semError(node, ETYPE_RETURN_OUTSIDE_FUNCTION);
 
-	auto returnType = functionNode->getDataType().staticCast<FunctionType>()->getReturnType();
+	auto returnType = astGetReturnType(functionNode.getPointer());
 
 	if (!areTypesCompatible(returnType, node->getDataType()))
 	{
 		return semError(node, ETYPE_INCOMPATIBLE_RETURN_TYPE_2,
-			node->getDataType()->toString().c_str(),
-			returnType->toString().c_str());
+			astTypeToString(node.getPointer()).c_str(),
+			astTypeToString(returnType).c_str());
 	}
 	else
 		return CompileError::ok();
@@ -300,28 +294,21 @@ CompileError functionDefTypeCheck(Ref<AstNode> node, SemAnalysisState& state)
 	auto body = node->child(2);
 	auto bodyType = body->getDataType();
 
-	//Create function own data type.
-	auto fnType = FunctionType::create(node);
-	node->setDataType(fnType);
+	//The data type of the function is itself
+	node->setDataType(node.getPointer());
 
 	//Infer return type if necessary.
 	if (!node->childExists(1))
 	{
-		if (bodyType->type() == DT_TUPLE)
-		{
-			auto tupleType = bodyType.staticCast<TupleType>();
-			auto tupleDefNode = buildTupleDefFromTupleType(tupleType, body->position());
-			node->setChild(1, tupleDefNode);
-		}
-		fnType->setReturnType(bodyType);
+		node->setChild(1, body);
 		return CompileError::ok();
 	}
 	else
 	{
-		auto declaredType = fnType->getReturnType();
+		auto declaredType = node->child(2).getPointer();
 
 		//If void is declared explicitly, then any type is valid for the body.
-		if (isVoidType(declaredType))
+		if (astIsVoidType(declaredType))
 			return CompileError::ok();
 		else
 			return areTypesCompatible(declaredType, bodyType, node);
@@ -344,10 +331,10 @@ CompileError callTypeCheck(Ref<AstNode> node, SemAnalysisState& state)
 	auto type = node->child(0)->getDataType();
 	auto paramsType = node->child(1)->getDataType();
 
-	assert(type->canBeCalled());
+	assert(astCanBeCalled(type));
 
-	node->setDataType(type->getReturnType());
-	return areTypesCompatible(type->getParameters(), paramsType, node);
+	node->setDataType(astGetReturnType(type));
+	return areTypesCompatible(astGetParameters(type), paramsType, node);
 }
 
 /// <summary>Type check for variable / symbol reading</summary>
@@ -369,7 +356,7 @@ CompileError varReadTypeCheck(Ref<AstNode> node, SemAnalysisState& state)
 		//Without type inference, we may just assign the types for declarations in a previous pass,
 		//and perform expression type checking in a later pass.
 		//Perhaps, a possible solution may be walking the tree on a different way...
-		if (referenced->getDataType().isNull())
+		if (astIsVoidType (referenced->getDataType()))
 			return semError(node, ETYPE_NOT_IMPLEMENTED_1, "Resolving data types for later defined symbols");
 
 		node->setDataType(referenced->getDataType());
@@ -381,18 +368,22 @@ CompileError varReadTypeCheck(Ref<AstNode> node, SemAnalysisState& state)
 CompileError memberAccessTypeCheck(Ref<AstNode> node, SemAnalysisState& state)
 {
 	auto	leftType = node->child(0)->getDataType();
-	assert(leftType->type() == DT_TUPLE);
+	assert(astIsTupleType(leftType));
 	
-	auto	tupleType = leftType.staticCast<TupleType>();
 	string	name = node->child(1)->getName();
 
-	int index = tupleType->findMemberByName(name);
+	int index = astFindMemberByName(leftType, name);
 
 	if (index < 0)
-		return semError(node->child(1), ETYPE_MEMBER_NOT_FOUND_2, name.c_str(), leftType->toString().c_str());
+	{
+		return semError(node->child(1), 
+			ETYPE_MEMBER_NOT_FOUND_2, 
+			name.c_str(), 
+			astTypeToString(leftType).c_str());
+	}
 	else
 	{
-		node->setDataType(tupleType->getMemberType(index));
+		auto memberType = leftType->child(index)->getDataType();
 		return CompileError::ok();
 	}
 }
@@ -424,13 +415,13 @@ CompileError prefixOpTypeCheck(Ref<AstNode> node, SemAnalysisState& state)
 
 	if (op == "!")
 	{
-		if (!isBoolType(childType))
-			return semError(node->child(0), ETYPE_WRONG_TYPE_2, childType->toString().c_str(), "bool");
+		if (!astIsBoolType(childType))
+			return semError(node->child(0), ETYPE_WRONG_TYPE_2, astTypeToString(childType).c_str(), "bool");
 	}
 	else
 	{
-		if (!isIntType(childType))
-			return semError(node->child(0), ETYPE_WRONG_TYPE_2, childType->toString().c_str(), "int");
+		if (!astIsIntType(childType))
+			return semError(node->child(0), ETYPE_WRONG_TYPE_2, astTypeToString(childType).c_str(), "int");
 	}
 
 	return CompileError::ok();
@@ -443,8 +434,8 @@ CompileError postfixOpTypeCheck(Ref<AstNode> node, SemAnalysisState& state)
 
 	node->setDataType(childType);
 
-	if (!isIntType(childType))
-		return semError(node->child(0), ETYPE_WRONG_TYPE_2, childType->toString().c_str(), "int");
+	if (!astIsIntType(childType))
+		return semError(node->child(0), ETYPE_WRONG_TYPE_2, astTypeToString(childType).c_str(), "int");
 	else
 		return CompileError::ok();
 }
@@ -458,10 +449,10 @@ CompileError mathOperatorTypeCheck(Ref<AstNode> node, SemAnalysisState& state)
 
 	node->setDataType(lexpr->getDataType());
 
-	if (!isIntType(lexpr->getDataType()))
-		return semError(node->child(0), ETYPE_WRONG_TYPE_2, lexpr->getDataType()->toString().c_str(), "int");
-	else if (!isIntType(rexpr->getDataType()))
-		return semError(node->child(0), ETYPE_WRONG_TYPE_2, rexpr->getDataType()->toString().c_str(), "int");
+	if (!astIsIntType(lexpr->getDataType()))
+		return semError(node->child(0), ETYPE_WRONG_TYPE_2, astTypeToString(lexpr->getDataType()).c_str(), "int");
+	else if (!astIsIntType(rexpr->getDataType()))
+		return semError(node->child(0), ETYPE_WRONG_TYPE_2, astTypeToString(rexpr->getDataType()).c_str(), "int");
 	else
 		return CompileError::ok();
 }
@@ -479,7 +470,7 @@ CompileError comparisionOperatorTypeCheck(Ref<AstNode> node, SemAnalysisState& s
 	//Also same checks as in math operators, but the type is boolean.
 	auto result = mathOperatorTypeCheck(node, state);
 
-	node->setDataType(DefaultType::createBool());
+	node->setDataType(astGetBool());
 	return result;
 }
 
@@ -490,20 +481,20 @@ CompileError equalityOperatorTypeCheck(Ref<AstNode> node, SemAnalysisState& stat
 	auto lexpr = node->child(0);
 	auto rexpr = node->child(1);
 
-	node->setDataType(DefaultType::createBool());
+	node->setDataType(astGetBool());
 
-	if (isIntType(lexpr->getDataType()))
+	if (astIsIntType(lexpr->getDataType()))
 	{
-		if (!isIntType(rexpr->getDataType()))
-			return semError(rexpr, ETYPE_WRONG_TYPE_2, rexpr->getDataType()->toString().c_str(), "int");
+		if (!astIsIntType(rexpr->getDataType()))
+			return semError(rexpr, ETYPE_WRONG_TYPE_2, astTypeToString(rexpr->getDataType()).c_str(), "int");
 	}
-	else if (isBoolType(lexpr->getDataType()))
+	else if (astIsBoolType(lexpr->getDataType()))
 	{
-		if (!isBoolType(rexpr->getDataType()))
-			return semError(rexpr, ETYPE_WRONG_TYPE_2, rexpr->getDataType()->toString().c_str(), "bool");
+		if (!astIsBoolType(rexpr->getDataType()))
+			return semError(rexpr, ETYPE_WRONG_TYPE_2, astTypeToString(rexpr->getDataType()).c_str(), "bool");
 	}
 	else
-		return semError(lexpr, ETYPE_WRONG_TYPE_2, rexpr->getDataType()->toString().c_str(), "int or bool");
+		return semError(lexpr, ETYPE_WRONG_TYPE_2, astTypeToString(rexpr->getDataType()).c_str(), "int or bool");
 
 	//If ir reach here, check is ok.
 	return CompileError::ok();
@@ -517,10 +508,10 @@ CompileError logicalOperatorTypeCheck(Ref<AstNode> node, SemAnalysisState& state
 
 	node->setDataType(lexpr->getDataType());
 
-	if (!isBoolType(lexpr->getDataType()))
-		return semError(node->child(0), ETYPE_WRONG_TYPE_2, lexpr->getDataType()->toString().c_str(), "bool");
-	else if (!isBoolType(rexpr->getDataType()))
-		return semError(node->child(0), ETYPE_WRONG_TYPE_2, rexpr->getDataType()->toString().c_str(), "bool");
+	if (!astIsBoolType(lexpr->getDataType()))
+		return semError(node->child(0), ETYPE_WRONG_TYPE_2, astTypeToString(lexpr->getDataType()).c_str(), "bool");
+	else if (!astIsBoolType(rexpr->getDataType()))
+		return semError(node->child(0), ETYPE_WRONG_TYPE_2, astTypeToString(rexpr->getDataType()).c_str(), "bool");
 	else
 		return CompileError::ok();
 }
@@ -531,11 +522,11 @@ CompileError literalTypeAssign(Ref<AstNode> node, SemAnalysisState& state)
 	switch (node->getType())
 	{
 	case AST_BOOL:
-		node->setDataType(DefaultType::createBool());
+		node->setDataType(astGetBool());
 		break;
 
 	case AST_INTEGER:
-		node->setDataType(DefaultType::createInt());
+		node->setDataType(astGetInt());
 		break;
 
 	case AST_STRING:
@@ -557,11 +548,11 @@ CompileError defaultTypeAssign(Ref<AstNode> node, SemAnalysisState& state)
 	string name = node->getName();
 
 	if (name == "int")
-		node->setDataType(DefaultType::createInt());
+		node->setDataType(astGetInt());
 	else
 	{
 		assert(name == "bool");
-		node->setDataType(DefaultType::createBool());
+		node->setDataType(astGetBool());
 	}
 
 	return CompileError::ok();
@@ -572,10 +563,8 @@ CompileError defaultTypeAssign(Ref<AstNode> node, SemAnalysisState& state)
 /// </summary>
 CompileError actorTypeCheck(Ref<AstNode> node, SemAnalysisState& state)
 {
-	auto	scope = node->getScope();
-	auto	actorType = ActorType::create(node);
-
-	node->setDataType(actorType);
+	//The data type of an actor is itself
+	node->setDataType(node.getPointer());
 
 	return CompileError::ok();
 }
@@ -588,9 +577,8 @@ CompileError actorTypeCheck(Ref<AstNode> node, SemAnalysisState& state)
 /// <returns></returns>
 CompileError messageTypeCheck(Ref<AstNode> node, SemAnalysisState& state)
 {
-	//Create message own data type.
-	auto msgType = MessageType::create(node);
-	node->setDataType(msgType);
+	//The data type of a message is itself
+	node->setDataType(node.getPointer());
 
 	return CompileError::ok();
 }
@@ -606,12 +594,12 @@ CompileError unnamedInputTypeCheck(Ref<AstNode> node, SemAnalysisState& state)
 		return semError(node, ETYPE_UNSPECIFIED_CONNECT_OUTPUT);
 
 	auto output = getConnectOutputType(pathNode, state);
-	if (output.isNull())
+	if (output == nullptr)
 		return semError(node, ETYPE_INVALID_CONNECT_OUTPUT);
 
 	auto paramsNode = node->child(1);
 
-	return areTypesCompatible(output->getParameters(), paramsNode->getDataType(), paramsNode);
+	return areTypesCompatible(astGetParameters(output), paramsNode->getDataType(), paramsNode);
 }
 
 
@@ -635,14 +623,14 @@ CompileError actorInstanceTypeCheck(Ref<AstNode> node, SemAnalysisState& state)
 	if (!node->hasFlag(ASTF_CONST))
 		return semError(node, ETYPE_NON_CONST_ACTOR_INSTANCE);
 
-	Ref<BaseType>	paramsType = DefaultType::createVoid();
+	auto	paramsType = astGetVoid();
 
 	if (node->childExists(1))
 		paramsType = node->child(1)->getDataType();
 
 	node->setDataType(actorType);
 
-	return areTypesCompatible(actorType->getParameters(), paramsType, node);
+	return areTypesCompatible(astGetParameters(actorType), paramsType, node);
 }
 
 /// <summary>
@@ -653,34 +641,33 @@ CompileError actorInstanceTypeCheck(Ref<AstNode> node, SemAnalysisState& state)
 /// <param name="pathNode"></param>
 /// <param name="state"></param>
 /// <returns></returns>
-Ref<BaseType> getConnectOutputType(Ref<AstNode> pathNode, SemAnalysisState& state)
+AstNode* getConnectOutputType(Ref<AstNode> pathNode, SemAnalysisState& state)
 {
 	auto			scope = pathNode->getScope();
 
 	auto referred = scope->get(pathNode->child(0)->getName(), true);
 	if (referred.isNull())
-		return Ref<BaseType>();
+		return nullptr;
 
 	auto result = referred->getDataType();
-	auto tuple = result.dynamicCast<TupleType>();
+	auto tuple = result;
 
 	size_t i = 1;
-	for (; i < pathNode->childCount() && tuple.notNull(); ++i)
+	for (; i < pathNode->childCount() && astIsTupleType(tuple); ++i)
 	{
 		auto child = pathNode->child(i);
 		assert(child.notNull() && child->getType() == AST_MEMBER_NAME);
 
-		int index = tuple->findMemberByName(child->getName());
+		int index = astFindMemberByName(tuple, child->getName());
 
 		if (index < 0)
-			return Ref<BaseType>();
+			return nullptr;
 
-		result = tuple->getMemberType(index);
-		tuple = result.dynamicCast<TupleType>();
+		result = tuple = tuple->child(index)->getDataType();
 	}
 
-	if (i < pathNode->childCount() || result->type() != DT_OUTPUT)
-		return Ref<BaseType>();
+	if (i < pathNode->childCount() || result->getType() != AST_OUTPUT)
+		return nullptr;
 	else
 		return result;
 }
@@ -723,11 +710,11 @@ Ref<AstNode> addTupleAdapter(Ref<AstNode> node, SemAnalysisState& state)
 /// <param name="rNode">Right hand node (the source node in an assignment)</param>
 /// <param name="lType">Data type to which it shall be converted.</param>
 /// <returns>An AST tuple adapter node or the right hand node if no adaptation is necessary.</returns>
-Ref<AstNode> makeTupleAdapter(Ref<AstNode> rNode, Ref<BaseType> lType)
+Ref<AstNode> makeTupleAdapter(Ref<AstNode> rNode, AstNode* lType)
 {
 	auto rType = rNode->getDataType();
 
-	if (lType->type() != DT_TUPLE && rType->type() != DT_TUPLE)
+	if (!astIsTupleType(lType) && astIsTupleType(rType))
 		return rNode;
 
 	if (lType == rType)
@@ -756,7 +743,7 @@ Ref<AstNode> addReturnTupleAdapter(Ref<AstNode> node, SemAnalysisState& state)
 
 	assert(functionNode.notNull());
 
-	auto returnType = functionNode->getDataType()->getReturnType();
+	auto returnType = astGetReturnType(functionNode.getPointer());
 	auto child = node->child(0);
 
 	node->setChild(0, makeTupleAdapter(child,returnType));
@@ -770,7 +757,7 @@ Ref<AstNode> addReturnTupleAdapter(Ref<AstNode> node, SemAnalysisState& state)
 /// <returns>Always 'ok'</returns>
 CompileError setVoidType(Ref<AstNode> node, SemAnalysisState& state)
 {
-	node->setDataType(DefaultType::createVoid());
+	node->setDataType(astGetVoid());
 	return CompileError::ok();
 }
 
@@ -779,7 +766,7 @@ CompileError setVoidType(Ref<AstNode> node, SemAnalysisState& state)
 /// <param name="typeB">Type of the source object.</param>
 /// <param name="opNode">Used to create the compile error (to give a location to it)</param>
 /// <returns>A compile error or 'ok'</returns>
-CompileError areTypesCompatible(Ref<BaseType> typeA, Ref<BaseType> typeB, Ref<AstNode> opNode)
+CompileError areTypesCompatible(AstNode* typeA, AstNode* typeB, Ref<AstNode> opNode)
 {
 	bool result = areTypesCompatible(typeA, typeB);
 
@@ -787,10 +774,15 @@ CompileError areTypesCompatible(Ref<BaseType> typeA, Ref<BaseType> typeB, Ref<As
 		return CompileError::ok();
 	else
 	{
-		if (typeA->type() == DT_FUNCTION)
+		if (typeA->getType() == AST_FUNCTION)
 			return semError(opNode, ETYPE_NOT_IMPLEMENTED_1, "Function variables assigning");
 		else
-			return semError(opNode, ETYPE_INCOMPATIBLE_TYPES_2, typeB->toString().c_str(), typeA->toString().c_str());
+		{
+			return semError(opNode, 
+				ETYPE_INCOMPATIBLE_TYPES_2, 
+				astTypeToString(typeB).c_str(), 
+				astTypeToString(typeA).c_str());
+		}
 	}
 }
 
@@ -798,51 +790,50 @@ CompileError areTypesCompatible(Ref<BaseType> typeA, Ref<BaseType> typeB, Ref<As
 /// <param name="typeA">Type of the object which is going to the receive the value.</param>
 /// <param name="typeB">Type of the source object.</param>
 /// <returns>true if types are compatible'</returns>
-bool areTypesCompatible(Ref<BaseType> typeA, Ref<BaseType> typeB)
+bool areTypesCompatible(AstNode* typeA, AstNode* typeB)
 {
-	auto a = typeA->type();
-	auto b = typeB->type();
+	auto a = typeA->getType();
+	auto b = typeB->getType();
 
-	if (a == DT_TUPLE || b == DT_TUPLE)
+	if (astIsTupleType(typeA) || astIsTupleType(typeB))
 		return areTuplesCompatible(typeA, typeB);
 	else if (a != b)
 		return false;
+	else if (a == AST_FUNCTION)
+		return false;		//Function are not assignable, by the moment.
 	else
-		return (a != DT_FUNCTION);		//Function are not assignable, by the moment.
+		return typeA->getName() == typeB->getName();
 }
 
 /// <summary>Performs type compatibility check when, at least, one of the types is a tuple</summary>
 /// <param name="typeA">Type of the object which is going to the receive the value.</param>
 /// <param name="typeB">Type of the source object.</param>
 /// <returns>true if types are compatible'</returns>
-bool areTuplesCompatible(Ref<BaseType> typeA, Ref<BaseType> typeB)
+bool areTuplesCompatible(AstNode* typeA, AstNode* typeB)
 {
-	assert(typeA->type() == DT_TUPLE || typeB->type() == DT_TUPLE);
-	if (typeA->type() != DT_TUPLE)
+	assert(astIsTupleType(typeA) || astIsTupleType(typeB));
+	if (!astIsTupleType(typeA))
 		return areTuplesCompatible(typeB, typeA);		//Reverse check will work, at this moment.
 	else
 	{
-		auto tupleA = typeA.staticCast<TupleType>();
-
-		if (typeB->type() != DT_TUPLE)
+		if (!astIsTupleType(typeB))
 		{
-			if (tupleA->memberCount() != 1)
+			if (typeA->childCount() != 1)
 				return false;
 			else
-				return areTypesCompatible(tupleA->getMemberType(0), typeB);
+				return areTypesCompatible(typeA->child(0)->getDataType(), typeB);
 		}
 		else
 		{
-			auto tupleB = typeB.staticCast<TupleType>();
-			if (tupleA->memberCount() != tupleB->memberCount())
+			if (typeA->childCount() != typeB->childCount())
 				return false;
 			else
 			{
-				const int count = tupleA->memberCount();
+				const int count = typeA->childCount();
 
 				for (int i = 0; i < count; ++i)
 				{
-					if (!areTypesCompatible(tupleA->getMemberType(i), tupleB->getMemberType(i)))
+					if (!areTypesCompatible(typeA->child(i)->getDataType(), typeB->child(i)->getDataType()))
 						return false;
 				}
 
@@ -854,72 +845,38 @@ bool areTuplesCompatible(Ref<BaseType> typeA, Ref<BaseType> typeB)
 
 /// <summary>Gets the common type for two types.</summary>
 /// <returns>Common type or 'null' if no common type can be found.</returns>
-Ref<BaseType> getCommonType(Ref<BaseType> typeA, Ref<BaseType> typeB, SemAnalysisState& state)
+AstNode* getCommonType(AstNode* typeA, AstNode* typeB, SemAnalysisState& state)
 {
 	//TODO: This is a very basic implementation. Improve it.
 
-	if (typeA->type() != typeB->type())
-		return Ref<BaseType>();
+	if (!areTypesCompatible (typeA, typeB))
+		return nullptr;
 	else
-	{
-		switch (typeA->type())
-		{
-		case DT_FUNCTION:
-			return Ref<BaseType>();
-
-		case DT_TUPLE:
-			if (areTuplesCompatible(typeA.staticCast<TupleType>(), typeB.staticCast<TupleType>()))
-				return typeA;
-			else
-				return Ref<BaseType>();
-
-		default:
-			return typeA;
-		}
-	}
+		return typeA;
 }
 
-/// <summary>
-/// Builds an AST Tuple definition node from a tuple data type.
-/// It is used for type inference.
-/// </summary>
-/// <param name="tuple"></param>
-/// <returns></returns>
-Ref<AstNode> buildTupleDefFromTupleType(Ref<TupleType> tuple, const ScriptPosition& pos)
-{
-	auto result = astCreateTupleDef(pos, "");
-
-	int count = tuple->memberCount();
-	for (int i = 0; i < count; ++i)
-	{
-		auto declNode = astCreateDeclaration(pos, "", Ref<AstNode>(), Ref<AstNode>());
-		declNode->addFlag(ASTF_CONST);
-		result->addChild(declNode);
-	}
-
-	result->setDataType(tuple);
-
-	return result;
-}
-
-
-/// <summary>Checks if a type is boolean</summary>
-bool isBoolType(Ref<BaseType> type)
-{
-	return type->type() == DT_BOOL;
-}
-
-/// <summary>Checks if a type is integer</summary>
-bool isIntType(Ref<BaseType> type)
-{
-	return type->type() == DT_INT;
-}
-
-/// <summary>Checks if a type is boolean</summary>
-bool isVoidType(Ref<BaseType> type)
-{
-	return type->type() == DT_VOID;
-}
+///// <summary>
+///// Builds an AST Tuple definition node from a tuple data type.
+///// It is used for type inference.
+///// </summary>
+///// <param name="tuple"></param>
+///// <returns></returns>
+//Ref<AstNode> buildTupleDefFromTupleType(Ref<TupleType> tuple, const ScriptPosition& pos)
+//{
+//	auto result = astCreateTupleDef(pos, "");
+//
+//	int count = tuple->memberCount();
+//	for (int i = 0; i < count; ++i)
+//	{
+//		auto declNode = astCreateDeclaration(pos, "", Ref<AstNode>(), Ref<AstNode>());
+//		declNode->addFlag(ASTF_CONST);
+//		result->addChild(declNode);
+//	}
+//
+//	result->setDataType(tuple);
+//
+//	return result;
+//}
 
 /// <summary>
 /// Checks whether an AST node represents a type or not.

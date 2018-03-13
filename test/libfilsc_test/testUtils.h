@@ -7,7 +7,6 @@
 #include "gtest/gtest.h"
 #include "parser.h"
 #include <functional>
-#include "dataTypes.h"
 #include "semanticAnalysis.h"
 
 #define EXPECT_PARSE_OK(x) EXPECT_TRUE(checkExprOk((x)))
@@ -37,17 +36,8 @@ Ref<AstNode> findNode(Ref<AstNode> root, std::function<bool(Ref<AstNode>)> predi
 Ref<AstNode> findNode(Ref<AstNode> root, AstNodeTypes nodeType);
 Ref<AstNode> findNode(Ref<AstNode> root, const std::string& name);
 
-#define EXPECT_DATATYPE(x,y) EXPECT_EQ(x, getDataType((y)))
-#define ASSERT_DATATYPE(x,y) ASSERT_EQ(x, getDataType((y)))
-
-EDataType getDataType(Ref<AstNode> node);
-EDataType getDataType(Ref<BaseType> type);
-
-#define EXPECT_DATATYPE_STR(x,y) EXPECT_STREQ(x, getDataTypeStr((y)).c_str())
-#define ASSERT_DATATYPE_STR(x,y) ASSERT_STREQ(x, getDataTypeStr((y)).c_str())
-
-std::string getDataTypeStr(Ref<AstNode> node);
-std::string getDataTypeStr(Ref<BaseType> type);
+#define EXPECT_DATATYPE_STR(x,y) EXPECT_STREQ(x, astTypeToString((y)).c_str())
+#define ASSERT_DATATYPE_STR(x,y) ASSERT_STREQ(x, astTypeToString((y)).c_str())
 
 std::string printAST(Ref<AstNode> node, int indentLevel = 0);
 void printAST(Ref<AstNode> node, std::ostream& output, int indentLevel = 0);

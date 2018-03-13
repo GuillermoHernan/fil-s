@@ -30,7 +30,6 @@
     <ClInclude Include="c_codeGenerator.h" />
     <ClInclude Include="c_codeGenerator_internal.h" />
     <ClInclude Include="codeGeneratorState.h" />
-    <ClInclude Include="dataTypes.h" />
     <ClInclude Include="builder.h" />
     <ClInclude Include="operationResult.h" />
     <ClInclude Include="DependencyTree.h" />
@@ -56,7 +55,6 @@
     <ClCompile Include="passOperations.cpp" />
     <ClCompile Include="c_codeGenerator.cpp" />
     <ClCompile Include="codeGeneratorState.cpp" />
-    <ClCompile Include="dataTypes.cpp" />
     <ClCompile Include="builder.cpp" />
     <ClCompile Include="DependencyTree.cpp" />
     <ClCompile Include="astSerialization.cpp" />

@@ -26,9 +26,8 @@ TEST(CodeGeneratorState, cname)
 
 	//printAST(r.result);
 
-	auto intType = DefaultType::createInt().staticCast<BaseType>();	//I don't know why the compiler says the
-																	//call is ambigous if I do not cast it to BaseType...
-																	//'template' limitations?
+	auto intType = astGetInt();
+
 	EXPECT_STREQ("int", state.cname(intType).c_str());
 	
 	auto node = findNode(r.result, "entero");

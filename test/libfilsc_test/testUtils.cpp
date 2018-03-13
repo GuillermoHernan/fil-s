@@ -157,27 +157,6 @@ Ref<AstNode> findNode(Ref<AstNode> root, const std::string& name)
 	});
 }
 
-
-EDataType getDataType(Ref<AstNode> node)
-{
-	return node->getDataType()->type();
-}
-
-EDataType getDataType(Ref<BaseType> type)
-{
-	return type->type();
-}
-
-std::string getDataTypeStr(Ref<AstNode> node)
-{
-	return node->getDataType()->toString();
-}
-
-std::string getDataTypeStr(Ref<BaseType> type)
-{
-	return type->toString();
-}
-
 /// <summary>Prints an AST tree.</summary>
 /// <param name="node"></param>
 /// <returns></returns>
@@ -202,7 +181,7 @@ void printAST(Ref<AstNode> node, std::ostream& output, int indentLevel)
 	{
 		output << astTypeToString(node->getType()) << "(";
 		output << node->getName() << "," << node->getValue() << "): ";
-		output << node->getDataType()->toString() << "\n";
+		output << astTypeToString (node->getDataType()) << "\n";
 
 		++indentLevel;
 		for (auto child : node->children())

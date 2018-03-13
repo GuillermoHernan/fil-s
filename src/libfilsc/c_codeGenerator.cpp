@@ -49,7 +49,7 @@ string generateCode(Ref<AstNode> node, std::function<bool(Ref<AstNode>)> entryPo
 	//Generate types.
 	auto types = astGatherTypes(node);
 	for (auto& type : types)
-		dataTypeCodegen(ref(type), state);
+		dataTypeCodegen(type, state);
 
 	//Generate code for AST, starting at the root node.
 	codegen(node, state, VoidVariable());
@@ -139,15 +139,16 @@ void codegen(Ref<AstNode> node, CodeGeneratorState& state, const IVariableInfo& 
 /// </summary>
 /// <param name="type"></param>
 /// <param name="state"></param>
-void dataTypeCodegen(Ref<BaseType> type, CodeGeneratorState& state)
+void dataTypeCodegen(AstNode* type, CodeGeneratorState& state)
 {
-	switch (type->type())
+	switch (type->getType())
 	{
-	case DT_TUPLE:
+	case AST_TUPLE:
+	case AST_TUPLE_DEF:
 		tupleDefCodegen(type, state);
 		break;
 
-	case DT_ACTOR:
+	case AST_ACTOR:
 		generateActorStruct(type, state);
 		break;
 
@@ -198,7 +199,7 @@ void functionCodegen(Ref<AstNode> node, CodeGeneratorState& state, const IVariab
 	auto params = node->child(0);
 	auto retTuple = node->child(1);
 	auto fnCode = node->child(2);
-	auto returnType = node->getDataType().staticCast<FunctionType>()->getReturnType();
+	auto returnType = astGetReturnType(node->getDataType());
 
 	//TODO: this is already done in struct creation pass. Delete when the change is consolidated.
 	//if (params->childCount() > 0)
@@ -219,7 +220,7 @@ void functionCodegen(Ref<AstNode> node, CodeGeneratorState& state, const IVariab
 	state.output() << genFunctionHeader(node, state);
 	state.output() << "{\n";
 
-	if(returnType->type() == DT_VOID)
+	if(astIsVoidType(returnType))
 		codegen(fnCode, state, VoidVariable());
 	else
 	{
@@ -238,8 +239,8 @@ void functionCodegen(Ref<AstNode> node, CodeGeneratorState& state, const IVariab
 string genFunctionHeader(Ref<AstNode> node, CodeGeneratorState& state)
 {
 	auto	params = node->child(0);
-	auto	type = node->getDataType().staticCast<FunctionType>();
-	auto	retType = type->getReturnType();
+	auto	type = node->getDataType();
+	auto	retType = astGetReturnType(type);
 	string	result;
 
 	result.reserve(128);
@@ -247,7 +248,7 @@ string genFunctionHeader(Ref<AstNode> node, CodeGeneratorState& state)
 	result = "static ";
 
 	//Return type.
-	if (retType->type() == DT_VOID)
+	if (astIsVoidType (retType))
 		result += "void ";
 	else 
 		result += state.cname(retType) + " ";
@@ -348,7 +349,6 @@ void tupleCodegen(
 		return;
 
 	auto&	expressions = node->children();
-	auto	tupleType = resultDest.dataType().staticCast<TupleType>();
 
 	for (size_t i = 0; i < expressions.size(); ++i)
 	{
@@ -365,9 +365,10 @@ void varCodegen(Ref<AstNode> node, CodeGeneratorState& state, const IVariableInf
 {
 	auto	typeNode = node->getDataType();
 	
-	//TODO: This should be done in a previous, strucutre declaration pass.
-	if (typeNode->type() == DT_TUPLE && state.hasName(typeNode) == false)
-		tupleDefCodegen(typeNode, state);
+	//TODO: This should be done in a previous, structure declaration pass.
+	//TODO: Check that this is already done.
+	//if (typeNode->type() == DT_TUPLE && state.hasName(typeNode) == false)
+	//	tupleDefCodegen(typeNode, state);
 
 	state.output() << state.cname(typeNode) << " ";
 	state.output() << state.cname(node) << ";\n";
@@ -394,19 +395,20 @@ void tupleDefCodegen(Ref<AstNode> node, CodeGeneratorState& state, const IVariab
 /// Generates code for a tuple definition.
 /// Generates it from a data type, instead of an AST node. For not declared, inferred types.
 /// </summary>
-void tupleDefCodegen(Ref<BaseType> type, CodeGeneratorState& state)
+void tupleDefCodegen(AstNode* type, CodeGeneratorState& state)
 {
-	assert(type->type() == DT_TUPLE);
+	assert(astIsTupleType(type));
 	string name = state.cname(type);
 
 	state.output() << "typedef struct {\n";
 
-	auto tType = type.staticCast<TupleType>();
-	const int count = tType->memberCount();
+	const int count = type->childCount();
 	for (int i = 0; i < count; ++i)
 	{
-		state.output() << state.cname(tType->getMemberType(i)) << " ";
-		state.output() << state.tupleMemberCName(tType, i) << ";\n";
+		auto child = type->child(i);
+
+		state.output() << state.cname(child->getDataType()) << " ";
+		state.output() << state.cname(child) << ";\n";
 	}
 
 	state.output() << "}" << name << ";\n\n";
@@ -520,9 +522,9 @@ void callCodegen(Ref<AstNode> node, CodeGeneratorState& state, const IVariableIn
 	}
 	else
 	{
-		auto			fnType = fnNode->getDataType().staticCast<FunctionType>();
-		auto			paramsType = fnType->getParameters();
-		TempVariable	tmpParams(paramsType.staticCast<BaseType>(), state, false);
+		auto			fnType = fnNode->getDataType();
+		auto			paramsType = astGetParameters (fnType);
+		TempVariable	tmpParams(paramsType, state, false);
 
 		codegen(paramsExpr, state, tmpParams);
 
@@ -592,14 +594,19 @@ void memberAccessCodegen(
 		else if (type == AST_MEMBER_ACCESS)
 		{
 			auto tuple = curNode->child(0);
-			auto tType = tuple->getDataType().staticCast<TupleType>();
+			auto tType = tuple->getDataType();
 			string fieldName = curNode->child(1)->getName();
-			int index = tType->findMemberByName(fieldName);
+			int index = astFindMemberByName (tType, fieldName);
 
 			if (index < 0)
-				errorAt(node->position(), ETYPE_MEMBER_NOT_FOUND_2, fieldName.c_str(), tType->toString().c_str());
+			{
+				errorAt(node->position(), 
+					ETYPE_MEMBER_NOT_FOUND_2, 
+					fieldName.c_str(), 
+					astTypeToString(tType).c_str());
+			}
 
-			nameStack.push_back(state.tupleMemberCName(tType, index));
+			nameStack.push_back(state.cname(tType->child(index)));
 			curNode = tuple;
 		}
 		else
@@ -712,28 +719,27 @@ void outputMessageCodegen(Ref<AstNode> node, CodeGeneratorState& state, const IV
 /// <summary>
 /// Generates the data structure which contains the actor data.
 /// </summary>
-void generateActorStruct(Ref<BaseType> type, CodeGeneratorState& state)
+void generateActorStruct(AstNode* type, CodeGeneratorState& state)
 {
 	string name = state.cname(type);
 
 	state.output() << "typedef struct " << "{\n";
 
-	auto params = type->getParameters();
+	auto params = astGetParameters (type);
 
-	if (params->memberCount() > 0)
+	if (params->childCount() > 0)
 	{
-		string paramsTypeName = state.cname(params.staticCast<BaseType>());
+		string paramsTypeName = state.cname(params);
 		state.output() << paramsTypeName << " params;\n";
 	}
 
-	auto actorType = type.staticCast<ActorType>();
-	for (int i = 0; i < actorType->memberCount(); ++i)
+	for (size_t i = 0; i < type->childCount(); ++i)
 	{
-		auto child = actorType->getMemberType(i);
-		if (child->type() != DT_INPUT)
+		auto child = type->child(i);
+		if (child->getType() != AST_INPUT)
 		{
-			string childName = state.tupleMemberCName(actorType, i);
-			string childTypeName = state.cname(child);
+			string childName = state.cname(child);
+			string childTypeName = state.cname(child->getDataType());
 			
 			state.output() << childTypeName << " "<< childName << ";\n";
 		}
@@ -835,18 +841,17 @@ void generateActorInput(Ref<AstNode> actor, Ref<AstNode> input, CodeGeneratorSta
 void generateConnection(Ref<AstNode> actor, Ref<AstNode> connection, CodeGeneratorState& state)
 {
 	vector<string>	path;
-	Ref<TupleType>	tupleT = actor->getDataType().staticCast<TupleType>();
+	auto			type = actor->getDataType();
 
 	for (auto pathNode : connection->child(0)->children())
 	{
-		assert(tupleT.notNull());
-		const int index = tupleT->findMemberByName(pathNode->getName());
+		const int index = astFindMemberByName(type, pathNode->getName());
 		assert(index >= 0);
+		auto child = type->child(index);
 
-		path.push_back(state.tupleMemberCName(tupleT, index));
+		path.push_back(state.cname(child));
 
-		auto memberType = tupleT->getMemberType(index);
-		tupleT = memberType.dynamicCast<TupleType>();
+		type = child->getDataType();
 	}
 
 	string strPath = "_gen_actor->" + join(path, ".");

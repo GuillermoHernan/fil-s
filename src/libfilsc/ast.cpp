@@ -5,7 +5,6 @@
 #include "pch.h"
 #include "ast.h"
 #include "SymbolScope.h"
-#include "dataTypes.h"
 #include "dependencySolver.h"
 
 using namespace std;
@@ -42,17 +41,21 @@ AstNode::AstNode(
 	int flags)
 	:m_position(pos), m_type(type), m_name(name), m_value(value), m_flags(flags)
 {
-	m_dataType = DefaultType::createVoid();
+	//TODO: This has been done to prevent an infinite loop. Find another solution...
+	if (type == AST_TUPLE_DEF)
+		m_dataType = this;
+	else
+		m_dataType = astGetVoid();
+
 	++ms_nodeCount;
 }
 
 /// <summary>
 /// Removes the references to the objects which may create circular refrences to the AST 
-/// tree. Basically, the scope and the DataType.
+/// tree. At this moment, is only the 'scope' reference.
 /// </summary>
 void AstNode::destroy()
 {
-	m_dataType.reset();
 	m_scope.reset();
 
 	for (auto child : children())
@@ -70,17 +73,6 @@ Ref<SymbolScope> AstNode::getScope()const
 void AstNode::setScope(Ref<SymbolScope> scope)
 {
 	m_scope = scope.staticCast<SymbolScope>();
-}
-
-
-Ref<BaseType> AstNode::getDataType()const
-{
-	return m_dataType.staticCast<BaseType>();
-}
-
-void AstNode::setDataType(Ref<BaseType> dataType)
-{
-	m_dataType = dataType;
 }
 
 
@@ -188,7 +180,7 @@ Ref<AstNode> astCreateTuple(LexToken token)
 
 Ref<AstNode> astCreateTupleDef(ScriptPosition pos, const std::string& name)
 {
-	return AstNode::create(AST_TUPLE, pos, name, "");
+	return AstNode::create(AST_TUPLE_DEF, pos, name, "");
 }
 
 Ref<AstNode> astCreateTupleAdapter(Ref<AstNode> tupleNode)
@@ -395,17 +387,18 @@ Ref<AstNode> astCreateBool(ScriptPosition pos, bool value)
 	return AstNode::create ( AST_BOOL, pos, "", strValue);
 }
 
-/// <summary>
-/// Creates an AST node for a default (predefined) data type.
-/// </summary>
-/// <returns></returns>
-Ref<AstNode> astCreateDefaultType(Ref<DefaultType> type)
-{
-	auto node = AstNode::create(AST_DEFAULT_TYPE, ScriptPosition(), type->getName());
-
-	node->setDataType(type);
-	return node;
-}
+//TODO: Which will be the role of this function after the refactor?
+///// <summary>
+///// Creates an AST node for a default (predefined) data type.
+///// </summary>
+///// <returns></returns>
+//Ref<AstNode> astCreateDefaultType(Ref<DefaultType> type)
+//{
+//	auto node = AstNode::create(AST_DEFAULT_TYPE, ScriptPosition(), type->getName());
+//
+//	node->setDataType(type);
+//	return node;
+//}
 
 /// <summary>
 /// Creates an unnamed input AST node.
@@ -429,9 +422,9 @@ Ref<AstNode> astCreateUnnamedInput(ScriptPosition pos,
 	return result;
 }
 
-static void astGatherTypes(Ref<AstNode> root, set<BaseType*>& types)
+static void astGatherTypes(Ref<AstNode> root, set<AstNode*>& types)
 {
-	root->getDataType()->getDependencies(types, true, true);
+	types.insert(root->getDataType());
 	for (auto child : root->children())
 	{
 		if (child.notNull())
@@ -445,16 +438,28 @@ static void astGatherTypes(Ref<AstNode> root, set<BaseType*>& types)
 /// </summary>
 /// <param name="root"></param>
 /// <returns></returns>
-std::vector<BaseType*> astGatherTypes(Ref<AstNode> root)
+std::vector<AstNode*> astGatherTypes(Ref<AstNode> root)
 {
-	set<BaseType*>	types;
+	set<AstNode*>	types;
 
 	astGatherTypes(root, types);
 
-	vector<BaseType*> typesV(types.begin(), types.end());
+	vector<AstNode*> typesV(types.begin(), types.end());
 
-	return dependencySort<BaseType*>(typesV, [](BaseType* type) {
-		return type->getDependencies(false);
+	return dependencySort<AstNode*>(typesV, [](AstNode* node) {
+		set<AstNode*>	types;
+
+		for (auto child : node->children())
+		{
+			if (child.notNull())
+			{
+				auto type = child->getDataType();
+				if (!astIsVoidType(type))
+					types.insert(type);
+			}
+		}
+
+		return types;
 	});
 }
 
@@ -581,3 +586,229 @@ AstNodeTypes astTypeFromString(const std::string& str)
 		throw exception(message.c_str());
 	}
 }
+
+/// <summary>Gets void data type</summary>
+AstNode* astGetVoid()
+{
+	static auto node = astCreateTupleDef(ScriptPosition(), "");
+	return node.getPointer();
+}
+
+// Gets bool default type.
+AstNode* astGetBool()
+{
+	static auto node = AstNode::create(AST_DEFAULT_TYPE, ScriptPosition(), "bool");
+	return node.getPointer();
+}
+
+//Gets int default type.
+AstNode* astGetInt()
+{
+	static auto node = AstNode::create(AST_DEFAULT_TYPE, ScriptPosition(), "int");
+	return node.getPointer();
+}
+
+//String representation of a tuple type, for debug purposes
+static string astTupleTypeToString(AstNode* node)
+{
+	ostringstream	output;
+
+	output << "(";
+	const int count = node->childCount();
+
+	for (int i = 0; i < count; ++i)
+	{
+		if (i > 0)
+			output << ",";
+
+		output << astTypeToString(node->child(i)->getDataType());
+	}
+	output << ")";
+
+	return output.str();
+
+}
+
+//String representation of a function type, for debug purposes
+static string astFunctionTypeToString(AstNode* node)
+{
+	string result = "function" + astTypeToString(astGetParameters(node));
+
+	if (node->childExists(1))
+		result += ":" + astTypeToString(astGetReturnType(node));
+
+	return result;
+}
+
+/// <summary>
+/// Gets a data type string representation, for debug purposes
+/// </summary>
+/// <param name="node"></param>
+/// <returns></returns>
+std::string astTypeToString(AstNode* node)
+{
+	switch (node->getType())
+	{
+	case AST_DEFAULT_TYPE:
+		return node->getName();
+
+	case AST_TUPLE:
+	case AST_TUPLE_DEF:
+		return astTupleTypeToString(node);
+
+	case AST_FUNCTION:
+		return astFunctionTypeToString(node);
+
+	case AST_ACTOR:
+		return string("actor '") + node->getName() + "'";
+
+	case AST_INPUT:
+		return "input" + astTypeToString(astGetParameters(node));
+
+	case AST_OUTPUT:
+		return "output" + astTypeToString(astGetParameters(node));
+
+	default:
+		return "";
+	}
+}
+
+/// <summary>
+/// Gets the datatype of the parameters, for the types which have parameters.
+/// </summary>
+/// <param name="node"></param>
+/// <returns>Parameters data type (should be a tuple) or void type if the node has no parameters</returns>
+AstNode* astGetParameters(AstNode* node)
+{
+	switch (node->getType())
+	{
+	case AST_FUNCTION:
+	case AST_ACTOR:
+	case AST_INPUT:
+	case AST_OUTPUT:
+		return node->child(0)->getDataType();
+
+	case AST_TUPLE:
+	case AST_TUPLE_DEF:
+		return node;
+
+	default:
+		return astGetVoid();
+	}
+}
+
+/// <summary>
+/// Gets the return type of a data type, for the types which have it.
+/// </summary>
+/// <param name="node"></param>
+/// <returns></returns>
+AstNode* astGetReturnType(AstNode* node)
+{
+	switch (node->getType())
+	{
+	case AST_FUNCTION:
+		return node->child(1)->getDataType();
+
+	default:
+		return astGetVoid();
+	}
+}
+
+/// <summary>
+/// Checks if the node represents a tuple data type.
+/// </summary>
+/// <param name="node"></param>
+/// <returns></returns>
+bool astIsTupleType(const AstNode* node)
+{
+	auto t = node->getType();
+
+	return t == AST_TUPLE || t == AST_TUPLE_DEF;
+}
+
+/// <summary>
+/// Checks if the data type can be called (functions or messages, for example)
+/// </summary>
+/// <param name="node"></param>
+/// <returns></returns>
+bool astCanBeCalled(const AstNode* node)
+{
+	auto t = node->getType();
+
+	return t == AST_FUNCTION || t == AST_INPUT || t == AST_OUTPUT;
+}
+
+/// <summary>Checks if a type is boolean</summary>
+bool astIsBoolType(const AstNode* type)
+{
+	return type->getType() == AST_DEFAULT_TYPE && type->getName() == "bool";
+}
+
+/// <summary>Checks if a type is integer</summary>
+bool astIsIntType(const AstNode* type)
+{
+	return type->getType() == AST_DEFAULT_TYPE && type->getName() == "int";
+}
+
+/// <summary>Checks if a type is boolean</summary>
+bool astIsVoidType(const AstNode* type)
+{
+	return astIsTupleType(type) && type->childCount() == 0;
+}
+
+/// <summary>
+/// Finds a child node by its name
+/// </summary>
+/// <param name="node"></param>
+/// <param name="name"></param>
+/// <returns>Child index or -1 if does not find it.</returns>
+int astFindMemberByName(AstNode* node, const std::string& name)
+{
+	for (size_t i = 0; i < node->childCount(); ++i)
+	{
+		if (node->child(i)->getName() == name)
+			return i;
+	}
+
+	return -1;
+}
+
+///// <summary>
+///// Gets the dependent data types of a given datatype
+///// </summary>
+///// <param name="node"></param>
+///// <param name="recursive"></param>
+///// <returns></returns>
+//std::vector<AstNode*> astGetTypeDependencies(AstNode* node, bool recursive)
+//{
+//	set<AstNode*>	deps;
+//	astGetTypeDependencies(node, deps, recursive);
+//
+//	return vector<AstNode*>(deps.begin(), deps.end());
+//}
+//
+///// <summary>
+///// Gets the dependent data types of a given datatype
+///// </summary>
+///// <param name="node"></param>
+///// <param name="nodeSet"></param>
+///// <param name="recursive"></param>
+//void astGetTypeDependencies(AstNode* node, std::set<AstNode*>& nodeSet, bool recursive)
+//{
+//	//'Void' type shall not be included in the dependency list.
+//	if (astIsVoidType(node))
+//		return;
+//	else if (nodeSet.count(node) > 0)
+//		return;
+//
+//	if (recursive)
+//	auto params = getParameters();
+//	auto retType = getReturnType();
+//
+//	if (params.notNull())
+//		params->getDependencies(typeSet, recursive, true);
+//
+//	if (retType.notNull())
+//		retType->getDependencies(typeSet, recursive, true);
+//
+//}

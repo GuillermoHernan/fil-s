@@ -1,7 +1,6 @@
 #pragma once
 
 #include "ast.h"
-#include "dataTypes.h"
 
 #ifndef FRIEND_TEST
 #define FRIEND_TEST(x,y)
@@ -13,8 +12,8 @@
 class CodeGeneratorState
 {
 public:
-	//typedef void(*TypeCodegenFN)(Ref<BaseType> type, CodeGeneratorState& state);
-	typedef std::function<void(Ref<BaseType>, CodeGeneratorState&)> TypeCodegenFN;
+	//typedef void(*TypeCodegenFN)(AstNode* type, CodeGeneratorState& state);
+	typedef std::function<void(AstNode*, CodeGeneratorState&)> TypeCodegenFN;
 
 	CodeGeneratorState(std::ostream* pOutput, TypeCodegenFN typeGenFN);
 	~CodeGeneratorState();
@@ -23,9 +22,9 @@ public:
 	CodeGeneratorState& operator=(const CodeGeneratorState&) = delete;
 
 	std::string cname(Ref<AstNode> node);
-	std::string cname(Ref<BaseType> type);
-	std::string tupleMemberCName(Ref<TupleType> tuple, int index);
-	bool hasName(Ref<BaseType> type)const;
+	std::string cname(AstNode* type);
+	//std::string tupleMemberCName(AstNode* tuple, int index);
+	bool hasName(AstNode* type)const;
 
 	void setCname(Ref<AstNode> node, const std::string& name);
 
@@ -34,7 +33,7 @@ public:
 		return *m_output;
 	}
 
-	void typeCodegen(Ref<BaseType> type, CodeGeneratorState& state);
+	void typeCodegen(AstNode* type, CodeGeneratorState& state);
 
 protected:
 	void enterBlock();
@@ -63,7 +62,7 @@ private:
 		std::vector<TempVarInfo>	tempVars;
 	};
 
-	typedef std::tuple< Ref<TupleType>, int>	TupleMemberKey;
+	typedef std::tuple< AstNode*, int>	TupleMemberKey;
 
 	std::ostream*								m_output;
 	//TODO: Remove this callback. Is a horrible hack that is already causing problems.
@@ -105,11 +104,11 @@ private:
 struct IVariableInfo
 {
 	virtual const std::string&	cname()const=0;
-	virtual Ref<BaseType>		dataType()const=0;
+	virtual AstNode*		dataType()const=0;
 
 	bool isVoid()const
 	{
-		return dataType()->type() == DT_VOID;
+		return astIsVoidType(dataType());
 	}
 
 	const bool isReference;
@@ -127,7 +126,7 @@ std::ostream& operator << (std::ostream& output, const IVariableInfo& var);
 class TempVariable : public IVariableInfo
 {
 public:
-	TempVariable(Ref<BaseType> type, CodeGeneratorState& state, bool ref);
+	TempVariable(AstNode* type, CodeGeneratorState& state, bool ref);
 	TempVariable(Ref<AstNode> node, CodeGeneratorState& state, bool ref);
 	~TempVariable();
 
@@ -136,14 +135,14 @@ public:
 		return m_cName;
 	}
 
-	virtual Ref<BaseType> dataType()const override
+	virtual AstNode* dataType()const override
 	{
 		return m_dataType;
 	}
 
 private:
 	std::string			m_cName;
-	Ref<BaseType>		m_dataType;
+	AstNode*		m_dataType;
 	CodeGeneratorState& m_state;
 };
 
@@ -153,7 +152,7 @@ private:
 struct VoidVariable : public IVariableInfo
 {
 	virtual const std::string&	cname()const override;
-	virtual Ref<BaseType>		dataType()const  override;
+	virtual AstNode*		dataType()const  override;
 
 	VoidVariable() : IVariableInfo(false) {}
 };
@@ -167,7 +166,7 @@ public:
 	NamedVariable(Ref<AstNode> node, CodeGeneratorState& state);
 
 	virtual const std::string&	cname()const override;
-	virtual Ref<BaseType>		dataType()const  override;
+	virtual AstNode*		dataType()const  override;
 
 private:
 	Ref<AstNode>		m_node;
@@ -183,9 +182,9 @@ public:
 	TupleField(const IVariableInfo& tuple, int fieldIndex, CodeGeneratorState& state);
 
 	virtual const std::string&	cname()const override;
-	virtual Ref<BaseType>		dataType()const  override;
+	virtual AstNode*		dataType()const  override;
 
 private:
-	Ref<BaseType>		m_type;
+	AstNode*		m_type;
 	std::string			m_cName;
 };
