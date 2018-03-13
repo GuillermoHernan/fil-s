@@ -28,7 +28,7 @@ TEST(SemanticAnalysis, semanticAnalysis)
 TEST(SemanticAnalysis, semInOrderWalk)
 {
 	const char* testCode = 
-		"function max (a:int, b:int) {\n"
+		"function max (a:int, b:int):int {\n"
 		"if (a>b)\n"
 		"  a\n"
 		"else\n"
@@ -40,6 +40,7 @@ TEST(SemanticAnalysis, semInOrderWalk)
 		AST_TYPE_NAME,
 		AST_DECLARATION,
 		AST_TUPLE_DEF,
+		AST_TYPE_NAME,
 		AST_IDENTIFIER,
 		AST_IDENTIFIER,
 		AST_BINARYOP,
@@ -62,6 +63,7 @@ TEST(SemanticAnalysis, semInOrderWalk)
 		return SemanticResult(node);
 	};
 
+	//printAST(result.result, cout);
 	result = semInOrderWalk(nodeFn, state, result.result);
 	ASSERT_SEM_OK(result);
 	ASSERT_EQ(expected, nodeTypes);
@@ -72,7 +74,7 @@ TEST(SemanticAnalysis, semInOrderWalk)
 /// </summary>
 TEST(SemanticAnalysis, semPreOrderWalk)
 {
-	const char* testCode = "function max (a:int, b:int) {if (a>b) a else b}\n";
+	const char* testCode = "function max (a:int, b:int):int {if (a>b) a else b}\n";
 	const std::vector<AstNodeTypes> expected = {
 		AST_SCRIPT,
 		AST_FUNCTION,
@@ -80,6 +82,7 @@ TEST(SemanticAnalysis, semPreOrderWalk)
 		AST_DECLARATION,
 		AST_TYPE_NAME,
 		AST_DECLARATION,
+		AST_TYPE_NAME,
 		AST_TYPE_NAME,
 		AST_BLOCK,
 		AST_IF,
