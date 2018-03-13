@@ -427,7 +427,14 @@ ExprResult parseTupleDefItem(LexToken token)
 		if (next.type() == LEX_OPERATOR && (next.text() == ":" || next.text() == "="))
 			return parseAnyDeclaration(token);
 		else
-			return parseTypeDescriptor(token);
+		{
+			auto r = parseTypeDescriptor(token);
+
+			if (r.ok())
+				r.result = astCreateDeclaration(r.result->position(), "", r.result, Ref<AstNode>());
+
+			return r;
+		}
 	}
 	else
 		return parseAnyDeclaration(token).orElse(parseTypeDescriptor);

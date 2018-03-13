@@ -277,8 +277,8 @@ TEST(Parser, parseTupleDef)
 
 	ASSERT_PARSE_OK(r);
 	ASSERT_EQ(2, node->childCount());
-	ASSERT_EQ(AST_TYPE_NAME, node->child(0)->getType());
-	ASSERT_EQ(AST_TYPE_NAME, node->child(1)->getType());
+	ASSERT_EQ(AST_DECLARATION, node->child(0)->getType());
+	ASSERT_EQ(AST_DECLARATION, node->child(1)->getType());
 }
 
 
