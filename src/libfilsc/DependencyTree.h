@@ -9,7 +9,7 @@
 class ModuleNode;
 class SourceFileNode;
 typedef std::unique_ptr<ModuleNode>	DepencencyTreePtr;
-typedef std::unique_ptr<SourceFileNode>	SourceFilePtr;
+typedef std::unique_ptr<SourceFileNode>	SourceFileNodePtr;
 
 typedef std::vector<std::string>	StrList;
 
@@ -50,7 +50,7 @@ private:
 
 private:
 	std::string						m_path;
-	std::vector<SourceFilePtr>		m_sources;
+	std::vector<SourceFileNodePtr>	m_sources;
 	std::vector<DepencencyTreePtr>	m_dependencies;
 	
 	Ref<AstNode>					m_compiledAst;
@@ -62,13 +62,18 @@ private:
 class SourceFileNode
 {
 public:
-	SourceFileNode(const std::string& path)
-		:m_path(path)
+	SourceFileNode(SourceFilePtr ref)
+		:m_ref(ref)
 	{}
 
-	const std::string&	path()const
+	std::string path()const
 	{
-		return m_path;
+		return m_ref->path();
+	}
+
+	SourceFilePtr ref()const
+	{
+		return m_ref;
 	}
 	
 	Ref<AstNode> getAST()const
@@ -81,6 +86,6 @@ public:
 	}
 
 private:
-	std::string		m_path;
+	SourceFilePtr	m_ref;
 	Ref<AstNode>	m_ast;
 };

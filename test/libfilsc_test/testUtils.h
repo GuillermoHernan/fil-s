@@ -9,6 +9,9 @@
 #include <functional>
 #include "semanticAnalysis.h"
 
+LexToken testToken(const char* code);
+ExprResult testParse(const char* code);
+
 #define EXPECT_PARSE_OK(x) EXPECT_TRUE(checkExprOk((x)))
 #define EXPECT_PARSE_ERROR(x) EXPECT_TRUE(checkExprError(x))
 #define ASSERT_PARSE_OK(x) ASSERT_TRUE(checkExprOk((x)))

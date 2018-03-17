@@ -8,8 +8,8 @@
 
 class LexToken;
 
-ExprResult parseFile(const std::string& path);
-ExprResult parseScript(const char* script);
+ExprResult parseFile(SourceFilePtr fileRef);
+ExprResult parseScript(const char* script, SourceFilePtr fileRef);
 ExprResult parseScript(LexToken token);
 ExprResult parseStatement(LexToken token);
 

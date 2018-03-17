@@ -21,7 +21,7 @@ protected:
 	/// <returns></returns>
 	SemanticResult runGatherPass(const char* code)
 	{
-		auto parseRes = parseScript(code);
+		auto parseRes = testParse(code);
 
 		if (!parseRes.ok())
 			return SemanticResult(parseRes.errorDesc);

@@ -162,24 +162,32 @@ ExprResult parseList(LexToken token, ExprResult::ParseFunction itemParseFn,
 /// <summary>
 /// Parses a script, reading it from a file.
 /// </summary>
-/// <param name="path"></param>
+/// <param name="fileRef">File reference object</param>
 /// <returns></returns>
-ExprResult parseFile(const std::string& path)
+ExprResult parseFile(SourceFilePtr fileRef)
 {
-	std::string content = readTextFile(path);
+	std::string content = readTextFile(fileRef->path());
 
-	return parseScript(content.c_str());
+	return parseScript(content.c_str(), fileRef);
 }
 
 
 /// <summary>
+/// 
+/// </summary>
+/// <param name="script"</param>
+/// <returns></returns>
+/// 
+
+/// <summary>
 /// Parses a script.
 /// </summary>
-/// <param name="script">text string which contains the complete script.</param>
+/// <param name="script">String which contains the complete source code.</param>
+/// <param name="fileRef">File reference, to include in script position objects.</param>
 /// <returns></returns>
-ExprResult parseScript(const char* script)
+ExprResult parseScript(const char* script, SourceFilePtr fileRef)
 {
-	LexToken tok(script);
+	LexToken tok(script, fileRef);
 
 	return parseScript(tok.next());
 }

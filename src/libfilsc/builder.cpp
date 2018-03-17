@@ -201,7 +201,7 @@ OperationResult<bool> parseSourceFiles(ModuleNode* module)
 		//TODO: Optimization oportunity. Each file is parsed independently, so
 		//it can be done in parallel.
 		module->walkSources([&errors](auto file) {
-			auto parseRes = parseFile(file->path());
+			auto parseRes = parseFile(file->ref());
 
 			if (parseRes.ok())
 				file->setAST(parseRes.result);

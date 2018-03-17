@@ -39,9 +39,16 @@ ModuleNode::ModuleNode(const std::string& modulePath, const StrList& sourcePaths
 	}
 	else
 	{
+		auto moduleObj = SourceModule::create(modulePath);
+
 		//It is a source folder, create source objects.
 		for (auto& srcFile : sourcePaths)
-			m_sources.emplace_back(new SourceFileNode(srcFile));
+		{
+			//TODO: Verify that this is a reliable way to get the file name.
+			string name = srcFile.substr(modulePath.size());
+			auto fileObj = SourceFile::create(moduleObj, name);
+			m_sources.emplace_back(new SourceFileNode(fileObj));
+		}
 
 		//Also try to load compiled module. But this time it does not throw an exception if
 		//it fails.

@@ -32,7 +32,7 @@ TEST(LexToken, ConstructorFromCode)
 {
 	const char* code = "some code";
 
-	LexToken	tok(code);
+	auto tok= testToken(code);
 
 	EXPECT_EQ(LEX_INITIAL, tok.type());
 	EXPECT_EQ(1, tok.getPosition().column());
@@ -50,14 +50,14 @@ TEST(LexToken, strValue)
 	const char* expected = "\tTest string\r\n\b\f\\\v\n"
 		"mJK'";
 
-	LexToken tok(inputStr);
+	auto tok = testToken(inputStr);
 	tok = tok.next();
 
 	ASSERT_EQ(LEX_STR, tok.type());
 	EXPECT_STREQ(expected, tok.strValue().c_str());
 
 	//Invalid hex escape sequence
-	tok = LexToken("\"A\\xZ\"");
+	tok = testToken("\"A\\xZ\"");
 	tok = tok.next();
 
 	ASSERT_EQ(LEX_STR, tok.type());
@@ -72,8 +72,8 @@ TEST(LexToken, next)
 	const char* code = "//This is a comment\n"
 		"x = 10;";
 
-	LexToken tok(code);
-	LexToken next = tok.next(LexToken::NONE);
+	auto tok = testToken(code);
+	auto next = tok.next(LexToken::NONE);
 
 	EXPECT_EQ(LEX_ID, next.type());
 	EXPECT_STREQ("x", next.text().c_str());
@@ -97,7 +97,7 @@ TEST(LexToken, nextDispatch)
 		"x = 12 / 3\n"
 		"y = \"test\"";
 
-	LexToken	tok(code);
+	auto tok = testToken(code);
 
 	//'match' would throw and exception if the appropriate token type is not found.
 	tok = tok.match(LEX_INITIAL, LexToken::ALL);
@@ -124,7 +124,7 @@ TEST(LexToken, match)
 {
 	const char *code = "z = y + x";
 
-	LexToken	tok(code);
+	auto tok = testToken(code);
 
 	tok = tok.next();
 	tok = tok.match(LEX_ID);
@@ -147,7 +147,7 @@ TEST(LexToken, parseComment)
 		"\tComment B*/\n"
 		"//Comment C";
 
-	LexToken	tok(code);
+	auto tok = testToken(code);
 
 	tok = tok.next(LexToken::COMMENTS);
 	EXPECT_EQ(LEX_COMMENT, tok.type());
@@ -165,7 +165,7 @@ TEST(LexToken, parseComment)
 	EXPECT_EQ(LEX_EOF, tok.type());
 
 	// Unclosed multi line comment
-	tok = LexToken("/*Unclosed");
+	tok = testToken("/*Unclosed");
 
 	EXPECT_THROW(tok.next(), CompileError);
 }
@@ -178,7 +178,7 @@ TEST(LexToken, parseID)
 {
 	const char *code = "a aa bZ2 z2w _a_e_ if a' a''";
 
-	LexToken	tok(code);
+	auto tok = testToken(code);
 
 	tok = tok.next();
 	EXPECT_STREQ("a", tok.text().c_str());
@@ -221,7 +221,7 @@ TEST(LexToken, parseNumber)
 		"2e+3\n"
 		"2e-3\n";
 
-	LexToken	tok(code);
+	auto tok = testToken(code);
 
 	tok = tok.next();
 	EXPECT_EQ(LEX_INT, tok.type());
@@ -269,7 +269,7 @@ TEST(LexToken, parseString)
 	const char *code = "\"test A\"\n"
 		"\"\\\"test B\\\"\"\n";
 
-	LexToken	tok(code);
+	auto tok = testToken(code);
 
 	tok = tok.next();
 	EXPECT_EQ(LEX_STR, tok.type());
@@ -283,11 +283,11 @@ TEST(LexToken, parseString)
 	EXPECT_EQ(LEX_EOF, tok.type());
 
 	//New line in string literal
-	tok = LexToken("\"test\nC\"");
+	tok = testToken("\"test\nC\"");
 	EXPECT_THROW(tok.next(), CompileError);
 
 	//End of file in string literal
-	tok = LexToken("\"test D");
+	tok = testToken("\"test D");
 	EXPECT_THROW(tok.next(), CompileError);
 }
 
@@ -302,7 +302,7 @@ TEST(LexToken, parseOperator)
 		"&&  ++  --  <-  -> \n"
 		"! | % & / () ? = [] {} . , ; : < > + * ^ ~";
 
-	LexToken	tok(code);
+	auto tok = testToken(code);
 
 	tok = tok.next();
 	tok = tok.match(LEX_OPERATOR, "<<=");
@@ -364,7 +364,7 @@ TEST(LexToken, calcPosition)
 	const char *code = "r = 2 + 3\n\n"
 		"z=r*7\n";
 
-	LexToken	tok(code);
+	auto tok = testToken(code);
 
 	EXPECT_EQ(1, tok.getPosition().line());
 	EXPECT_EQ(1, tok.getPosition().column());
@@ -433,7 +433,7 @@ TEST(LexToken, isOperator)
 {
 	const char *code = "= a";
 
-	LexToken	tok(code);
+	auto tok = testToken(code);
 
 	tok = tok.next();
 	EXPECT_TRUE(tok.isOperator("="));

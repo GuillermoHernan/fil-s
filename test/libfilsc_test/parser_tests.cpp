@@ -15,15 +15,15 @@ TEST(Parser, parseScript)
 
 	const char* badCode = "funcion add (a:int, b:int) {a+b}\n";
 
-	auto result = parseScript(goodCode);
+	auto result = parseScript(goodCode, SourceFilePtr());
 	EXPECT_STREQ("", result.errorDesc.what());
 	ASSERT_TRUE(result.ok());
 	EXPECT_EQ(AST_SCRIPT, result.result->getType());
 
-	result = parseScript(badCode);
+	result = parseScript(badCode, SourceFilePtr());
 	EXPECT_FALSE(result.ok());
 
-	result = parseScript("");
+	result = parseScript("", SourceFilePtr());
 	EXPECT_TRUE(result.ok());
 	EXPECT_FALSE(result.result->childExists(0));
 }
@@ -36,12 +36,12 @@ TEST(Parser, isAssignment)
 	const char * assignmentOps = "= >>= <<= += -= *= /= %= &= |= ^=";
 	const char * otherOps = ">> << + - * / % < > <= >= ";
 
-	LexToken	tok(assignmentOps);
+	LexToken	tok(assignmentOps, SourceFilePtr());
 
 	for (tok = tok.next(); !tok.eof(); tok = tok.next())
 		EXPECT_TRUE(isAssignment(tok));
 
-	tok = LexToken(otherOps);
+	tok = LexToken(otherOps, SourceFilePtr());
 
 	for (tok = tok.next(); !tok.eof(); tok = tok.next())
 		EXPECT_FALSE(isAssignment(tok));
@@ -56,12 +56,12 @@ TEST(Parser, isBinaryOp)
 	const char * binaryOps = ">>> >> << ** + - * / % & | && || ^ < > >= <= == != ";
 	const char * otherOps = "-= += ~ ! ++ --";
 
-	LexToken	tok(binaryOps);
+	LexToken	tok(binaryOps, SourceFilePtr());
 
 	for (tok = tok.next(); !tok.eof(); tok = tok.next())
 		EXPECT_TRUE(isBinaryOp(tok));
 
-	tok = LexToken(otherOps);
+	tok = LexToken(otherOps, SourceFilePtr());
 
 	for (tok = tok.next(); !tok.eof(); tok = tok.next())
 		EXPECT_FALSE(isBinaryOp(tok));
@@ -76,12 +76,12 @@ TEST(Parser, isPrefixOp)
 	const char * prefixOps = "! ~ + - ++ --";
 	const char * otherOps = ">>> >> << ** * / % & | && || ^ < > >= <= == != ";
 
-	LexToken	tok(prefixOps);
+	LexToken	tok(prefixOps, SourceFilePtr());
 
 	for (tok = tok.next(); !tok.eof(); tok = tok.next())
 		EXPECT_TRUE(isPrefixOp(tok));
 
-	tok = LexToken(otherOps);
+	tok = LexToken(otherOps, SourceFilePtr());
 
 	for (tok = tok.next(); !tok.eof(); tok = tok.next())
 		EXPECT_FALSE(isPrefixOp(tok));
@@ -96,12 +96,12 @@ TEST(Parser, isPostfixOp)
 	const char * postFixOps = "++ --";
 	const char * otherOps = "! | ~ >>> >> << ** * / % & | && || ^ < > >= <= == != ";
 
-	LexToken	tok(postFixOps);
+	LexToken	tok(postFixOps, SourceFilePtr());
 
 	for (tok = tok.next(); !tok.eof(); tok = tok.next())
 		EXPECT_TRUE(isPostfixOp(tok));
 
-	tok = LexToken(otherOps);
+	tok = LexToken(otherOps, SourceFilePtr());
 
 	for (tok = tok.next(); !tok.eof(); tok = tok.next())
 		EXPECT_FALSE(isPostfixOp(tok));
@@ -120,7 +120,7 @@ TEST(Parser, parseList)
 
 	auto parseList_ = [](const char* code, const char* beginTok, const char* endTok, const char* separator)
 	{
-		LexToken	tok(code);
+		LexToken	tok(code, SourceFilePtr());
 		return parseList(tok.next(), parseLiteral, beginTok, endTok, separator);
 	};
 
@@ -156,7 +156,7 @@ TEST(Parser, parseBlock)
 {
 	auto parseBlock_ = [](const char* code)
 	{
-		return parseBlock(LexToken(code).next());
+		return parseBlock(LexToken(code, SourceFilePtr()).next());
 	};
 
 	const char * block1 =
@@ -694,9 +694,9 @@ TEST(Parser, parseStatementSeparator)
 		"const a = 5\n"
 		"const b = 6  const c = 7\n";
 
-	EXPECT_PARSE_OK(parseScript(goodCode));
+	EXPECT_PARSE_OK(parseScript(goodCode, SourceFilePtr()));
 	
-	auto r = parseScript(badCode);
+	auto r = parseScript(badCode, SourceFilePtr());
 	ASSERT_PARSE_ERROR(r);
 
 	auto r2 = parseStatementSeparator(r);
@@ -726,7 +726,6 @@ TEST(Parser, parseReturn)
 
 	EXPECT_PARSE_ERROR(parseReturn_("const a = 6"));
 	EXPECT_PARSE_ERROR(parseReturn_("return const a = 6"));
-	EXPECT_PARSE_ERROR(parseReturn("return const a = 6"));
 }
 
 
@@ -766,7 +765,7 @@ TEST(Parser, parseActorDef)
 {
 	auto parseActorDef_ = [](const char* code)
 	{
-		return parseActorDef(LexToken(code).next());
+		return parseActorDef(LexToken(code, SourceFilePtr()).next());
 	};
 
 	EXPECT_PARSE_OK(parseActorDef_(

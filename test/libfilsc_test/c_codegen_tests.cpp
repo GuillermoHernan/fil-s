@@ -47,7 +47,7 @@ protected:
 				return false;
 		};
 		//clock_t		t0 = clock();
-		auto parseRes = parseScript(code);
+		auto parseRes = testParse(code);
 
 		if (!parseRes.ok())
 			throw parseRes.errorDesc;

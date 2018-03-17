@@ -9,6 +9,27 @@
 using namespace std;
 
 /// <summary>
+/// Creates a token for testing, without file reference.
+/// </summary>
+/// <param name="code"></param>
+/// <returns></returns>
+LexToken testToken(const char* code)
+{
+	return LexToken(code, SourceFilePtr());
+}
+
+/// <summary>
+/// Calls to parseScript, using a dummy file reference.
+/// </summary>
+/// <param name="code"></param>
+/// <returns></returns>
+ExprResult testParse(const char* code)
+{
+	return parseScript(code, SourceFilePtr());
+}
+
+
+/// <summary>
 /// Checks an expression result object, and passes the error message to 'Google test'
 /// if failed.
 /// </summary>
@@ -72,7 +93,7 @@ using namespace std;
 /// <returns></returns>
 ExprResult checkAllParsed(const char* code, ParseFunction parseFn)
 {
-	auto r = parseFn(LexToken(code).next());
+	auto r = parseFn(LexToken(code, SourceFilePtr()).next());
 
 	if (r.ok() && !r.nextToken().eof())
 		r = r.skip().getError(ETYPE_UNEXPECTED_TOKEN_2, r.nextText().c_str(), "<EOF>");
@@ -86,7 +107,7 @@ ExprResult checkAllParsed(const char* code, ParseFunction parseFn)
 /// <returns></returns>
 SemanticResult semAnalysisCheck(const char* code)
 {
-	auto parseRes = parseScript(code);
+	auto parseRes = parseScript(code, SourceFilePtr());
 
 	if (parseRes.error())
 		return SemanticResult(parseRes.errorDesc);

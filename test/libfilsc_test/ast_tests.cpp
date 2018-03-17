@@ -33,7 +33,7 @@ TEST(AstNode, create)
 {
 	auto node = AstNode::create(
 		AST_FUNCTION,
-		ScriptPosition(1, 2),
+		ScriptPosition(SourceFilePtr(), 1, 2),
 		"test_function",
 		"test_value",
 		ASTF_CONST

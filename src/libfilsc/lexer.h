@@ -59,7 +59,7 @@ public:
 	/// The token created with the constructor is not parsed from input string. It is
 	/// just the 'initial' token.To parse the first real token, call 'next'.
     /// </remarks>
-    LexToken(const char* code);
+    LexToken(const char* code, SourceFilePtr fileId);
 
     LexToken(LEX_TYPES lexType, const char* code, const ScriptPosition& position, int length);
 

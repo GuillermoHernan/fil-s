@@ -47,10 +47,10 @@ string tokenType2String(int token)
 /// The token created with the constructor is not parsed from input string. It is
 /// just the 'initial' token.To parse the first real token, call 'next'.
 /// </remarks>
-LexToken::LexToken(const char* code)
+LexToken::LexToken(const char* code, SourceFilePtr fileId)
 : m_code(code)
 , m_type(LEX_INITIAL)
-, m_position(1, 1)
+, m_position(fileId, 1, 1)
 , m_length(0)
 {
 }
@@ -265,7 +265,7 @@ LexToken LexToken::parseComment(const char * const code)const
 			end += 2;
 	}
 	else
-		return LexToken(""); //Not a commentary
+		return LexToken("", m_position.file()); //Not a commentary
 
 	return buildNextToken(LEX_COMMENT, code, end - code);
 }
@@ -492,7 +492,5 @@ ScriptPosition LexToken::calcPosition(const char* codePos)const
 
     assert(codePos == code);
 
-    ScriptPosition pos(line, col);
-
-    return pos;
+    return ScriptPosition (m_position, line, col);
 }
