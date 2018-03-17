@@ -35,8 +35,8 @@ TEST(LexToken, ConstructorFromCode)
 	LexToken	tok(code);
 
 	EXPECT_EQ(LEX_INITIAL, tok.type());
-	EXPECT_EQ(1, tok.getPosition().column);
-	EXPECT_EQ(1, tok.getPosition().line);
+	EXPECT_EQ(1, tok.getPosition().column());
+	EXPECT_EQ(1, tok.getPosition().line());
 	EXPECT_STREQ("", tok.text().c_str());
 }
 
@@ -366,58 +366,58 @@ TEST(LexToken, calcPosition)
 
 	LexToken	tok(code);
 
-	EXPECT_EQ(1, tok.getPosition().line);
-	EXPECT_EQ(1, tok.getPosition().column);
+	EXPECT_EQ(1, tok.getPosition().line());
+	EXPECT_EQ(1, tok.getPosition().column());
 
 	tok = tok.next();
 	EXPECT_STREQ("r", tok.text().c_str());
-	EXPECT_EQ(1, tok.getPosition().line);
-	EXPECT_EQ(1, tok.getPosition().column);
+	EXPECT_EQ(1, tok.getPosition().line());
+	EXPECT_EQ(1, tok.getPosition().column());
 
 	tok = tok.next();
 	EXPECT_STREQ("=", tok.text().c_str());
-	EXPECT_EQ(1, tok.getPosition().line);
-	EXPECT_EQ(3, tok.getPosition().column);
+	EXPECT_EQ(1, tok.getPosition().line());
+	EXPECT_EQ(3, tok.getPosition().column());
 
 	tok = tok.next();
 	EXPECT_STREQ("2", tok.text().c_str());
-	EXPECT_EQ(1, tok.getPosition().line);
-	EXPECT_EQ(5, tok.getPosition().column);
+	EXPECT_EQ(1, tok.getPosition().line());
+	EXPECT_EQ(5, tok.getPosition().column());
 
 	tok = tok.next();
 	EXPECT_STREQ("+", tok.text().c_str());
-	EXPECT_EQ(1, tok.getPosition().line);
-	EXPECT_EQ(7, tok.getPosition().column);
+	EXPECT_EQ(1, tok.getPosition().line());
+	EXPECT_EQ(7, tok.getPosition().column());
 
 	tok = tok.next();
 	EXPECT_STREQ("3", tok.text().c_str());
-	EXPECT_EQ(1, tok.getPosition().line);
-	EXPECT_EQ(9, tok.getPosition().column);
+	EXPECT_EQ(1, tok.getPosition().line());
+	EXPECT_EQ(9, tok.getPosition().column());
 
 	tok = tok.next();
 	EXPECT_STREQ("z", tok.text().c_str());
-	EXPECT_EQ(3, tok.getPosition().line);
-	EXPECT_EQ(1, tok.getPosition().column);
+	EXPECT_EQ(3, tok.getPosition().line());
+	EXPECT_EQ(1, tok.getPosition().column());
 
 	tok = tok.next();
 	EXPECT_STREQ("=", tok.text().c_str());
-	EXPECT_EQ(3, tok.getPosition().line);
-	EXPECT_EQ(2, tok.getPosition().column);
+	EXPECT_EQ(3, tok.getPosition().line());
+	EXPECT_EQ(2, tok.getPosition().column());
 
 	tok = tok.next();
 	EXPECT_STREQ("r", tok.text().c_str());
-	EXPECT_EQ(3, tok.getPosition().line);
-	EXPECT_EQ(3, tok.getPosition().column);
+	EXPECT_EQ(3, tok.getPosition().line());
+	EXPECT_EQ(3, tok.getPosition().column());
 
 	tok = tok.next();
 	EXPECT_STREQ("*", tok.text().c_str());
-	EXPECT_EQ(3, tok.getPosition().line);
-	EXPECT_EQ(4, tok.getPosition().column);
+	EXPECT_EQ(3, tok.getPosition().line());
+	EXPECT_EQ(4, tok.getPosition().column());
 
 	tok = tok.next();
 	EXPECT_STREQ("7", tok.text().c_str());
-	EXPECT_EQ(3, tok.getPosition().line);
-	EXPECT_EQ(5, tok.getPosition().column);
+	EXPECT_EQ(3, tok.getPosition().line());
+	EXPECT_EQ(5, tok.getPosition().column());
 
 	tok = tok.next();
 	EXPECT_TRUE(tok.eof());

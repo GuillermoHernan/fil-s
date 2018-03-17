@@ -40,8 +40,8 @@ TEST(AstNode, create)
 	);
 
 	EXPECT_EQ(AST_FUNCTION, node->getType());
-	EXPECT_EQ(1, node->position().line);
-	EXPECT_EQ(2, node->position().column);
+	EXPECT_EQ(1, node->position().line());
+	EXPECT_EQ(2, node->position().column());
 	EXPECT_STREQ("test_function", node->getName().c_str());
 	EXPECT_STREQ("test_value", node->getValue().c_str());
 	EXPECT_TRUE(node->hasFlag(ASTF_CONST));

@@ -478,7 +478,7 @@ ScriptPosition LexToken::calcPosition(const char* codePos)const
 {
     assert(codePos >= m_code);
 
-    int line = m_position.line, col = m_position.column;
+    int line = m_position.line(), col = m_position.column();
     const char* code;
 
     for (code = m_code; *code != 0 && code < codePos; ++code, ++col)
@@ -492,9 +492,7 @@ ScriptPosition LexToken::calcPosition(const char* codePos)const
 
     assert(codePos == code);
 
-    ScriptPosition pos;
-    pos.line = line;
-    pos.column = col;
+    ScriptPosition pos(line, col);
 
     return pos;
 }

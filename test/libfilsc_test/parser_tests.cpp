@@ -435,7 +435,7 @@ TEST(Parser, parseBinaryExpr)
 
 	auto result = parseBinaryExpr_("a + b - c");
 	EXPECT_EQ(ETYPE_INVALID_EXP_CHAIN, result.errorDesc.type());
-	EXPECT_EQ(7, result.errorDesc.position().column);
+	EXPECT_EQ(7, result.errorDesc.position().column());
 
 	result = parseBinaryExpr_("a > 0");
 	auto node = result.result;

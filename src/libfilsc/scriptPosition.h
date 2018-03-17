@@ -9,36 +9,37 @@
 /// <summary>
 ///  Indicates a position inside a script file (line / column)
 /// </summary>
-struct ScriptPosition
+class ScriptPosition
 {
-    int line;
-    int column;
-
+public:
     ScriptPosition() :
-    line(-1), column(-1)
+    m_line(-1), m_column(-1)
     {
     }
 
     ScriptPosition(int l, int c) :
-    line(l), column(c)
+    m_line(l), m_column(c)
     {
     }
+
+	int line()const		{ return m_line; }
+	int column()const	{ return m_column; }
 
     std::string toString()const;
     
     bool operator < (const ScriptPosition& b)const
     {
-        if (line < b.line)
+        if (line() < b.line())
             return true;
-        else if (line == b.line)
-            return column < b.column;
+        else if (line() == b.line())
+            return column() < b.column();
         else
             return false;
     }
     
     bool operator == (const ScriptPosition& b)const
     {
-        return (line == b.line && column == b.column);
+        return (line() == b.line() && column() == b.column());
     }
     
     bool operator > (const ScriptPosition& b)const
@@ -59,4 +60,9 @@ struct ScriptPosition
 	{
 		return !(*this == b);
 	}
+
+private:
+	int m_line;
+	int m_column;
+
 };//struct ScriptPosition

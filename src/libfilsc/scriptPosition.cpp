@@ -15,6 +15,6 @@ string ScriptPosition::toString()const
 {
     char buffer [128];
 
-    sprintf_s(buffer, "(line: %d, col: %d): ", this->line, this->column);
+    sprintf_s(buffer, "(line: %d, col: %d): ", this->line(), this->column());
     return string(buffer);
 }

@@ -14,8 +14,6 @@
 typedef std::vector<std::string> StringVector;
 
 
-struct ScriptPosition;
-
 bool isWhitespace(char ch);
 
 bool isNumeric(char ch);

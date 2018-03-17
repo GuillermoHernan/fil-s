@@ -24,7 +24,7 @@ static string generateErrorMessage(const ScriptPosition* pPos, ErrorTypes type, 
 
     if (pPos)
     {
-        sprintf_s(buffer, "(line: %d, col: %d): ", pPos->line, pPos->column);
+        sprintf_s(buffer, "(line: %d, col: %d): ", pPos->line(), pPos->column());
         message = buffer;
     }
 
