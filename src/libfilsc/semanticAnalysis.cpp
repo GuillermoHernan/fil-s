@@ -237,13 +237,6 @@ CompileError semError(Ref<AstNode> node, ErrorTypes type, ...)
 }
 
 /// <summary>
-/// Builds an 'AST_SCRIPT' node from the nodes present in 
-/// </summary>
-/// <param name="state"></param>
-/// <returns></returns>
-/// 
-
-/// <summary>
 /// Builds an 'AST_MODULE' node from the node map.
 /// </summary>
 /// <param name="nodes"></param>
