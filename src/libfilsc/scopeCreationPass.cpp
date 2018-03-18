@@ -21,9 +21,9 @@ void buildScope(Ref<AstNode> node, Ref<SymbolScope> currentScope, SemAnalysisSta
 /// <returns></returns>
 SemanticResult scopeCreationPass(Ref<AstNode> node, SemAnalysisState& state)
 {
-	buildScope(node, state.rootScope, state);
+    buildScope(node, state.rootScope, state);
 
-	return SemanticResult(node);
+    return SemanticResult(node);
 }
 
 /// <summary>
@@ -33,17 +33,17 @@ SemanticResult scopeCreationPass(Ref<AstNode> node, SemAnalysisState& state)
 /// <param name="currentScope"></param>
 void buildScope(Ref<AstNode> node, Ref<SymbolScope> currentScope, SemAnalysisState& state)
 {
-	if (node.isNull())
-		return;
+    if (node.isNull())
+        return;
 
-	if (needsOwnScope(node))
-		currentScope = SymbolScope::create(currentScope);
+    if (needsOwnScope(node))
+        currentScope = SymbolScope::create(currentScope);
 
-	state.setScope(node, currentScope);
+    state.setScope(node, currentScope);
 
-	//Walk children
-	for (auto child : node->children())
-		buildScope(child, currentScope, state);
+    //Walk children
+    for (auto child : node->children())
+        buildScope(child, currentScope, state);
 }
 
 /// <summary>
@@ -53,14 +53,14 @@ void buildScope(Ref<AstNode> node, Ref<SymbolScope> currentScope, SemAnalysisSta
 /// <returns></returns>
 bool needsOwnScope(Ref<AstNode> node)
 {
-	AstNodeTypes	type = node->getType();
+    AstNodeTypes	type = node->getType();
 
-	return type == AST_BLOCK
-		|| type == AST_FOR
-		|| type == AST_TUPLE_DEF
-		|| type == AST_FUNCTION
-		|| type == AST_INPUT
-		|| type == AST_ACTOR
-		|| type == AST_UNNAMED_INPUT
-		;
+    return type == AST_BLOCK
+        || type == AST_FOR
+        || type == AST_TUPLE_DEF
+        || type == AST_FUNCTION
+        || type == AST_INPUT
+        || type == AST_ACTOR
+        || type == AST_UNNAMED_INPUT
+        ;
 }

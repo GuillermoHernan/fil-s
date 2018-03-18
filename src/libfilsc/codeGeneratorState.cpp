@@ -11,33 +11,33 @@ using namespace std;
 /// <returns></returns>
 std::string CodeGeneratorState::cname(Ref<AstNode> node)
 {
-	//This 'switch' handles special cases.
-	switch (node->getType())
-	{
-	case AST_TYPEDEF:
-		return cname(node->child(0));
-	
-	case AST_TUPLE_DEF:
-	case AST_DEFAULT_TYPE:
-	case AST_TYPE_NAME:
-	case AST_ACTOR:
-		return cname(node->getDataType());
+    //This 'switch' handles special cases.
+    switch (node->getType())
+    {
+    case AST_TYPEDEF:
+        return cname(node->child(0));
 
-	default:
-		break;
-	}
+    case AST_TUPLE_DEF:
+    case AST_DEFAULT_TYPE:
+    case AST_TYPE_NAME:
+    case AST_ACTOR:
+        return cname(node->getDataType());
 
-	auto it = m_objNames.find(node);
+    default:
+        break;
+    }
 
-	if (it != m_objNames.end())
-		return it->second;
-	else
-	{
-		string name = allocCName(node->getName());
+    auto it = m_objNames.find(node);
 
-		m_objNames[node] = name;
-		return name;
-	}
+    if (it != m_objNames.end())
+        return it->second;
+    else
+    {
+        string name = allocCName(node->getName());
+
+        m_objNames[node] = name;
+        return name;
+    }
 }
 
 /// <summary>
@@ -47,22 +47,22 @@ std::string CodeGeneratorState::cname(Ref<AstNode> node)
 /// <returns></returns>
 std::string CodeGeneratorState::cname(AstNode* type)
 {
-	auto it = m_objNames.find(type);
+    auto it = m_objNames.find(type);
 
-	if (it != m_objNames.end())
-		return it->second;
-	else
-	{
-		string name;
+    if (it != m_objNames.end())
+        return it->second;
+    else
+    {
+        string name;
 
-		if (type->getType() == AST_DEFAULT_TYPE)
-			name = type->getName();
-		else
-			name = allocCName(type->getName());
+        if (type->getType() == AST_DEFAULT_TYPE)
+            name = type->getName();
+        else
+            name = allocCName(type->getName());
 
-		m_objNames[type] = name;
-		return name;
-	}
+        m_objNames[type] = name;
+        return name;
+    }
 }
 
 //TODO: PRobably, this function is no longer necessary.
@@ -96,10 +96,10 @@ std::string CodeGeneratorState::cname(AstNode* type)
 /// <returns></returns>
 bool CodeGeneratorState::hasName(AstNode* type)const
 {
-	if (type->getType() == AST_DEFAULT_TYPE)
-		return true;
-	else
-		return m_objNames.count(type) > 0;
+    if (type->getType() == AST_DEFAULT_TYPE)
+        return true;
+    else
+        return m_objNames.count(type) > 0;
 }
 
 
@@ -109,20 +109,20 @@ bool CodeGeneratorState::hasName(AstNode* type)const
 /// <param name="name"></param>
 void CodeGeneratorState::setCname(Ref<AstNode> node, const std::string& name)
 {
-	m_objNames[node] = name;
+    m_objNames[node] = name;
 
-	switch (node->getType())
-	{
-		case AST_TUPLE_DEF:
-		case AST_DEFAULT_TYPE:
-		case AST_TYPE_NAME:
-		case AST_ACTOR:
-			//For this node types, also its data type gets the name.
-			m_objNames[node->getDataType()] = name;
-			break;
-		default:
-			break;
-	}
+    switch (node->getType())
+    {
+    case AST_TUPLE_DEF:
+    case AST_DEFAULT_TYPE:
+    case AST_TYPE_NAME:
+    case AST_ACTOR:
+        //For this node types, also its data type gets the name.
+        m_objNames[node->getDataType()] = name;
+        break;
+    default:
+        break;
+    }
 }
 
 /// <summary>
@@ -133,31 +133,31 @@ void CodeGeneratorState::setCname(Ref<AstNode> node, const std::string& name)
 /// <param name="state"></param>
 void CodeGeneratorState::typeCodegen(AstNode* type, CodeGeneratorState& state)
 {
-	m_typeGenFN(type, state);
+    m_typeGenFN(type, state);
 }
 
 /// <summary>
 /// Constructor of CodeGeneratorState
 /// </summary>
 CodeGeneratorState::CodeGeneratorState(std::ostream* pOutput, TypeCodegenFN typeGenFN)
-	: m_output(pOutput), m_typeGenFN(typeGenFN)
+    : m_output(pOutput), m_typeGenFN(typeGenFN)
 {
-	assert(pOutput != NULL);
-	//Create root block
-	enterBlock();
+    assert(pOutput != NULL);
+    //Create root block
+    enterBlock();
 }
 
 CodeGeneratorState::~CodeGeneratorState()
 {
-	//Check that only the root block remains in the stack
-	assert(m_blockStack.size() == 1);
+    //Check that only the root block remains in the stack
+    assert(m_blockStack.size() == 1);
 }
 
 /// <summary>Enters in a new block.</summary>
 /// <remarks>Each block stores its own temporaries</remarks>
 void CodeGeneratorState::enterBlock()
 {
-	m_blockStack.push_back(BlockInfo());
+    m_blockStack.push_back(BlockInfo());
 }
 
 /// <summary>
@@ -165,10 +165,10 @@ void CodeGeneratorState::enterBlock()
 /// </summary>
 void CodeGeneratorState::exitBlock()
 {
-	m_blockStack.pop_back();
+    m_blockStack.pop_back();
 
-	//Root block shall not be destroyed.
-	assert(m_blockStack.size() > 0);
+    //Root block shall not be destroyed.
+    assert(m_blockStack.size() > 0);
 }
 
 /// <summary>
@@ -181,27 +181,27 @@ void CodeGeneratorState::exitBlock()
 /// temporary has been reused</returns>
 bool CodeGeneratorState::allocTemp(const std::string& cTypeName, std::string& outputName, bool ref)
 {
-	auto tempVar = findTemporary([&cTypeName, ref](const TempVarInfo& varInfo) {
-		return varInfo.cType == cTypeName 
-			&& varInfo.ref == ref
-			&& varInfo.free == true;
-	});
+    auto tempVar = findTemporary([&cTypeName, ref](const TempVarInfo& varInfo) {
+        return varInfo.cType == cTypeName
+            && varInfo.ref == ref
+            && varInfo.free == true;
+    });
 
-	//Try to reuse.
-	if (tempVar != NULL)
-	{
-		tempVar->free = false;
-		outputName = tempVar->cName;
+    //Try to reuse.
+    if (tempVar != NULL)
+    {
+        tempVar->free = false;
+        outputName = tempVar->cName;
 
-		return false;
-	}
-	else
-	{
-		outputName = allocCName("temp");
-		m_blockStack.back().tempVars.push_back(TempVarInfo{ cTypeName, outputName, ref });
+        return false;
+    }
+    else
+    {
+        outputName = allocCName("temp");
+        m_blockStack.back().tempVars.push_back(TempVarInfo{ cTypeName, outputName, ref });
 
-		return true;
-	}
+        return true;
+    }
 }
 
 /// <summary>
@@ -211,18 +211,18 @@ bool CodeGeneratorState::allocTemp(const std::string& cTypeName, std::string& ou
 /// <returns>true if the variable exists and was used. 'false' in other case.</returns>
 bool CodeGeneratorState::releaseTemp(const std::string& varName)
 {
-	auto tempVar = findTemporary([&varName](const TempVarInfo& varInfo) {
-		return varInfo.cName == varName;
-	});
+    auto tempVar = findTemporary([&varName](const TempVarInfo& varInfo) {
+        return varInfo.cName == varName;
+    });
 
-	if (tempVar != NULL)
-	{
-		bool result = !tempVar->free;
-		tempVar->free = true;
-		return result;
-	}
-	else
-		return false;
+    if (tempVar != NULL)
+    {
+        bool result = !tempVar->free;
+        tempVar->free = true;
+        return result;
+    }
+    else
+        return false;
 }
 
 /// <summary>
@@ -232,26 +232,26 @@ bool CodeGeneratorState::releaseTemp(const std::string& varName)
 /// <returns></returns>
 std::string	CodeGeneratorState::allocCName(std::string base)
 {
-	const size_t	bufSize = base.size() + 32;
-	char *			buffer = new char[bufSize];
+    const size_t	bufSize = base.size() + 32;
+    char *			buffer = new char[bufSize];
 
-	if (base == "")
-		base = "_unnamed";
-	else
-	{
-		//Limit name length
-		if (base.size() > 16)
-			base = base.substr(0, 7) + "__" + base.substr(base.size()-7, 7);
+    if (base == "")
+        base = "_unnamed";
+    else
+    {
+        //Limit name length
+        if (base.size() > 16)
+            base = base.substr(0, 7) + "__" + base.substr(base.size() - 7, 7);
 
-		replace(base, '\'', "1");	// single quotes are illegal in 'C' names.
-	}
+        replace(base, '\'', "1");	// single quotes are illegal in 'C' names.
+    }
 
-	sprintf_s(buffer, bufSize, "%s_%04X", base.c_str(), m_nextSymbolId++);
+    sprintf_s(buffer, bufSize, "%s_%04X", base.c_str(), m_nextSymbolId++);
 
-	string result = buffer;
-	delete[]buffer;
+    string result = buffer;
+    delete[]buffer;
 
-	return result;
+    return result;
 }
 
 /// <summary>
@@ -260,15 +260,15 @@ std::string	CodeGeneratorState::allocCName(std::string base)
 /// <param name="predicate"></param>
 /// <returns></returns>
 CodeGeneratorState::TempVarInfo* CodeGeneratorState::findTemporary(
-	std::function<bool(const TempVarInfo&)> predicate)
+    std::function<bool(const TempVarInfo&)> predicate)
 {
-	for (TempVarInfo& varInfo : m_blockStack.back().tempVars)
-	{
-		if (predicate(varInfo))
-			return &varInfo;
-	}
+    for (TempVarInfo& varInfo : m_blockStack.back().tempVars)
+    {
+        if (predicate(varInfo))
+            return &varInfo;
+    }
 
-	return NULL;
+    return NULL;
 }
 
 /// <summary>
@@ -276,8 +276,8 @@ CodeGeneratorState::TempVarInfo* CodeGeneratorState::findTemporary(
 /// </summary>
 std::ostream& operator << (std::ostream& output, const IVariableInfo& var)
 {
-	output << var.cname();
-	return output;
+    output << var.cname();
+    return output;
 }
 
 /// <summary>
@@ -286,24 +286,24 @@ std::ostream& operator << (std::ostream& output, const IVariableInfo& var)
 /// <param name="type"></param>
 /// <param name="state"></param>
 TempVariable::TempVariable(AstNode* type, CodeGeneratorState& state, bool ref)
-	: IVariableInfo(ref), m_state(state), m_dataType(type)
+    : IVariableInfo(ref), m_state(state), m_dataType(type)
 {
-	//If the datatype has not been declared in 'C' source, declare it.
-	if (!state.hasName(type))
-		state.typeCodegen(type, state);
+    //If the datatype has not been declared in 'C' source, declare it.
+    if (!state.hasName(type))
+        state.typeCodegen(type, state);
 
-	string	cTypeName = state.cname(type);
+    string	cTypeName = state.cname(type);
 
-	if (state.allocTemp(cTypeName, m_cName, ref))
-	{
-		state.output() << cTypeName;
-		if (ref)
-			state.output() << "*";
-		state.output() << "\t" << m_cName << ";\n";
-	}
+    if (state.allocTemp(cTypeName, m_cName, ref))
+    {
+        state.output() << cTypeName;
+        if (ref)
+            state.output() << "*";
+        state.output() << "\t" << m_cName << ";\n";
+    }
 
-	//If 'allocTemp' returns false, it means that a temp value has been reused.
-	//It shall not be declared again.
+    //If 'allocTemp' returns false, it means that a temp value has been reused.
+    //It shall not be declared again.
 }
 
 /// <summary>
@@ -312,7 +312,7 @@ TempVariable::TempVariable(AstNode* type, CodeGeneratorState& state, bool ref)
 /// <param name="node"></param>
 /// <param name="state"></param>
 TempVariable::TempVariable(Ref<AstNode> node, CodeGeneratorState& state, bool ref)
-	:TempVariable(node->getDataType(), state, ref)
+    :TempVariable(node->getDataType(), state, ref)
 {
 }
 
@@ -322,57 +322,57 @@ TempVariable::TempVariable(Ref<AstNode> node, CodeGeneratorState& state, bool re
 /// </summary>
 TempVariable::~TempVariable()
 {
-	m_state.releaseTemp(m_cName);
+    m_state.releaseTemp(m_cName);
 }
 
 
 const std::string& VoidVariable::cname()const
 {
-	static string empty;
-	return empty;
+    static string empty;
+    return empty;
 }
 
 AstNode* VoidVariable::dataType()const
 {
-	return astGetVoid();
+    return astGetVoid();
 }
 
 NamedVariable::NamedVariable(Ref<AstNode> node, CodeGeneratorState& state)
-	:IVariableInfo(false), m_node(node), m_cName(state.cname(node))
+    :IVariableInfo(false), m_node(node), m_cName(state.cname(node))
 {
 }
 
 const std::string& NamedVariable::cname()const
 {
-	return m_cName;
+    return m_cName;
 }
 AstNode* NamedVariable::dataType()const
 {
-	return m_node->getDataType();
+    return m_node->getDataType();
 }
 
 /// <summary>
 /// Constructor for 'TupleField'. Resolves needed data on invocation.
 /// </summary>
 TupleField::TupleField(const IVariableInfo& tuple, int fieldIndex, CodeGeneratorState& state)
-	:IVariableInfo(false)
+    :IVariableInfo(false)
 {
-	auto type = tuple.dataType();
+    auto type = tuple.dataType();
 
-	assert(astIsTupleType (type));
+    assert(astIsTupleType(type));
 
-	assert(fieldIndex < (int)type->childCount());
+    assert(fieldIndex < (int)type->childCount());
 
-	auto fieldNode = type->child(fieldIndex);
-	m_type = fieldNode->getDataType();
-	m_cName = tuple.cname() + "." + state.cname(fieldNode);
+    auto fieldNode = type->child(fieldIndex);
+    m_type = fieldNode->getDataType();
+    m_cName = tuple.cname() + "." + state.cname(fieldNode);
 }
 
 const std::string& TupleField::cname()const
 {
-	return m_cName;
+    return m_cName;
 }
 AstNode* TupleField::dataType()const
 {
-	return m_type;
+    return m_type;
 }

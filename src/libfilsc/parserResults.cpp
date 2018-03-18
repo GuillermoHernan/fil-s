@@ -11,16 +11,16 @@
  * If the current result is an error, executes the parse function.
  * If not, it doesn't call the parse function.
  * @param parseFn
- * @return 
+ * @return
  */
 ExprResult ExprResult::orElse(ParseFunction parseFn)
 {
     if (ok())
         return *this;
-    
+
     ExprResult r = parseFn(m_token);
     r.m_initialToken = m_initialToken;
-    
+
     if (r.ok() || r.errorDesc.position() > this->errorDesc.position())
         return r;
     else
@@ -32,7 +32,7 @@ ExprResult ExprResult::orElse(ParseFunction parseFn)
  * its result.
  * Version for regular parse functions.
  * @param parseFn
- * @return 
+ * @return
  */
 ExprResult ExprResult::then(ParseFunction parseFn)
 {
@@ -41,8 +41,8 @@ ExprResult ExprResult::then(ParseFunction parseFn)
 
     ExprResult r = parseFn(nextToken());
     r.m_initialToken = m_initialToken;
-    
-    return r;    
+
+    return r;
 }
 
 /**
@@ -51,7 +51,7 @@ ExprResult ExprResult::then(ParseFunction parseFn)
  * Version for chained parse functions. Chained parse functions receive the current
  * result as parameter.
  * @param parseFn
- * @return 
+ * @return
  */
 ExprResult ExprResult::then(ChainParseFunction parseFn)
 {
@@ -60,8 +60,8 @@ ExprResult ExprResult::then(ChainParseFunction parseFn)
 
     ExprResult r = parseFn(nextToken(), result);
     r.m_initialToken = m_initialToken;
-    
-    return r;    
+
+    return r;
 }
 
 /// <summary>
@@ -75,10 +75,10 @@ ExprResult ExprResult::require(TokenCheck checkFn)
     if (error())
         return *this;
 
-	auto r = require(checkFn, nextToken());
-	r.m_initialToken = m_initialToken;
-	r.result = this->result;
-	return r;
+    auto r = require(checkFn, nextToken());
+    r.m_initialToken = m_initialToken;
+    r.result = this->result;
+    return r;
 }
 
 /// <summary>
@@ -90,10 +90,10 @@ ExprResult ExprResult::require(TokenCheck checkFn)
 /// <returns>An expression result, which indicates the outcome of the operation.</returns>
 ExprResult ExprResult::require(TokenCheck checkFn, LexToken token)
 {
-	if (checkFn(token))
-		return ExprResult (token, Ref<AstNode>(), token);
-	else
-		return getError(token, ETYPE_UNEXPECTED_TOKEN_1, token.text().c_str());
+    if (checkFn(token))
+        return ExprResult(token, Ref<AstNode>(), token);
+    else
+        return getError(token, ETYPE_UNEXPECTED_TOKEN_1, token.text().c_str());
 }
 
 
@@ -101,17 +101,17 @@ ExprResult ExprResult::require(TokenCheck checkFn, LexToken token)
  * Requires that the current token is of the specified type.
  * If the check is successful, advances to the next token in the result.
  * @param tokenType     Token type
- * @return 
+ * @return
  */
 ExprResult ExprResult::require(LEX_TYPES tokenType)
 {
     if (error())
         return *this;
 
-	auto r = require(tokenType, nextToken());
-	r.m_initialToken = m_initialToken;
-	r.result = this->result;
-	return r;
+    auto r = require(tokenType, nextToken());
+    r.m_initialToken = m_initialToken;
+    r.result = this->result;
+    return r;
 }
 
 /// <summary>Requires that the token has the specified type.</summary>
@@ -120,12 +120,12 @@ ExprResult ExprResult::require(LEX_TYPES tokenType)
 /// <returns></returns>
 ExprResult ExprResult::require(LEX_TYPES tokenType, LexToken token)
 {
-	if (token.type() == tokenType)
-		return ExprResult(token, Ref<AstNode>(), token);
-	else
-		return getError(token, ETYPE_UNEXPECTED_TOKEN_2, 
-			token.text().c_str(),
-			tokenType2String(tokenType).c_str());
+    if (token.type() == tokenType)
+        return ExprResult(token, Ref<AstNode>(), token);
+    else
+        return getError(token, ETYPE_UNEXPECTED_TOKEN_2,
+            token.text().c_str(),
+            tokenType2String(tokenType).c_str());
 }
 
 /// <summary>Requires that the token has the specified text.</summary>
@@ -134,28 +134,28 @@ ExprResult ExprResult::require(LEX_TYPES tokenType, LexToken token)
 /// <returns></returns>
 ExprResult ExprResult::require(const char* text, LexToken token)
 {
-	if (token.text() == text)
-		return ExprResult(token, Ref<AstNode>(), token);
-	else
-		return getError(token, ETYPE_UNEXPECTED_TOKEN_2, token.text().c_str(), text);
+    if (token.text() == text)
+        return ExprResult(token, Ref<AstNode>(), token);
+    else
+        return getError(token, ETYPE_UNEXPECTED_TOKEN_2, token.text().c_str(), text);
 }
 
 /**
  * Requires that the current token is an identifier with the given text.
  * @param text
- * @return 
+ * @return
  */
 ExprResult ExprResult::requireId(const char* text)
 {
-	if (error())
-		return *this;
+    if (error())
+        return *this;
 
-	ExprResult  r = require(LEX_ID);
+    ExprResult  r = require(LEX_ID);
 
-	if (r.ok() && r.m_token.text() == text)
-		return r;
-	else
-		return r.getError(ETYPE_UNEXPECTED_TOKEN_2, r.m_token.text().c_str(), text);
+    if (r.ok() && r.m_token.text() == text)
+        return r;
+    else
+        return r.getError(ETYPE_UNEXPECTED_TOKEN_2, r.m_token.text().c_str(), text);
 }
 
 /// <summary>
@@ -165,15 +165,15 @@ ExprResult ExprResult::requireId(const char* text)
 /// <returns></returns>
 ExprResult ExprResult::requireOp(const char* text)
 {
-	if (error())
-		return *this;
+    if (error())
+        return *this;
 
-	ExprResult  r = require(LEX_OPERATOR);
+    ExprResult  r = require(LEX_OPERATOR);
 
-	if (r.ok() && r.m_token.text() == text)
-		return r;
-	else
-		return r.getError(ETYPE_UNEXPECTED_TOKEN_2, r.m_token.text().c_str(), text);
+    if (r.ok() && r.m_token.text() == text)
+        return r;
+    else
+        return r.getError(ETYPE_UNEXPECTED_TOKEN_2, r.m_token.text().c_str(), text);
 }
 
 /// <summary>
@@ -183,23 +183,23 @@ ExprResult ExprResult::requireOp(const char* text)
 /// <returns></returns>
 ExprResult ExprResult::requireReserved(const char* text)
 {
-	if (error())
-		return *this;
+    if (error())
+        return *this;
 
-	auto r = requireReserved(text, nextToken());
-	r.m_initialToken = m_initialToken;
-	r.result = this->result;
-	return r;
+    auto r = requireReserved(text, nextToken());
+    r.m_initialToken = m_initialToken;
+    r.result = this->result;
+    return r;
 }
 
 ExprResult ExprResult::requireReserved(const char* text, LexToken token)
 {
-	ExprResult  r = require(LEX_RESERVED, token);
+    ExprResult  r = require(LEX_RESERVED, token);
 
-	if (r.ok() && r.m_token.text() == text)
-		return r;
-	else
-		return r.getError(ETYPE_UNEXPECTED_TOKEN_2, token.text().c_str(), text);
+    if (r.ok() && r.m_token.text() == text)
+        return r;
+    else
+        return r.getError(ETYPE_UNEXPECTED_TOKEN_2, token.text().c_str(), text);
 }
 
 /// <summary>
@@ -208,13 +208,13 @@ ExprResult ExprResult::requireReserved(const char* text, LexToken token)
 /// <returns></returns>
 ExprResult ExprResult::noNewLine()
 {
-	if (error())
-		return *this;
+    if (error())
+        return *this;
 
-	if (nextToken(LexToken::NEWLINE).type() == LEX_NEWLINE)
-		return getError(ETYPE_UNEXPECTED_TOKEN_1, "[new line]");
-	else
-		return *this;
+    if (nextToken(LexToken::NEWLINE).type() == LEX_NEWLINE)
+        return getError(ETYPE_UNEXPECTED_TOKEN_1, "[new line]");
+    else
+        return *this;
 }
 
 
@@ -226,18 +226,18 @@ ExprResult ExprResult::noNewLine()
 /// <returns></returns>
 ExprResult ExprResult::ok(LexToken token, Ref<AstNode> result)
 {
-	return ExprResult(token, result, token);
+    return ExprResult(token, result, token);
 }
 
 /**
  * Skips next token. Forwards the previous result
- * @return 
+ * @return
  */
 ExprResult ExprResult::skip()
 {
     if (error())
         return *this;
-    
+
     return ExprResult(nextToken(), result, m_initialToken);
 }
 
@@ -250,16 +250,16 @@ ExprResult ExprResult::skip()
 /// <returns></returns>
 ExprResult ExprResult::getError(ErrorTypes type, ...)
 {
-	va_list args;
+    va_list args;
 
-	va_start(args, type);
+    va_start(args, type);
 
-	ExprResult result(m_token, CompileError::create(m_token.getPosition(), type, args));
-	result.m_initialToken = m_initialToken;
+    ExprResult result(m_token, CompileError::create(m_token.getPosition(), type, args));
+    result.m_initialToken = m_initialToken;
 
-	va_end(args);
+    va_end(args);
 
-	return result;
+    return result;
 }
 
 /// <summary>
@@ -274,10 +274,10 @@ ExprResult ExprResult::getError(LexToken token, ErrorTypes type, ...)
     va_list args;
 
     va_start(args, type);
-    
-	ExprResult result(token, CompileError::create(token.getPosition(), type, args));
 
-	va_end(args);
+    ExprResult result(token, CompileError::create(token.getPosition(), type, args));
+
+    va_end(args);
 
     return result;
 }
@@ -287,7 +287,7 @@ ExprResult ExprResult::getError(LexToken token, ErrorTypes type, ...)
 /// <returns></returns>
 std::string ExprResult::nextText(int flags)const
 {
-	return nextToken(flags).text();
+    return nextToken(flags).text();
 }
 
 /// <summary>Gets the next token.</summary>
@@ -295,7 +295,7 @@ std::string ExprResult::nextText(int flags)const
 /// <returns></returns>
 LexToken ExprResult::nextToken(int flags)const
 {
-	return m_token.next(flags);
+    return m_token.next(flags);
 }
 
 /// <summary>Gets the type of the next token.</summary>
@@ -303,7 +303,7 @@ LexToken ExprResult::nextToken(int flags)const
 /// <returns></returns>
 LEX_TYPES ExprResult::nextType(int flags)const
 {
-	return nextToken(flags).type();
+    return nextToken(flags).type();
 }
 
 
@@ -312,13 +312,13 @@ LEX_TYPES ExprResult::nextType(int flags)const
  */
 void ExprResult::throwIfError()const
 {
-	if (error())
-		throw errorDesc;
+    if (error())
+        throw errorDesc;
 }
 
 /**
  * If the result is an error, relocates it to the initial token
- * @return 
+ * @return
  */
 ExprResult ExprResult::final()const
 {

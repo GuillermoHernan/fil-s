@@ -56,18 +56,18 @@ std::string					replaceScriptVariables(const std::string& scriptTemplate, Module
 class FindVariableResult
 {
 public:
-	FindVariableResult(const std::string& text, size_t beginPosition)
-		: m_text(text), m_begin(beginPosition)
-	{}
+    FindVariableResult(const std::string& text, size_t beginPosition)
+        : m_text(text), m_begin(beginPosition)
+    {}
 
-	bool		found()const	{ return m_begin != std::string::npos; }
-	std::string	text()const		{ return m_text; }
-	size_t		begin()const	{ return m_begin;}
-	size_t		end()const		{ return m_begin + m_text.size() + 3; }
+    bool		found()const { return m_begin != std::string::npos; }
+    std::string	text()const { return m_text; }
+    size_t		begin()const { return m_begin; }
+    size_t		end()const { return m_begin + m_text.size() + 3; }
 
 private:
-	std::string		m_text;
-	size_t			m_begin;
+    std::string		m_text;
+    size_t			m_begin;
 };
 
 FindVariableResult			findScriptVariable(const std::string& scriptTemplate, size_t initialPosition);

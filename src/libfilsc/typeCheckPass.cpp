@@ -15,41 +15,41 @@ using namespace std;
 /// <returns></returns>
 SemanticResult typeCheckPass(Ref<AstNode> node, SemAnalysisState& state)
 {
-	static PassOperations	functions;
+    static PassOperations	functions;
 
-	if (functions.empty())
-	{
-		functions.add(AST_TYPE_NAME, typeExistsCheck);
-		functions.add(AST_TUPLE_DEF, tupleDefTypeCheck);
+    if (functions.empty())
+    {
+        functions.add(AST_TYPE_NAME, typeExistsCheck);
+        functions.add(AST_TUPLE_DEF, tupleDefTypeCheck);
 
-		functions.add(AST_BLOCK, blockTypeCheck);
-		functions.add(AST_TYPEDEF, typedefTypeCheck);
-		functions.add(AST_TUPLE, tupleTypeCheck);
-		functions.add(AST_DECLARATION, declarationTypeCheck);
-		functions.add(AST_IF, ifTypeCheck);
-		functions.add(AST_RETURN, returnTypeAssign);
-		functions.add(AST_FUNCTION, functionDefTypeCheck);
-		functions.add(AST_ASSIGNMENT, assignmentTypeCheck);
-		functions.add(AST_FNCALL, callTypeCheck);
-		functions.add(AST_INTEGER, literalTypeAssign);
-		functions.add(AST_FLOAT, literalTypeAssign);
-		functions.add(AST_STRING, literalTypeAssign);
-		functions.add(AST_BOOL, literalTypeAssign);
-		functions.add(AST_IDENTIFIER, varReadTypeCheck);
-		functions.add(AST_MEMBER_ACCESS, memberAccessTypeCheck);
-		functions.add(AST_BINARYOP, binaryOpTypeCheck);
-		functions.add(AST_PREFIXOP, prefixOpTypeCheck);
-		functions.add(AST_POSTFIXOP, postfixOpTypeCheck);
-		functions.add(AST_DEFAULT_TYPE, defaultTypeAssign);
-		functions.add(AST_ACTOR, actorTypeCheck);
-		functions.add(AST_INPUT, messageTypeCheck);
-		functions.add(AST_OUTPUT, messageTypeCheck);
-		functions.add(AST_UNNAMED_INPUT, unnamedInputTypeCheck);
+        functions.add(AST_BLOCK, blockTypeCheck);
+        functions.add(AST_TYPEDEF, typedefTypeCheck);
+        functions.add(AST_TUPLE, tupleTypeCheck);
+        functions.add(AST_DECLARATION, declarationTypeCheck);
+        functions.add(AST_IF, ifTypeCheck);
+        functions.add(AST_RETURN, returnTypeAssign);
+        functions.add(AST_FUNCTION, functionDefTypeCheck);
+        functions.add(AST_ASSIGNMENT, assignmentTypeCheck);
+        functions.add(AST_FNCALL, callTypeCheck);
+        functions.add(AST_INTEGER, literalTypeAssign);
+        functions.add(AST_FLOAT, literalTypeAssign);
+        functions.add(AST_STRING, literalTypeAssign);
+        functions.add(AST_BOOL, literalTypeAssign);
+        functions.add(AST_IDENTIFIER, varReadTypeCheck);
+        functions.add(AST_MEMBER_ACCESS, memberAccessTypeCheck);
+        functions.add(AST_BINARYOP, binaryOpTypeCheck);
+        functions.add(AST_PREFIXOP, prefixOpTypeCheck);
+        functions.add(AST_POSTFIXOP, postfixOpTypeCheck);
+        functions.add(AST_DEFAULT_TYPE, defaultTypeAssign);
+        functions.add(AST_ACTOR, actorTypeCheck);
+        functions.add(AST_INPUT, messageTypeCheck);
+        functions.add(AST_OUTPUT, messageTypeCheck);
+        functions.add(AST_UNNAMED_INPUT, unnamedInputTypeCheck);
 
-		functions.add(AST_ASSIGNMENT, addTupleAdapter);
-	}
+        functions.add(AST_ASSIGNMENT, addTupleAdapter);
+    }
 
-	return semInOrderWalk(functions, state, node);
+    return semInOrderWalk(functions, state, node);
 }
 
 /// <summary>
@@ -61,15 +61,15 @@ SemanticResult typeCheckPass(Ref<AstNode> node, SemAnalysisState& state)
 /// <returns></returns>
 SemanticResult typeCheckPass2(Ref<AstNode> node, SemAnalysisState& state)
 {
-	static PassOperations	functions;
+    static PassOperations	functions;
 
-	if (functions.empty())
-	{
-		functions.add(AST_RETURN, returnTypeCheck);
-		functions.add(AST_RETURN, addReturnTupleAdapter);		
-	}
+    if (functions.empty())
+    {
+        functions.add(AST_RETURN, returnTypeCheck);
+        functions.add(AST_RETURN, addReturnTupleAdapter);
+    }
 
-	return semInOrderWalk(functions, state, node);
+    return semInOrderWalk(functions, state, node);
 
 }
 
@@ -81,16 +81,16 @@ SemanticResult typeCheckPass2(Ref<AstNode> node, SemAnalysisState& state)
 /// <returns></returns>
 SemanticResult preTypeCheckPass(Ref<AstNode> node, SemAnalysisState& state)
 {
-	static PassOperations	functions;
+    static PassOperations	functions;
 
-	if (functions.empty())
-	{
-		functions.add(AST_IDENTIFIER, recursiveSymbolReferenceCheck);
+    if (functions.empty())
+    {
+        functions.add(AST_IDENTIFIER, recursiveSymbolReferenceCheck);
 
-		functions.add(AST_TYPEDEF, tupleRemoveTypedef);
-	}
+        functions.add(AST_TYPEDEF, tupleRemoveTypedef);
+    }
 
-	return semInOrderWalk(functions, state, node);
+    return semInOrderWalk(functions, state, node);
 }
 
 
@@ -99,18 +99,18 @@ SemanticResult preTypeCheckPass(Ref<AstNode> node, SemAnalysisState& state)
 /// </summary>
 CompileError recursiveSymbolReferenceCheck(Ref<AstNode> node, SemAnalysisState& state)
 {
-	//auto referenced = node->getScope()->get(node->getName(), false);
-	auto referenced = state.getScope(node)->get(node->getName(), false);
-	//auto referenced = node->getReference();
-	int i = 0;
+    //auto referenced = node->getScope()->get(node->getName(), false);
+    auto referenced = state.getScope(node)->get(node->getName(), false);
+    //auto referenced = node->getReference();
+    int i = 0;
 
-	for (; state.parent(i).notNull(); ++i)
-	{
-		if (referenced == state.parent(i))
-			return semError(node, ETYPE_RECURSIVE_SYMBOL_REFERENCE_1, node->getName().c_str());
-	}
+    for (; state.parent(i).notNull(); ++i)
+    {
+        if (referenced == state.parent(i))
+            return semError(node, ETYPE_RECURSIVE_SYMBOL_REFERENCE_1, node->getName().c_str());
+    }
 
-	return CompileError::ok();
+    return CompileError::ok();
 }
 
 
@@ -119,29 +119,29 @@ CompileError recursiveSymbolReferenceCheck(Ref<AstNode> node, SemAnalysisState& 
 /// </summary>
 CompileError typeExistsCheck(Ref<AstNode> node, SemAnalysisState& state)
 {
-	auto	scope = state.getScope(node);
-	string	name = node->getName();
+    auto	scope = state.getScope(node);
+    string	name = node->getName();
 
-	auto typeNode = scope->get(name, true);
+    auto typeNode = scope->get(name, true);
 
-	if (typeNode.isNull())
-		return semError(node, ETYPE_NON_EXISTENT_SYMBOL_1, name.c_str());
-	
-	if (!isType(typeNode))
-		return semError(node, ETYPE_NOT_A_TYPE_1, name.c_str());
-	else
-		node->setDataType(typeNode->getDataType());
+    if (typeNode.isNull())
+        return semError(node, ETYPE_NON_EXISTENT_SYMBOL_1, name.c_str());
 
-	return CompileError::ok();
+    if (!isType(typeNode))
+        return semError(node, ETYPE_NOT_A_TYPE_1, name.c_str());
+    else
+        node->setDataType(typeNode->getDataType());
+
+    return CompileError::ok();
 }
 
 /// <summary>Type checking on a tuple definition.</summary>
 CompileError tupleDefTypeCheck(Ref<AstNode> node, SemAnalysisState& state)
 {
-	//The data type of a tuple definition is itself.
-	node->setDataType(node.getPointer());
+    //The data type of a tuple definition is itself.
+    node->setDataType(node.getPointer());
 
-	return CompileError::ok();
+    return CompileError::ok();
 }
 
 /// <summary>
@@ -149,13 +149,13 @@ CompileError tupleDefTypeCheck(Ref<AstNode> node, SemAnalysisState& state)
 /// </summary>
 CompileError blockTypeCheck(Ref<AstNode> node, SemAnalysisState& state)
 {
-	if (node->childCount() == 0)
-		return setVoidType(node, state);
-	else
-	{
-		node->setDataType(node->children().back()->getDataType());
-		return CompileError::ok();
-	}
+    if (node->childCount() == 0)
+        return setVoidType(node, state);
+    else
+    {
+        node->setDataType(node->children().back()->getDataType());
+        return CompileError::ok();
+    }
 }
 
 /// <summary>
@@ -164,8 +164,8 @@ CompileError blockTypeCheck(Ref<AstNode> node, SemAnalysisState& state)
 /// </summary>
 CompileError typedefTypeCheck(Ref<AstNode> node, SemAnalysisState& state)
 {
-	node->setDataType(node->child(0)->getDataType());
-	return CompileError::ok();
+    node->setDataType(node->child(0)->getDataType());
+    return CompileError::ok();
 }
 
 /// <summary>
@@ -173,10 +173,10 @@ CompileError typedefTypeCheck(Ref<AstNode> node, SemAnalysisState& state)
 /// </summary>
 CompileError tupleTypeCheck(Ref<AstNode> node, SemAnalysisState& state)
 {
-	//The type of a tuple node is itself.
-	node->setDataType(node.getPointer());
+    //The type of a tuple node is itself.
+    node->setDataType(node.getPointer());
 
-	return CompileError::ok();
+    return CompileError::ok();
 }
 
 /// <summary>
@@ -184,66 +184,66 @@ CompileError tupleTypeCheck(Ref<AstNode> node, SemAnalysisState& state)
 /// </summary>
 CompileError declarationTypeCheck(Ref<AstNode> node, SemAnalysisState& state)
 {
-	//Type declared explicitly?
-	if (node->childExists(0))
-	{
-		auto declaredType = node->child(0)->getDataType();
+    //Type declared explicitly?
+    if (node->childExists(0))
+    {
+        auto declaredType = node->child(0)->getDataType();
 
-		if (declaredType->getType() == AST_ACTOR)
-			return actorInstanceTypeCheck(node, state);
+        if (declaredType->getType() == AST_ACTOR)
+            return actorInstanceTypeCheck(node, state);
 
-		node->setDataType(declaredType);
+        node->setDataType(declaredType);
 
-		if (!node->childExists(1))
-			return CompileError::ok();	//No initialization
-		else
-			return areTypesCompatible(declaredType, node->child(1)->getDataType(), node);
-	}
-	else
-	{
-		if (!node->childExists(1))
-			return semError( node, ETYPE_DECLARATION_WITHOUT_TYPE);
-		else
-		{
-			//Infer type from initialization expression.
-			node->setDataType(node->child(1)->getDataType());
-			return CompileError::ok();
-		}
-	}
+        if (!node->childExists(1))
+            return CompileError::ok();	//No initialization
+        else
+            return areTypesCompatible(declaredType, node->child(1)->getDataType(), node);
+    }
+    else
+    {
+        if (!node->childExists(1))
+            return semError(node, ETYPE_DECLARATION_WITHOUT_TYPE);
+        else
+        {
+            //Infer type from initialization expression.
+            node->setDataType(node->child(1)->getDataType());
+            return CompileError::ok();
+        }
+    }
 }
 
 /// <summary>Type checking for 'if' expressions</summary>
 CompileError ifTypeCheck(Ref<AstNode> node, SemAnalysisState& state)
 {
-	auto conditionType = node->child(0)->getDataType();
+    auto conditionType = node->child(0)->getDataType();
 
-	if (!astIsBoolType(conditionType))
-	{
-		return semError(node->child(0), 
-			ETYPE_WRONG_IF_CONDITION_TYPE_1, 
-			astTypeToString(conditionType).c_str());
-	}
+    if (!astIsBoolType(conditionType))
+    {
+        return semError(node->child(0),
+            ETYPE_WRONG_IF_CONDITION_TYPE_1,
+            astTypeToString(conditionType).c_str());
+    }
 
-	auto thenType = node->child(1)->getDataType();
+    auto thenType = node->child(1)->getDataType();
 
-	if (!node->childExists(2))
-		setVoidType(node, state);
-	else
-	{
-		auto elseType = node->child(2)->getDataType();
-		auto common = getCommonType(thenType, elseType, state);
+    if (!node->childExists(2))
+        setVoidType(node, state);
+    else
+    {
+        auto elseType = node->child(2)->getDataType();
+        auto common = getCommonType(thenType, elseType, state);
 
-		if (common != nullptr)
-			node->setDataType(common);
-		else
-		{
-			//It is not an error to have incompatible types on both branches.
-			//But in this case, the 'if' expression takes 'void' type.
-			setVoidType(node, state);	
-		}
-	}
+        if (common != nullptr)
+            node->setDataType(common);
+        else
+        {
+            //It is not an error to have incompatible types on both branches.
+            //But in this case, the 'if' expression takes 'void' type.
+            setVoidType(node, state);
+        }
+    }
 
-	return CompileError::ok();
+    return CompileError::ok();
 }
 
 /// <summary>'return' expressions type check</summary>
@@ -252,13 +252,13 @@ CompileError ifTypeCheck(Ref<AstNode> node, SemAnalysisState& state)
 /// </remarks>
 CompileError returnTypeAssign(Ref<AstNode> node, SemAnalysisState& state)
 {
-	if (node->childExists(0))
-	{
-		node->setDataType(node->child(0)->getDataType());
-		return CompileError::ok();
-	}
-	else
-		return setVoidType(node, state);
+    if (node->childExists(0))
+    {
+        node->setDataType(node->child(0)->getDataType());
+        return CompileError::ok();
+    }
+    else
+        return setVoidType(node, state);
 }
 
 /// <summary>
@@ -268,23 +268,23 @@ CompileError returnTypeAssign(Ref<AstNode> node, SemAnalysisState& state)
 /// </summary>
 CompileError returnTypeCheck(Ref<AstNode> node, SemAnalysisState& state)
 {
-	auto functionNode = state.findParent([](auto node) {
-		return node->getType() == AST_FUNCTION;
-	});
+    auto functionNode = state.findParent([](auto node) {
+        return node->getType() == AST_FUNCTION;
+    });
 
-	if (functionNode.isNull())
-		return semError(node, ETYPE_RETURN_OUTSIDE_FUNCTION);
+    if (functionNode.isNull())
+        return semError(node, ETYPE_RETURN_OUTSIDE_FUNCTION);
 
-	auto returnType = astGetReturnType(functionNode.getPointer());
+    auto returnType = astGetReturnType(functionNode.getPointer());
 
-	if (!areTypesCompatible(returnType, node->getDataType()))
-	{
-		return semError(node, ETYPE_INCOMPATIBLE_RETURN_TYPE_2,
-			astTypeToString(node.getPointer()).c_str(),
-			astTypeToString(returnType).c_str());
-	}
-	else
-		return CompileError::ok();
+    if (!areTypesCompatible(returnType, node->getDataType()))
+    {
+        return semError(node, ETYPE_INCOMPATIBLE_RETURN_TYPE_2,
+            astTypeToString(node.getPointer()).c_str(),
+            astTypeToString(returnType).c_str());
+    }
+    else
+        return CompileError::ok();
 }
 
 
@@ -293,51 +293,51 @@ CompileError returnTypeCheck(Ref<AstNode> node, SemAnalysisState& state)
 /// </summary>
 CompileError functionDefTypeCheck(Ref<AstNode> node, SemAnalysisState& state)
 {
-	auto body = node->child(2);
-	auto bodyType = body->getDataType();
+    auto body = node->child(2);
+    auto bodyType = body->getDataType();
 
-	//The data type of the function is itself
-	node->setDataType(node.getPointer());
+    //The data type of the function is itself
+    node->setDataType(node.getPointer());
 
-	//Infer return type if necessary.
-	if (!node->childExists(1))
-	{
-		node->setChild(1, body);
-		return CompileError::ok();
-	}
-	else
-	{
-		auto declaredType = node->child(1)->getDataType();
+    //Infer return type if necessary.
+    if (!node->childExists(1))
+    {
+        node->setChild(1, body);
+        return CompileError::ok();
+    }
+    else
+    {
+        auto declaredType = node->child(1)->getDataType();
 
-		//If void is declared explicitly, then any type is valid for the body.
-		if (astIsVoidType(declaredType))
-			return CompileError::ok();
-		else
-			return areTypesCompatible(declaredType, bodyType, node);
-	}
+        //If void is declared explicitly, then any type is valid for the body.
+        if (astIsVoidType(declaredType))
+            return CompileError::ok();
+        else
+            return areTypesCompatible(declaredType, bodyType, node);
+    }
 }
 
 /// <summary>Type checking for assignment operations.</summary>
 CompileError assignmentTypeCheck(Ref<AstNode> node, SemAnalysisState& state)
 {
-	auto leftType = node->child(0)->getDataType();
-	auto rightType = node->child(1)->getDataType();
+    auto leftType = node->child(0)->getDataType();
+    auto rightType = node->child(1)->getDataType();
 
-	node->setDataType(leftType);
-	return areTypesCompatible(leftType, rightType, node);
+    node->setDataType(leftType);
+    return areTypesCompatible(leftType, rightType, node);
 }
 
 /// <summary>Performs type checking for function calls.</summary>
 CompileError callTypeCheck(Ref<AstNode> node, SemAnalysisState& state)
 {
-	auto type = node->child(0)->getDataType();
-	auto paramsType = node->child(1)->getDataType();
+    auto type = node->child(0)->getDataType();
+    auto paramsType = node->child(1)->getDataType();
 
-	if (!astCanBeCalled(type))
-		return semError(node, ETYPE_NOT_CALLABLE);
+    if (!astCanBeCalled(type))
+        return semError(node, ETYPE_NOT_CALLABLE);
 
-	node->setDataType(astGetReturnType(type));
-	return areTypesCompatible(astGetParameters(type), paramsType, node);
+    node->setDataType(astGetReturnType(type));
+    return areTypesCompatible(astGetParameters(type), paramsType, node);
 }
 
 /// <summary>Type check for variable / symbol reading</summary>
@@ -346,214 +346,214 @@ CompileError callTypeCheck(Ref<AstNode> node, SemAnalysisState& state)
 /// <returns></returns>
 CompileError varReadTypeCheck(Ref<AstNode> node, SemAnalysisState& state)
 {
-	auto scope = state.getScope(node);
+    auto scope = state.getScope(node);
 
-	auto referenced = scope->get(node->getName(), true);
+    auto referenced = scope->get(node->getName(), true);
 
-	if (referenced.isNull())
-		return semError(node, ETYPE_NON_EXISTENT_SYMBOL_1, node->getName().c_str());
-	else
-	{
-		//TODO: If the referenced node has not been type-checked at this moment, 
-		//the type of the reference node may be still void when this function returns.
-		node->setReference(referenced.getPointer());
-		return CompileError::ok();
-	}
+    if (referenced.isNull())
+        return semError(node, ETYPE_NON_EXISTENT_SYMBOL_1, node->getName().c_str());
+    else
+    {
+        //TODO: If the referenced node has not been type-checked at this moment, 
+        //the type of the reference node may be still void when this function returns.
+        node->setReference(referenced.getPointer());
+        return CompileError::ok();
+    }
 }
 
 /// <summary>Type checking of member access operations.</summary>
 CompileError memberAccessTypeCheck(Ref<AstNode> node, SemAnalysisState& state)
 {
-	auto	leftType = node->child(0)->getDataType();
-	assert(astIsTupleType(leftType));
-	
-	string	name = node->child(1)->getName();
+    auto	leftType = node->child(0)->getDataType();
+    assert(astIsTupleType(leftType));
 
-	int index = astFindMemberByName(leftType, name);
+    string	name = node->child(1)->getName();
 
-	if (index < 0)
-	{
-		return semError(node->child(1), 
-			ETYPE_MEMBER_NOT_FOUND_2, 
-			name.c_str(), 
-			astTypeToString(leftType).c_str());
-	}
-	else
-	{
-		auto memberType = leftType->child(index)->getDataType();
-		node->setDataType(memberType);
-		return CompileError::ok();
-	}
+    int index = astFindMemberByName(leftType, name);
+
+    if (index < 0)
+    {
+        return semError(node->child(1),
+            ETYPE_MEMBER_NOT_FOUND_2,
+            name.c_str(),
+            astTypeToString(leftType).c_str());
+    }
+    else
+    {
+        auto memberType = leftType->child(index)->getDataType();
+        node->setDataType(memberType);
+        return CompileError::ok();
+    }
 }
 
 /// <summary>Type check for binary operators</summary>
 CompileError binaryOpTypeCheck(Ref<AstNode> node, SemAnalysisState& state)
 {
-	string op = node->getValue();
+    string op = node->getValue();
 
-	if (op == "+" || op == "-" ||op == "*" || op == "/" || op == "%")
-		return mathOperatorTypeCheck(node, state);
-	else if (op == ">>" || op == "<<" || op == "&" || op == "|" || op == "^")
-		return bitwiseOperatorTypeCheck(node, state);
-	else if (op == "<" || op == ">" || op == ">=" || op == "<=")
-		return comparisionOperatorTypeCheck(node, state);
-	else if (op == "==" || op == "!=")
-		return equalityOperatorTypeCheck(node, state);
-	else
-		return logicalOperatorTypeCheck(node, state);
+    if (op == "+" || op == "-" || op == "*" || op == "/" || op == "%")
+        return mathOperatorTypeCheck(node, state);
+    else if (op == ">>" || op == "<<" || op == "&" || op == "|" || op == "^")
+        return bitwiseOperatorTypeCheck(node, state);
+    else if (op == "<" || op == ">" || op == ">=" || op == "<=")
+        return comparisionOperatorTypeCheck(node, state);
+    else if (op == "==" || op == "!=")
+        return equalityOperatorTypeCheck(node, state);
+    else
+        return logicalOperatorTypeCheck(node, state);
 }
 
 /// <summary>Type check for prefix operators</summary>
 CompileError prefixOpTypeCheck(Ref<AstNode> node, SemAnalysisState& state)
 {
-	string op = node->getValue();
-	auto childType = node->child(0)->getDataType();
+    string op = node->getValue();
+    auto childType = node->child(0)->getDataType();
 
-	node->setDataType(childType);
+    node->setDataType(childType);
 
-	if (op == "!")
-	{
-		if (!astIsBoolType(childType))
-			return semError(node->child(0), ETYPE_WRONG_TYPE_2, astTypeToString(childType).c_str(), "bool");
-	}
-	else
-	{
-		if (!astIsIntType(childType))
-			return semError(node->child(0), ETYPE_WRONG_TYPE_2, astTypeToString(childType).c_str(), "int");
-	}
+    if (op == "!")
+    {
+        if (!astIsBoolType(childType))
+            return semError(node->child(0), ETYPE_WRONG_TYPE_2, astTypeToString(childType).c_str(), "bool");
+    }
+    else
+    {
+        if (!astIsIntType(childType))
+            return semError(node->child(0), ETYPE_WRONG_TYPE_2, astTypeToString(childType).c_str(), "int");
+    }
 
-	return CompileError::ok();
+    return CompileError::ok();
 }
 
 /// <summary>Type check for postfix operators</summary>
 CompileError postfixOpTypeCheck(Ref<AstNode> node, SemAnalysisState& state)
 {
-	auto childType = node->child(0)->getDataType();
+    auto childType = node->child(0)->getDataType();
 
-	node->setDataType(childType);
+    node->setDataType(childType);
 
-	if (!astIsIntType(childType))
-		return semError(node->child(0), ETYPE_WRONG_TYPE_2, astTypeToString(childType).c_str(), "int");
-	else
-		return CompileError::ok();
+    if (!astIsIntType(childType))
+        return semError(node->child(0), ETYPE_WRONG_TYPE_2, astTypeToString(childType).c_str(), "int");
+    else
+        return CompileError::ok();
 }
 
 /// <summary>Type check for arithmetic operators</summary>
 CompileError mathOperatorTypeCheck(Ref<AstNode> node, SemAnalysisState& state)
 {
-	//TODO: Support other types different from integers.
-	auto lexpr = node->child(0);
-	auto rexpr = node->child(1);
+    //TODO: Support other types different from integers.
+    auto lexpr = node->child(0);
+    auto rexpr = node->child(1);
 
-	node->setDataType(lexpr->getDataType());
+    node->setDataType(lexpr->getDataType());
 
-	if (!astIsIntType(lexpr->getDataType()))
-		return semError(node->child(0), ETYPE_WRONG_TYPE_2, astTypeToString(lexpr->getDataType()).c_str(), "int");
-	else if (!astIsIntType(rexpr->getDataType()))
-		return semError(node->child(0), ETYPE_WRONG_TYPE_2, astTypeToString(rexpr->getDataType()).c_str(), "int");
-	else
-		return CompileError::ok();
+    if (!astIsIntType(lexpr->getDataType()))
+        return semError(node->child(0), ETYPE_WRONG_TYPE_2, astTypeToString(lexpr->getDataType()).c_str(), "int");
+    else if (!astIsIntType(rexpr->getDataType()))
+        return semError(node->child(0), ETYPE_WRONG_TYPE_2, astTypeToString(rexpr->getDataType()).c_str(), "int");
+    else
+        return CompileError::ok();
 }
 
 /// <summary>Type check for bitwise operators</summary>
 CompileError bitwiseOperatorTypeCheck(Ref<AstNode> node, SemAnalysisState& state)
 {
-	//It is the same, by the moment.
-	return mathOperatorTypeCheck(node, state);
+    //It is the same, by the moment.
+    return mathOperatorTypeCheck(node, state);
 }
 
 /// <summary>Type check for comparision operators</summary>
 CompileError comparisionOperatorTypeCheck(Ref<AstNode> node, SemAnalysisState& state)
 {
-	//Also same checks as in math operators, but the type is boolean.
-	auto result = mathOperatorTypeCheck(node, state);
+    //Also same checks as in math operators, but the type is boolean.
+    auto result = mathOperatorTypeCheck(node, state);
 
-	node->setDataType(astGetBool());
-	return result;
+    node->setDataType(astGetBool());
+    return result;
 }
 
 /// <summary>Type check for equality and inequality operators</summary>
 CompileError equalityOperatorTypeCheck(Ref<AstNode> node, SemAnalysisState& state)
 {
-	//TODO: Support other types different from integers and booleans.
-	auto lexpr = node->child(0);
-	auto rexpr = node->child(1);
+    //TODO: Support other types different from integers and booleans.
+    auto lexpr = node->child(0);
+    auto rexpr = node->child(1);
 
-	node->setDataType(astGetBool());
+    node->setDataType(astGetBool());
 
-	if (astIsIntType(lexpr->getDataType()))
-	{
-		if (!astIsIntType(rexpr->getDataType()))
-			return semError(rexpr, ETYPE_WRONG_TYPE_2, astTypeToString(rexpr->getDataType()).c_str(), "int");
-	}
-	else if (astIsBoolType(lexpr->getDataType()))
-	{
-		if (!astIsBoolType(rexpr->getDataType()))
-			return semError(rexpr, ETYPE_WRONG_TYPE_2, astTypeToString(rexpr->getDataType()).c_str(), "bool");
-	}
-	else
-		return semError(lexpr, ETYPE_WRONG_TYPE_2, astTypeToString(rexpr->getDataType()).c_str(), "int or bool");
+    if (astIsIntType(lexpr->getDataType()))
+    {
+        if (!astIsIntType(rexpr->getDataType()))
+            return semError(rexpr, ETYPE_WRONG_TYPE_2, astTypeToString(rexpr->getDataType()).c_str(), "int");
+    }
+    else if (astIsBoolType(lexpr->getDataType()))
+    {
+        if (!astIsBoolType(rexpr->getDataType()))
+            return semError(rexpr, ETYPE_WRONG_TYPE_2, astTypeToString(rexpr->getDataType()).c_str(), "bool");
+    }
+    else
+        return semError(lexpr, ETYPE_WRONG_TYPE_2, astTypeToString(rexpr->getDataType()).c_str(), "int or bool");
 
-	//If ir reach here, check is ok.
-	return CompileError::ok();
+    //If ir reach here, check is ok.
+    return CompileError::ok();
 }
 
 /// <summary>Type check for logical operators</summary>
 CompileError logicalOperatorTypeCheck(Ref<AstNode> node, SemAnalysisState& state)
 {
-	auto lexpr = node->child(0);
-	auto rexpr = node->child(1);
+    auto lexpr = node->child(0);
+    auto rexpr = node->child(1);
 
-	node->setDataType(lexpr->getDataType());
+    node->setDataType(lexpr->getDataType());
 
-	if (!astIsBoolType(lexpr->getDataType()))
-		return semError(node->child(0), ETYPE_WRONG_TYPE_2, astTypeToString(lexpr->getDataType()).c_str(), "bool");
-	else if (!astIsBoolType(rexpr->getDataType()))
-		return semError(node->child(0), ETYPE_WRONG_TYPE_2, astTypeToString(rexpr->getDataType()).c_str(), "bool");
-	else
-		return CompileError::ok();
+    if (!astIsBoolType(lexpr->getDataType()))
+        return semError(node->child(0), ETYPE_WRONG_TYPE_2, astTypeToString(lexpr->getDataType()).c_str(), "bool");
+    else if (!astIsBoolType(rexpr->getDataType()))
+        return semError(node->child(0), ETYPE_WRONG_TYPE_2, astTypeToString(rexpr->getDataType()).c_str(), "bool");
+    else
+        return CompileError::ok();
 }
 
 /// <summary>Assigns the type for a literal expression.</summary>
 CompileError literalTypeAssign(Ref<AstNode> node, SemAnalysisState& state)
 {
-	switch (node->getType())
-	{
-	case AST_BOOL:
-		node->setDataType(astGetBool());
-		break;
+    switch (node->getType())
+    {
+    case AST_BOOL:
+        node->setDataType(astGetBool());
+        break;
 
-	case AST_INTEGER:
-		node->setDataType(astGetInt());
-		break;
+    case AST_INTEGER:
+        node->setDataType(astGetInt());
+        break;
 
-	case AST_STRING:
-		return semError(node, ETYPE_NOT_IMPLEMENTED_1, "String literals");
-		break;
+    case AST_STRING:
+        return semError(node, ETYPE_NOT_IMPLEMENTED_1, "String literals");
+        break;
 
-	default:
-		assert(!"Unexpected literal type");
-	}
+    default:
+        assert(!"Unexpected literal type");
+    }
 
-	return CompileError::ok();
+    return CompileError::ok();
 }
 
 /// <summary>Assigns the type for a default type node.</summary>
 CompileError defaultTypeAssign(Ref<AstNode> node, SemAnalysisState& state)
 {
-	//TODO: Think in better alternatives to handle default types. The current one
-	//is weird. A hack.
-	string name = node->getName();
+    //TODO: Think in better alternatives to handle default types. The current one
+    //is weird. A hack.
+    string name = node->getName();
 
-	if (name == "int")
-		node->setDataType(astGetInt());
-	else
-	{
-		assert(name == "bool");
-		node->setDataType(astGetBool());
-	}
+    if (name == "int")
+        node->setDataType(astGetInt());
+    else
+    {
+        assert(name == "bool");
+        node->setDataType(astGetBool());
+    }
 
-	return CompileError::ok();
+    return CompileError::ok();
 }
 
 /// <summary>
@@ -561,10 +561,10 @@ CompileError defaultTypeAssign(Ref<AstNode> node, SemAnalysisState& state)
 /// </summary>
 CompileError actorTypeCheck(Ref<AstNode> node, SemAnalysisState& state)
 {
-	//The data type of an actor is itself
-	node->setDataType(node.getPointer());
+    //The data type of an actor is itself
+    node->setDataType(node.getPointer());
 
-	return CompileError::ok();
+    return CompileError::ok();
 }
 
 /// <summary>
@@ -575,10 +575,10 @@ CompileError actorTypeCheck(Ref<AstNode> node, SemAnalysisState& state)
 /// <returns></returns>
 CompileError messageTypeCheck(Ref<AstNode> node, SemAnalysisState& state)
 {
-	//The data type of a message is itself
-	node->setDataType(node.getPointer());
+    //The data type of a message is itself
+    node->setDataType(node.getPointer());
 
-	return CompileError::ok();
+    return CompileError::ok();
 }
 
 /// <summary>
@@ -586,49 +586,49 @@ CompileError messageTypeCheck(Ref<AstNode> node, SemAnalysisState& state)
 /// </summary>
 CompileError unnamedInputTypeCheck(Ref<AstNode> node, SemAnalysisState& state)
 {
-	auto pathNode = node->child(0);
+    auto pathNode = node->child(0);
 
-	if (pathNode->childCount() == 0)
-		return semError(node, ETYPE_UNSPECIFIED_CONNECT_OUTPUT);
+    if (pathNode->childCount() == 0)
+        return semError(node, ETYPE_UNSPECIFIED_CONNECT_OUTPUT);
 
-	auto output = getConnectOutputType(pathNode, state);
-	if (output == nullptr)
-		return semError(node, ETYPE_INVALID_CONNECT_OUTPUT);
+    auto output = getConnectOutputType(pathNode, state);
+    if (output == nullptr)
+        return semError(node, ETYPE_INVALID_CONNECT_OUTPUT);
 
-	auto paramsNode = node->child(1);
+    auto paramsNode = node->child(1);
 
-	return areTypesCompatible(astGetParameters(output), paramsNode->getDataType(), paramsNode);
+    return areTypesCompatible(astGetParameters(output), paramsNode->getDataType(), paramsNode);
 }
 
 
 /// <summary>Type checking of an actor instance.</summary>
 CompileError actorInstanceTypeCheck(Ref<AstNode> node, SemAnalysisState& state)
 {
-	assert(node->getType() == AST_DECLARATION);
-	assert(node->childExists(0));
+    assert(node->getType() == AST_DECLARATION);
+    assert(node->childExists(0));
 
-	auto actorType = node->child(0)->getDataType();
-	auto parent = state.parent();
+    auto actorType = node->child(0)->getDataType();
+    auto parent = state.parent();
 
-	if (parent->getType() != AST_ACTOR)
-		return semError(node, ETYPE_MISPLACED_ACTOR_INSTANCE);
+    if (parent->getType() != AST_ACTOR)
+        return semError(node, ETYPE_MISPLACED_ACTOR_INSTANCE);
 
-	//TODO: PRobably, this is going to be detected by a more generic function.
-	//which will handle recursive definitions.
-	//if (parent->getDataType() == actorType)
-	//	return semError(node, ETYPE_RECURSIVE_ACTOR_INSTANCE);
+    //TODO: PRobably, this is going to be detected by a more generic function.
+    //which will handle recursive definitions.
+    //if (parent->getDataType() == actorType)
+    //	return semError(node, ETYPE_RECURSIVE_ACTOR_INSTANCE);
 
-	if (!node->hasFlag(ASTF_CONST))
-		return semError(node, ETYPE_NON_CONST_ACTOR_INSTANCE);
+    if (!node->hasFlag(ASTF_CONST))
+        return semError(node, ETYPE_NON_CONST_ACTOR_INSTANCE);
 
-	auto	paramsType = astGetVoid();
+    auto	paramsType = astGetVoid();
 
-	if (node->childExists(1))
-		paramsType = node->child(1)->getDataType();
+    if (node->childExists(1))
+        paramsType = node->child(1)->getDataType();
 
-	node->setDataType(actorType);
+    node->setDataType(actorType);
 
-	return areTypesCompatible(astGetParameters(actorType), paramsType, node);
+    return areTypesCompatible(astGetParameters(actorType), paramsType, node);
 }
 
 /// <summary>
@@ -641,33 +641,33 @@ CompileError actorInstanceTypeCheck(Ref<AstNode> node, SemAnalysisState& state)
 /// <returns></returns>
 AstNode* getConnectOutputType(Ref<AstNode> pathNode, SemAnalysisState& state)
 {
-	auto			scope = state.getScope(pathNode);
+    auto			scope = state.getScope(pathNode);
 
-	auto referred = scope->get(pathNode->child(0)->getName(), true);
-	if (referred.isNull())
-		return nullptr;
+    auto referred = scope->get(pathNode->child(0)->getName(), true);
+    if (referred.isNull())
+        return nullptr;
 
-	auto result = referred->getDataType();
-	auto actor = result;
+    auto result = referred->getDataType();
+    auto actor = result;
 
-	size_t i = 1;
-	for (; i < pathNode->childCount() && actor->getType() == AST_ACTOR; ++i)
-	{
-		auto child = pathNode->child(i);
-		assert(child.notNull() && child->getType() == AST_MEMBER_NAME);
+    size_t i = 1;
+    for (; i < pathNode->childCount() && actor->getType() == AST_ACTOR; ++i)
+    {
+        auto child = pathNode->child(i);
+        assert(child.notNull() && child->getType() == AST_MEMBER_NAME);
 
-		int index = astFindMemberByName(actor, child->getName());
+        int index = astFindMemberByName(actor, child->getName());
 
-		if (index < 0)
-			return nullptr;
+        if (index < 0)
+            return nullptr;
 
-		result = actor = actor->child(index)->getDataType();
-	}
+        result = actor = actor->child(index)->getDataType();
+    }
 
-	if (i < pathNode->childCount() || result->getType() != AST_OUTPUT)
-		return nullptr;
-	else
-		return result;
+    if (i < pathNode->childCount() || result->getType() != AST_OUTPUT)
+        return nullptr;
+    else
+        return result;
 }
 
 
@@ -676,15 +676,15 @@ AstNode* getConnectOutputType(Ref<AstNode> pathNode, SemAnalysisState& state)
 /// </summary>
 Ref<AstNode> tupleRemoveTypedef(Ref<AstNode> node, SemAnalysisState& state)
 {
-	auto child = node->child(0);
+    auto child = node->child(0);
 
-	if (child->getType() != AST_TUPLE_DEF)
-		return node;		//Nothing to do.
-	else
-	{
-		child->setName(node->getName());
-		return child;
-	}
+    if (child->getType() != AST_TUPLE_DEF)
+        return node;		//Nothing to do.
+    else
+    {
+        child->setName(node->getName());
+        return child;
+    }
 }
 
 /// <summary>
@@ -693,13 +693,13 @@ Ref<AstNode> tupleRemoveTypedef(Ref<AstNode> node, SemAnalysisState& state)
 /// </summary>
 Ref<AstNode> addTupleAdapter(Ref<AstNode> node, SemAnalysisState& state)
 {
-	auto lNode = node->child(0);
-	auto lType = lNode->getDataType();
-	auto rNode = node->child(1);
+    auto lNode = node->child(0);
+    auto lType = lNode->getDataType();
+    auto rNode = node->child(1);
 
-	node->setChild(1, makeTupleAdapter(rNode, lType));
+    node->setChild(1, makeTupleAdapter(rNode, lType));
 
-	return node;
+    return node;
 }
 
 /// <summary>
@@ -710,18 +710,18 @@ Ref<AstNode> addTupleAdapter(Ref<AstNode> node, SemAnalysisState& state)
 /// <returns>An AST tuple adapter node or the right hand node if no adaptation is necessary.</returns>
 Ref<AstNode> makeTupleAdapter(Ref<AstNode> rNode, AstNode* lType)
 {
-	auto rType = rNode->getDataType();
+    auto rType = rNode->getDataType();
 
-	if (!astIsTupleType(lType) && astIsTupleType(rType))
-		return rNode;
+    if (!astIsTupleType(lType) && astIsTupleType(rType))
+        return rNode;
 
-	if (lType == rType)
-		return rNode;
+    if (lType == rType)
+        return rNode;
 
-	auto adapterNode = astCreateTupleAdapter(rNode);
-	adapterNode->setDataType(lType);
+    auto adapterNode = astCreateTupleAdapter(rNode);
+    adapterNode->setDataType(lType);
 
-	return adapterNode;
+    return adapterNode;
 }
 
 
@@ -732,22 +732,22 @@ Ref<AstNode> makeTupleAdapter(Ref<AstNode> rNode, AstNode* lType)
 /// </summary>
 Ref<AstNode> addReturnTupleAdapter(Ref<AstNode> node, SemAnalysisState& state)
 {
-	if (!node->childExists(0))
-		return node;
+    if (!node->childExists(0))
+        return node;
 
-	auto functionNode = state.findParent([](auto node) {
-		return node->getType() == AST_FUNCTION;
-	});
+    auto functionNode = state.findParent([](auto node) {
+        return node->getType() == AST_FUNCTION;
+    });
 
-	assert(functionNode.notNull());
+    assert(functionNode.notNull());
 
-	auto returnType = astGetReturnType(functionNode.getPointer());
-	auto child = node->child(0);
+    auto returnType = astGetReturnType(functionNode.getPointer());
+    auto child = node->child(0);
 
-	node->setChild(0, makeTupleAdapter(child,returnType));
-	node->setDataType(returnType);
+    node->setChild(0, makeTupleAdapter(child, returnType));
+    node->setDataType(returnType);
 
-	return node;
+    return node;
 }
 
 
@@ -755,8 +755,8 @@ Ref<AstNode> addReturnTupleAdapter(Ref<AstNode> node, SemAnalysisState& state)
 /// <returns>Always 'ok'</returns>
 CompileError setVoidType(Ref<AstNode> node, SemAnalysisState& state)
 {
-	node->setDataType(astGetVoid());
-	return CompileError::ok();
+    node->setDataType(astGetVoid());
+    return CompileError::ok();
 }
 
 /// <summary>Checks if an object of 'typeB' can be assigned to a object of 'typeA'</summary>
@@ -766,22 +766,22 @@ CompileError setVoidType(Ref<AstNode> node, SemAnalysisState& state)
 /// <returns>A compile error or 'ok'</returns>
 CompileError areTypesCompatible(AstNode* typeA, AstNode* typeB, Ref<AstNode> opNode)
 {
-	bool result = areTypesCompatible(typeA, typeB);
+    bool result = areTypesCompatible(typeA, typeB);
 
-	if (result)
-		return CompileError::ok();
-	else
-	{
-		if (typeA->getType() == AST_FUNCTION)
-			return semError(opNode, ETYPE_NOT_IMPLEMENTED_1, "Function variables assigning");
-		else
-		{
-			return semError(opNode, 
-				ETYPE_INCOMPATIBLE_TYPES_2, 
-				astTypeToString(typeB).c_str(), 
-				astTypeToString(typeA).c_str());
-		}
-	}
+    if (result)
+        return CompileError::ok();
+    else
+    {
+        if (typeA->getType() == AST_FUNCTION)
+            return semError(opNode, ETYPE_NOT_IMPLEMENTED_1, "Function variables assigning");
+        else
+        {
+            return semError(opNode,
+                ETYPE_INCOMPATIBLE_TYPES_2,
+                astTypeToString(typeB).c_str(),
+                astTypeToString(typeA).c_str());
+        }
+    }
 }
 
 /// <summary>Checks if an object of 'typeB' can be assigned to a object of 'typeA'</summary>
@@ -790,17 +790,17 @@ CompileError areTypesCompatible(AstNode* typeA, AstNode* typeB, Ref<AstNode> opN
 /// <returns>true if types are compatible'</returns>
 bool areTypesCompatible(AstNode* typeA, AstNode* typeB)
 {
-	auto a = typeA->getType();
-	auto b = typeB->getType();
+    auto a = typeA->getType();
+    auto b = typeB->getType();
 
-	if (astIsTupleType(typeA) || astIsTupleType(typeB))
-		return areTuplesCompatible(typeA, typeB);
-	else if (a != b)
-		return false;
-	else if (a == AST_FUNCTION)
-		return false;		//Function are not assignable, by the moment.
-	else
-		return typeA->getName() == typeB->getName();
+    if (astIsTupleType(typeA) || astIsTupleType(typeB))
+        return areTuplesCompatible(typeA, typeB);
+    else if (a != b)
+        return false;
+    else if (a == AST_FUNCTION)
+        return false;		//Function are not assignable, by the moment.
+    else
+        return typeA->getName() == typeB->getName();
 }
 
 /// <summary>Performs type compatibility check when, at least, one of the types is a tuple</summary>
@@ -809,48 +809,48 @@ bool areTypesCompatible(AstNode* typeA, AstNode* typeB)
 /// <returns>true if types are compatible'</returns>
 bool areTuplesCompatible(AstNode* typeA, AstNode* typeB)
 {
-	assert(astIsTupleType(typeA) || astIsTupleType(typeB));
-	if (!astIsTupleType(typeA))
-		return areTuplesCompatible(typeB, typeA);		//Reverse check will work, at this moment.
-	else
-	{
-		if (!astIsTupleType(typeB))
-		{
-			if (typeA->childCount() != 1)
-				return false;
-			else
-				return areTypesCompatible(typeA->child(0)->getDataType(), typeB);
-		}
-		else
-		{
-			if (typeA->childCount() != typeB->childCount())
-				return false;
-			else
-			{
-				const int count = typeA->childCount();
+    assert(astIsTupleType(typeA) || astIsTupleType(typeB));
+    if (!astIsTupleType(typeA))
+        return areTuplesCompatible(typeB, typeA);		//Reverse check will work, at this moment.
+    else
+    {
+        if (!astIsTupleType(typeB))
+        {
+            if (typeA->childCount() != 1)
+                return false;
+            else
+                return areTypesCompatible(typeA->child(0)->getDataType(), typeB);
+        }
+        else
+        {
+            if (typeA->childCount() != typeB->childCount())
+                return false;
+            else
+            {
+                const int count = typeA->childCount();
 
-				for (int i = 0; i < count; ++i)
-				{
-					if (!areTypesCompatible(typeA->child(i)->getDataType(), typeB->child(i)->getDataType()))
-						return false;
-				}
+                for (int i = 0; i < count; ++i)
+                {
+                    if (!areTypesCompatible(typeA->child(i)->getDataType(), typeB->child(i)->getDataType()))
+                        return false;
+                }
 
-				return true;
-			}//else
-		}//else
-	}//else
+                return true;
+            }//else
+        }//else
+    }//else
 }
 
 /// <summary>Gets the common type for two types.</summary>
 /// <returns>Common type or 'null' if no common type can be found.</returns>
 AstNode* getCommonType(AstNode* typeA, AstNode* typeB, SemAnalysisState& state)
 {
-	//TODO: This is a very basic implementation. Improve it.
+    //TODO: This is a very basic implementation. Improve it.
 
-	if (!areTypesCompatible (typeA, typeB))
-		return nullptr;
-	else
-		return typeA;
+    if (!areTypesCompatible(typeA, typeB))
+        return nullptr;
+    else
+        return typeA;
 }
 
 ///// <summary>
@@ -883,10 +883,10 @@ AstNode* getCommonType(AstNode* typeA, AstNode* typeB, SemAnalysisState& state)
 /// <returns></returns>
 bool isType(Ref<AstNode> node)
 {
-	AstNodeTypes type = node->getType();
+    AstNodeTypes type = node->getType();
 
-	return type == AST_DEFAULT_TYPE
-		|| type == AST_FUNCTION
-		|| type == AST_TUPLE_DEF
-		|| type == AST_ACTOR;
+    return type == AST_DEFAULT_TYPE
+        || type == AST_FUNCTION
+        || type == AST_TUPLE_DEF
+        || type == AST_ACTOR;
 }

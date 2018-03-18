@@ -11,7 +11,7 @@ Ref<AstNode>	parseAST(const char* text);
 
 namespace json11
 {
-	class Json;
+    class Json;
 }
 
 /// <summary>
@@ -20,19 +20,19 @@ namespace json11
 class AstSerializeContext
 {
 public:
-	AstSerializeContext(std::ostream& output);
+    AstSerializeContext(std::ostream& output);
 
-	void			serializeAST(AstNode* root);
-	std::string		getNodeRef(const AstNode* node);
-
-private:
-	json11::Json	serializeNode(const AstNode* root);
+    void			serializeAST(AstNode* root);
+    std::string		getNodeRef(const AstNode* node);
 
 private:
-	std::ostream&	m_output;
+    json11::Json	serializeNode(const AstNode* root);
 
-	std::map <const AstNode*, int>	m_nodeIds;
-	int								m_nextId = 1;
+private:
+    std::ostream&	m_output;
+
+    std::map <const AstNode*, int>	m_nodeIds;
+    int								m_nextId = 1;
 };
 
 /// <summary>
@@ -42,10 +42,10 @@ private:
 class AstDeserializeContext
 {
 public:
-	void		registerNode(AstNode* node, const std::string& id, const std::string& dataTypeId);
-	AstNode*	getDataType(AstNode* node);
+    void		registerNode(AstNode* node, const std::string& id, const std::string& dataTypeId);
+    AstNode*	getDataType(AstNode* node);
 
 private:
-	std::map<std::string, AstNode*>	m_id2Node;
-	std::map<AstNode*, std::string>	m_node2TypeId;
+    std::map<std::string, AstNode*>	m_id2Node;
+    std::map<AstNode*, std::string>	m_node2TypeId;
 };

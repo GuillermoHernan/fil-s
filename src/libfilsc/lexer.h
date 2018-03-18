@@ -12,16 +12,16 @@ enum LEX_TYPES
     LEX_EOF = 0,
     LEX_INITIAL,
     LEX_COMMENT,
-	LEX_NEWLINE,
-    
+    LEX_NEWLINE,
+
     LEX_ID = 256,
-	LEX_RESERVED,
+    LEX_RESERVED,
     LEX_INT,
     LEX_FLOAT,
     LEX_STR,
 
-	LEX_OPERATOR,
-    
+    LEX_OPERATOR,
+
     LEX_R_LIST_END /* always the last entry */
 };
 
@@ -32,32 +32,32 @@ std::string tokenType2String(int token);
 /**
  * Lexical analyzzer token. Tokens are the fragments in which input source is divided
  * and classified before being parsed.
- * 
+ *
  * The lexical analysis process is implemented taking a functional approach. There
  * is no 'lexer' object. There are functions which return the current state of the
- * lexer process as immutable 'LexToken' objects. 
+ * lexer process as immutable 'LexToken' objects.
  * These objects are not strictly 'immutable', as they have assignment operator. But none
  * of their public methods modify its internal state.
  */
 class LexToken
 {
 public:
-	/// <summary>Flags used to control the behaviour of 'next' function.</summary>
-	enum NextFlags
-	{
-		NONE = 0,
-		COMMENTS = 1,
-		NEWLINE = 2,
-		ALL = COMMENTS | NEWLINE
-	};
+    /// <summary>Flags used to control the behaviour of 'next' function.</summary>
+    enum NextFlags
+    {
+        NONE = 0,
+        COMMENTS = 1,
+        NEWLINE = 2,
+        ALL = COMMENTS | NEWLINE
+    };
 
     /// <summary>Constructor which receives a source code string.</summary>
     /// <remarks>
     /// The constructor doesn't make a copy of the input string, so it is important
-	/// not to delete input string while there are still live 'LexToken's using it.
-	/// 
-	/// The token created with the constructor is not parsed from input string. It is
-	/// just the 'initial' token.To parse the first real token, call 'next'.
+    /// not to delete input string while there are still live 'LexToken's using it.
+    /// 
+    /// The token created with the constructor is not parsed from input string. It is
+    /// just the 'initial' token.To parse the first real token, call 'next'.
     /// </remarks>
     LexToken(const char* code, SourceFilePtr fileId);
 
@@ -67,8 +67,8 @@ public:
     LexToken next(int flags = NONE)const;
 
     /// Checks that the current token matches the expected, and returns next
-	LexToken match(int expected_tk, int flags = NONE)const;
-	LexToken match(int expected_tk, const char* expected_text, int flags = NONE)const;
+    LexToken match(int expected_tk, int flags = NONE)const;
+    LexToken match(int expected_tk, const char* expected_text, int flags = NONE)const;
 
     ///Return a string representing the position in lines and columns of the token
 
@@ -81,7 +81,7 @@ public:
     {
         return m_type;
     }
-    
+
     bool eof()const
     {
         return m_type == LEX_EOF;
@@ -95,13 +95,13 @@ public:
 
     std::string strValue()const;
 
-	bool isOperator(const char* opText)const;
+    bool isOperator(const char* opText)const;
 
 private:
     const char*		m_code;			//Pointer to the position of the token in the source string.
     LEX_TYPES		m_type;			//Token type.
-	int				m_length;		//Token length.
-	ScriptPosition	m_position;
+    int				m_length;		//Token length.
+    ScriptPosition	m_position;
 
     LexToken nextDispatch()const;
 
@@ -112,7 +112,7 @@ private:
     LexToken parseString(const char * code)const;
     LexToken parseOperator(const char * code)const;
 
-	static bool	isReservedWord(const std::string& text);
+    static bool	isReservedWord(const std::string& text);
 
     ScriptPosition calcPosition(const char* code)const;
     LexToken errorAt(const char* charPos, ErrorTypes type, ...)const;

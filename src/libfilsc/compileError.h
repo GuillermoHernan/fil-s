@@ -17,37 +17,37 @@
 class CompileError : public std::logic_error
 {
 public:
-	CompileError() : logic_error(""), m_type(ETYPE_OK)
-	{
-	}
+    CompileError() : logic_error(""), m_type(ETYPE_OK)
+    {
+    }
 
-	static CompileError create(const ScriptPosition& pos, ErrorTypes type, va_list args);
-	static CompileError create(const ScriptPosition& pos, ErrorTypes type, ...);
-	static CompileError ok();
+    static CompileError create(const ScriptPosition& pos, ErrorTypes type, va_list args);
+    static CompileError create(const ScriptPosition& pos, ErrorTypes type, ...);
+    static CompileError ok();
 
-	const ScriptPosition& position()const
-	{
-		return m_position;
-	}
+    const ScriptPosition& position()const
+    {
+        return m_position;
+    }
 
-	ErrorTypes	type()const
-	{
-		return m_type;
-	}
+    ErrorTypes	type()const
+    {
+        return m_type;
+    }
 
-	bool isOk()const
-	{
-		return m_type == ETYPE_OK;
-	}
-
-private:
-	CompileError(const std::string& text, const ScriptPosition& pos, ErrorTypes type) :
-		logic_error(text), m_position(pos), m_type(type)
-	{
-	}
+    bool isOk()const
+    {
+        return m_type == ETYPE_OK;
+    }
 
 private:
-	ErrorTypes		m_type;
+    CompileError(const std::string& text, const ScriptPosition& pos, ErrorTypes type) :
+        logic_error(text), m_position(pos), m_type(type)
+    {
+    }
+
+private:
+    ErrorTypes		m_type;
     ScriptPosition	m_position;
 };
 

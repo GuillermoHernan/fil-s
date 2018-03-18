@@ -17,26 +17,26 @@ class ScriptPosition
 {
 public:
     ScriptPosition() :
-    m_line(-1), m_column(-1)
+        m_line(-1), m_column(-1)
     {
     }
 
-	ScriptPosition(SourceFilePtr file, int line, int col) :
-		m_file(file), m_line(line), m_column(col)
-	{
-	}
+    ScriptPosition(SourceFilePtr file, int line, int col) :
+        m_file(file), m_line(line), m_column(col)
+    {
+    }
 
-	ScriptPosition(const ScriptPosition& refPos, int line, int col) :
-		m_file(refPos.m_file), m_line(line), m_column(col)
-	{
-	}
+    ScriptPosition(const ScriptPosition& refPos, int line, int col) :
+        m_file(refPos.m_file), m_line(line), m_column(col)
+    {
+    }
 
-	int				line()const		{ return m_line; }
-	int				column()const	{ return m_column; }
-	SourceFilePtr	file()const		{ return m_file; }
+    int				line()const { return m_line; }
+    int				column()const { return m_column; }
+    SourceFilePtr	file()const { return m_file; }
 
     std::string toString()const;
-    
+
     bool operator < (const ScriptPosition& b)const
     {
         if (line() < b.line())
@@ -46,35 +46,35 @@ public:
         else
             return false;
     }
-    
+
     bool operator == (const ScriptPosition& b)const
     {
         return (line() == b.line() && column() == b.column());
     }
-    
+
     bool operator > (const ScriptPosition& b)const
     {
         return !(*this <= b);
     }
-    
+
     bool operator <= (const ScriptPosition& b)const
     {
         return (*this < b || *this == b);
     }
-    
+
     bool operator >= (const ScriptPosition& b)const
     {
         return !(*this < b);
     }
-	bool operator != (const ScriptPosition& b)const
-	{
-		return !(*this == b);
-	}
+    bool operator != (const ScriptPosition& b)const
+    {
+        return !(*this == b);
+    }
 
 private:
-	int				m_line;
-	int				m_column;
-	SourceFilePtr	m_file;
+    int				m_line;
+    int				m_column;
+    SourceFilePtr	m_file;
 };//struct ScriptPosition
 
 /// <summary>
@@ -83,19 +83,19 @@ private:
 class SourceModule
 {
 public:
-	static std::shared_ptr<SourceModule>	create(const std::string& path);
+    static std::shared_ptr<SourceModule>	create(const std::string& path);
 
-	SourceModule(const std::string& path)
-		: m_path(path)
-	{}
+    SourceModule(const std::string& path)
+        : m_path(path)
+    {}
 
-	const std::string& path()const
-	{
-		return m_path;
-	}
+    const std::string& path()const
+    {
+        return m_path;
+    }
 
 private:
-	std::string m_path;
+    std::string m_path;
 };
 typedef std::shared_ptr<SourceModule> SourceModulePtr;
 
@@ -105,19 +105,19 @@ typedef std::shared_ptr<SourceModule> SourceModulePtr;
 class SourceFile
 {
 public:
-	SourceFile(SourceModulePtr module, const std::string& name)
-		:m_module(module), m_name(name)
-	{}
+    SourceFile(SourceModulePtr module, const std::string& name)
+        :m_module(module), m_name(name)
+    {}
 
-	static SourceFilePtr create(SourceModulePtr module, const std::string& name);
+    static SourceFilePtr create(SourceModulePtr module, const std::string& name);
 
-	std::string toString()const
-	{
-		return path();
-	}
-	std::string path()const;
+    std::string toString()const
+    {
+        return path();
+    }
+    std::string path()const;
 
 private:
-	SourceModulePtr m_module;
-	std::string		m_name;
+    SourceModulePtr m_module;
+    std::string		m_name;
 };

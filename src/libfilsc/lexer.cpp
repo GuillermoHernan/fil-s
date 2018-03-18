@@ -19,19 +19,19 @@ string tokenType2String(int token)
         return buf;
     }
 
-	switch (token)
+    switch (token)
     {
     case LEX_EOF: return "EOF";
-	case LEX_INITIAL: return "INITIAL";
-	case LEX_COMMENT: return "COMMENT";
-	case LEX_NEWLINE: return "NEWLINE";
-	case LEX_RESERVED: return "RESERVED";
-	case LEX_ID: return "ID";
-	case LEX_INT: return "INT";
+    case LEX_INITIAL: return "INITIAL";
+    case LEX_COMMENT: return "COMMENT";
+    case LEX_NEWLINE: return "NEWLINE";
+    case LEX_RESERVED: return "RESERVED";
+    case LEX_ID: return "ID";
+    case LEX_INT: return "INT";
     case LEX_FLOAT: return "FLOAT";
-	case LEX_STR: return "STRING";
-	case LEX_OPERATOR: return "OPERATOR";
-    
+    case LEX_STR: return "STRING";
+    case LEX_OPERATOR: return "OPERATOR";
+
     }
 
     ostringstream msg;
@@ -48,24 +48,24 @@ string tokenType2String(int token)
 /// just the 'initial' token.To parse the first real token, call 'next'.
 /// </remarks>
 LexToken::LexToken(const char* code, SourceFilePtr fileId)
-: m_code(code)
-, m_type(LEX_INITIAL)
-, m_position(fileId, 1, 1)
-, m_length(0)
+    : m_code(code)
+    , m_type(LEX_INITIAL)
+    , m_position(fileId, 1, 1)
+    , m_length(0)
 {
 }
 
 LexToken::LexToken(LEX_TYPES lexType, const char* code, const ScriptPosition& position, int length)
-: m_code(code)
-, m_type(lexType)
-, m_position(position)
-, m_length(length)
+    : m_code(code)
+    , m_type(lexType)
+    , m_position(position)
+    , m_length(length)
 {
 }
 
 /**
  * Returns full token text
- * @return 
+ * @return
  */
 std::string LexToken::text()const
 {
@@ -75,7 +75,7 @@ std::string LexToken::text()const
 /**
  * Gets the value of a string constant. Replaces escape sequences, and removes
  * initial and final quotes.
- * @return 
+ * @return
  */
 std::string LexToken::strValue()const
 {
@@ -117,18 +117,18 @@ std::string LexToken::strValue()const
                 break;
             case 'x':
                 copyWhile(buf, m_code + i + 1, isHexadecimal, 2);
-				if (buf[0] == 0)
-					errorAt(m_code + i, ETYPE_INVALID_HEX_ESCAPE_SEQ);
-                result.push_back((char) strtol(buf, 0, 16));
-				i += strlen(buf);
+                if (buf[0] == 0)
+                    errorAt(m_code + i, ETYPE_INVALID_HEX_ESCAPE_SEQ);
+                result.push_back((char)strtol(buf, 0, 16));
+                i += strlen(buf);
                 break;
             default:
-				copyWhile(buf, m_code + i, isOctal, 3);
-				if (buf[0] != 0)
-				{
-					result.push_back((char)strtol(buf, 0, 8));
-					i += strlen(buf);
-				}
+                copyWhile(buf, m_code + i, isOctal, 3);
+                if (buf[0] != 0)
+                {
+                    result.push_back((char)strtol(buf, 0, 8));
+                    i += strlen(buf);
+                }
                 else
                     result.push_back(m_code[i]);
             }//switch
@@ -145,7 +145,7 @@ std::string LexToken::strValue()const
 /// <returns></returns>
 bool LexToken::isOperator(const char* opText)const
 {
-	return m_type == LEX_OPERATOR && text() == opText;
+    return m_type == LEX_OPERATOR && text() == opText;
 }
 
 
@@ -154,7 +154,7 @@ bool LexToken::isOperator(const char* opText)const
  * @param lexType
  * @param code
  * @param length
- * @return 
+ * @return
  */
 LexToken LexToken::buildNextToken(LEX_TYPES lexType, const char* code, int length)const
 {
@@ -167,25 +167,25 @@ LexToken LexToken::buildNextToken(LEX_TYPES lexType, const char* code, int lengt
  * @return Next token
  */
 
-/// <summary>
-/// Reads next token from input, and returns it.
-/// </summary>
-/// <param name="flags">Controls which (extra) tokens are returned.
-/// By default, all extra tokens are skipped. By passing one or more
-/// of the flags defined in 'LexToken::NextFlags', the function would also
-/// return 'comment' or 'new line' tokens.</param>
-/// <returns></returns>
+ /// <summary>
+ /// Reads next token from input, and returns it.
+ /// </summary>
+ /// <param name="flags">Controls which (extra) tokens are returned.
+ /// By default, all extra tokens are skipped. By passing one or more
+ /// of the flags defined in 'LexToken::NextFlags', the function would also
+ /// return 'comment' or 'new line' tokens.</param>
+ /// <returns></returns>
 LexToken LexToken::next(int flags)const
 {
     LexToken	result = nextDispatch();
-	auto		type = result.type();
+    auto		type = result.type();
 
-	if (type == LEX_COMMENT && (flags & COMMENTS) == 0)
-		return result.next(flags);
-	else if (type == LEX_NEWLINE && (flags & NEWLINE) == 0)
-		return result.next(flags);
-	else
-		return result;
+    if (type == LEX_COMMENT && (flags & COMMENTS) == 0)
+        return result.next(flags);
+    else if (type == LEX_NEWLINE && (flags & NEWLINE) == 0)
+        return result.next(flags);
+    else
+        return result;
 }
 
 /// Reads next token from input, and returns it.
@@ -202,8 +202,8 @@ LexToken LexToken::nextDispatch()const
         else
             return comment;
     }
-	else if (*currCh == '\n')
-		return buildNextToken(LEX_NEWLINE, currCh, 1);
+    else if (*currCh == '\n')
+        return buildNextToken(LEX_NEWLINE, currCh, 1);
     else if (isAlpha(*currCh))
         return parseId(currCh);
     else if (isNumeric(*currCh))
@@ -219,9 +219,9 @@ LexToken LexToken::nextDispatch()const
 LexToken LexToken::match(int expected_tk, int flags)const
 {
     if (type() != expected_tk)
-		return errorAt(m_code, ETYPE_UNEXPECTED_TOKEN_2, text().c_str(), tokenType2String(expected_tk).c_str());
-	else
-		return next(flags);
+        return errorAt(m_code, ETYPE_UNEXPECTED_TOKEN_2, text().c_str(), tokenType2String(expected_tk).c_str());
+    else
+        return next(flags);
 }
 
 /// <summary>
@@ -233,10 +233,10 @@ LexToken LexToken::match(int expected_tk, int flags)const
 /// <returns>Next token</returns>
 LexToken LexToken::match(int expected_tk, const char* expected_text, int flags)const
 {
-	if (type() != expected_tk || text() != expected_text)
-		return errorAt(m_code, ETYPE_UNEXPECTED_TOKEN_2, text().c_str(), expected_text);
-	else
-		return next(flags);
+    if (type() != expected_tk || text() != expected_text)
+        return errorAt(m_code, ETYPE_UNEXPECTED_TOKEN_2, text().c_str(), expected_text);
+    else
+        return next(flags);
 }
 
 
@@ -247,27 +247,27 @@ LexToken LexToken::match(int expected_tk, const char* expected_text, int flags)c
 */
 LexToken LexToken::parseComment(const char * const code)const
 {
-	const char* end = code + 2;
+    const char* end = code + 2;
 
-	if (code[1] == '/')
-	{
-		while (*end && *end != '\n')
-			++end;
-	}
-	else if (code[1] == '*')
-	{
-		while (*end && (end[0] != '*' || end[1] != '/'))
-			++end;
+    if (code[1] == '/')
+    {
+        while (*end && *end != '\n')
+            ++end;
+    }
+    else if (code[1] == '*')
+    {
+        while (*end && (end[0] != '*' || end[1] != '/'))
+            ++end;
 
-		if (*end == 0)
-			errorAt(code, ETYPE_UNCLOSED_COMMENT);
-		else
-			end += 2;
-	}
-	else
-		return LexToken("", m_position.file()); //Not a commentary
+        if (*end == 0)
+            errorAt(code, ETYPE_UNCLOSED_COMMENT);
+        else
+            end += 2;
+    }
+    else
+        return LexToken("", m_position.file()); //Not a commentary
 
-	return buildNextToken(LEX_COMMENT, code, end - code);
+    return buildNextToken(LEX_COMMENT, code, end - code);
 }
 
 /**
@@ -281,11 +281,11 @@ LexToken LexToken::parseId(const char * code)const
     while (isAlpha(*end) || isNumeric(*end))
         ++end;
 
-	//Identifiers can end with several 'single quote' characters.
-	while (*end == '\'')
-		++end;
+    //Identifiers can end with several 'single quote' characters.
+    while (*end == '\'')
+        ++end;
 
-	LEX_TYPES type = isReservedWord(string(code, end)) ? LEX_RESERVED : LEX_ID;
+    LEX_TYPES type = isReservedWord(string(code, end)) ? LEX_RESERVED : LEX_ID;
 
     return buildNextToken(type, code, end - code);
 }
@@ -369,7 +369,7 @@ struct SOperatorDef
  * Operator definition table. It is important that longer operators are added
  * before sorter ones.
  */
-const SOperatorDef s_operators [] = {
+const SOperatorDef s_operators[] = {
     {"<<=", 3},
     {">>=", 3},
     {"==", 2},
@@ -420,29 +420,29 @@ LexToken LexToken::parseOperator(const char * code)const
 /// <returns></returns>
 bool LexToken::isReservedWord(const std::string& text)
 {
-	static set<string>	reservedWords;
+    static set<string>	reservedWords;
 
-	if (reservedWords.empty())
-	{
-		reservedWords.insert("actor");
-		reservedWords.insert("break");
-		reservedWords.insert("const");
-		reservedWords.insert("else");
-		reservedWords.insert("false");
-		reservedWords.insert("for");
-		reservedWords.insert("function");
-		reservedWords.insert("if");
-		reservedWords.insert("input");
-		reservedWords.insert("output");
-		reservedWords.insert("return");
-		reservedWords.insert("select");
-		reservedWords.insert("type");
-		reservedWords.insert("var");
-		reservedWords.insert("while");
-		reservedWords.insert("true");
-	}
+    if (reservedWords.empty())
+    {
+        reservedWords.insert("actor");
+        reservedWords.insert("break");
+        reservedWords.insert("const");
+        reservedWords.insert("else");
+        reservedWords.insert("false");
+        reservedWords.insert("for");
+        reservedWords.insert("function");
+        reservedWords.insert("if");
+        reservedWords.insert("input");
+        reservedWords.insert("output");
+        reservedWords.insert("return");
+        reservedWords.insert("select");
+        reservedWords.insert("type");
+        reservedWords.insert("var");
+        reservedWords.insert("while");
+        reservedWords.insert("true");
+    }
 
-	return reservedWords.count(text) > 0;
+    return reservedWords.count(text) > 0;
 }
 
 
@@ -468,9 +468,9 @@ LexToken LexToken::errorAt(const char* code, ErrorTypes type, ...)const
 
 /**
  * Calculates a line and column position, from a code pointer.
- * Uses the 'LexToken' information as a base from which to perform the 
+ * Uses the 'LexToken' information as a base from which to perform the
  * calculations
- * @param codePos  Pointer to the text for which the position is going to be 
+ * @param codePos  Pointer to the text for which the position is going to be
  * calculated. It MUST BE a pointer to the same text as 'm_code' pointer, and be
  * greater than it.
  */
@@ -492,5 +492,5 @@ ScriptPosition LexToken::calcPosition(const char* codePos)const
 
     assert(codePos == code);
 
-    return ScriptPosition (m_position, line, col);
+    return ScriptPosition(m_position, line, col);
 }

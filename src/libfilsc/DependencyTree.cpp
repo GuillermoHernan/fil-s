@@ -20,43 +20,43 @@ using namespace std;
 /// <param name="modulePath"></param>
 /// <param name="sourcePaths"></param>
 ModuleNode::ModuleNode(const std::string& modulePath, const StrList& sourcePaths)
-	:m_path (modulePath)
+    :m_path(modulePath)
 {
-	fs::path	modPath(modulePath);
-	auto		extension = modPath.extension();
+    fs::path	modPath(modulePath);
+    auto		extension = modPath.extension();
 
-	if (extension == ".fast")
-	{
-		//It is an already compiled module
-		if (!tryLoadAst(modPath.u8string()))
-		{
-			throw CompileError::create(
-				ScriptPosition(),
-				ETYPE_ERROR_LOADING_COMPILED_MODULE_1,
-				modulePath.c_str()
-			);
-		}
-	}
-	else
-	{
-		auto moduleObj = SourceModule::create(modulePath);
+    if (extension == ".fast")
+    {
+        //It is an already compiled module
+        if (!tryLoadAst(modPath.u8string()))
+        {
+            throw CompileError::create(
+                ScriptPosition(),
+                ETYPE_ERROR_LOADING_COMPILED_MODULE_1,
+                modulePath.c_str()
+            );
+        }
+    }
+    else
+    {
+        auto moduleObj = SourceModule::create(modulePath);
 
-		//It is a source folder, create source objects.
-		for (auto& srcFile : sourcePaths)
-		{
-			//TODO: Verify that this is a reliable way to get the file name.
-			string name = srcFile.substr(modulePath.size());
-			auto fileObj = SourceFile::create(moduleObj, name);
-			m_sources.emplace_back(new SourceFileNode(fileObj));
-		}
+        //It is a source folder, create source objects.
+        for (auto& srcFile : sourcePaths)
+        {
+            //TODO: Verify that this is a reliable way to get the file name.
+            string name = srcFile.substr(modulePath.size());
+            auto fileObj = SourceFile::create(moduleObj, name);
+            m_sources.emplace_back(new SourceFileNode(fileObj));
+        }
 
-		//Also try to load compiled module. But this time it does not throw an exception if
-		//it fails.
-		string	compPathStr = getCompiledPath();
-		
-		if (checkUpdated(compPathStr))
-			tryLoadAst(compPathStr);
-	}
+        //Also try to load compiled module. But this time it does not throw an exception if
+        //it fails.
+        string	compPathStr = getCompiledPath();
+
+        if (checkUpdated(compPathStr))
+            tryLoadAst(compPathStr);
+    }
 }
 
 /// <summary>
@@ -65,7 +65,7 @@ ModuleNode::ModuleNode(const std::string& modulePath, const StrList& sourcePaths
 /// <param name="node"></param>
 void ModuleNode::addDependency(DepencencyTreePtr node)
 {
-	m_dependencies.emplace_back(move(node));
+    m_dependencies.emplace_back(move(node));
 }
 
 /// <summary>
@@ -74,8 +74,8 @@ void ModuleNode::addDependency(DepencencyTreePtr node)
 /// <param name="fn"></param>
 void ModuleNode::walkSources(std::function<void(SourceFileNode*)> fn)const
 {
-	for (auto& src : m_sources)
-		fn(src.get());
+    for (auto& src : m_sources)
+        fn(src.get());
 }
 
 /// <summary>
@@ -84,8 +84,8 @@ void ModuleNode::walkSources(std::function<void(SourceFileNode*)> fn)const
 /// <param name="fn"></param>
 void ModuleNode::walkDependencies(std::function<void(ModuleNode*)> fn)const
 {
-	for (auto& dep : m_dependencies)
-		fn(dep.get());
+    for (auto& dep : m_dependencies)
+        fn(dep.get());
 }
 
 /// <summary>
@@ -94,7 +94,7 @@ void ModuleNode::walkDependencies(std::function<void(ModuleNode*)> fn)const
 /// <returns></returns>
 std::string ModuleNode::name()const
 {
-	return removeExt(fileFromPath(m_path));
+    return removeExt(fileFromPath(m_path));
 }
 
 /// <summary>
@@ -104,22 +104,22 @@ std::string ModuleNode::name()const
 /// <param name="ast"></param>
 void ModuleNode::setAST(Ref<AstNode> ast)
 {
-	string path = getCompiledPath();
+    string path = getCompiledPath();
 
-	try
-	{
-		serializeAST(path, ast);
-		m_compiledAst = ast;
-	}
-	catch (exception & ex)
-	{
-		throw CompileError::create(
-			ScriptPosition(),
-			ETYPE_WRITING_RESULT_FILE_2,
-			path.c_str(),
-			ex.what()
-		);
-	}
+    try
+    {
+        serializeAST(path, ast);
+        m_compiledAst = ast;
+    }
+    catch (exception & ex)
+    {
+        throw CompileError::create(
+            ScriptPosition(),
+            ETYPE_WRITING_RESULT_FILE_2,
+            path.c_str(),
+            ex.what()
+        );
+    }
 }
 
 
@@ -129,15 +129,15 @@ void ModuleNode::setAST(Ref<AstNode> ast)
 /// <returns></returns>
 std::string ModuleNode::getCompiledPath()const
 {
-	fs::path	modPath(m_path);
+    fs::path	modPath(m_path);
 
-	if (modPath.extension() == ".fast")
-		return m_path;
-	else
-	{
-		auto compPath = modPath / "bin" / (this->name() + ".fast");
-		return compPath.u8string();
-	}
+    if (modPath.extension() == ".fast")
+        return m_path;
+    else
+    {
+        auto compPath = modPath / "bin" / (this->name() + ".fast");
+        return compPath.u8string();
+    }
 }
 
 /// <summary>
@@ -146,10 +146,10 @@ std::string ModuleNode::getCompiledPath()const
 /// <returns></returns>
 std::string ModuleNode::getCFilePath()const
 {
-	fs::path	modPath(m_path);
-	auto		result = modPath / "int" / (this->name() + ".c");
-	
-	return result.u8string();
+    fs::path	modPath(m_path);
+    auto		result = modPath / "int" / (this->name() + ".c");
+
+    return result.u8string();
 }
 
 /// <summary>
@@ -159,16 +159,16 @@ std::string ModuleNode::getCFilePath()const
 /// <returns></returns>
 bool ModuleNode::tryLoadAst(const std::string& path)
 {
-	try
-	{
-		m_compiledAst = deSerializeAST(path);
-		//TODO: It should check AST integrity... A corrupted AST may crash the compiler.
-		return true;
-	}
-	catch (exception &)
-	{
-		return false;
-	}
+    try
+    {
+        m_compiledAst = deSerializeAST(path);
+        //TODO: It should check AST integrity... A corrupted AST may crash the compiler.
+        return true;
+    }
+    catch (exception &)
+    {
+        return false;
+    }
 }
 
 /// <summary>
@@ -179,24 +179,24 @@ bool ModuleNode::tryLoadAst(const std::string& path)
 /// <returns></returns>
 bool ModuleNode::checkUpdated(const std::string& compPath)
 {
-	error_code	ec;
+    error_code	ec;
 
-	if (!fs::is_regular_file(fs::status(compPath)))
-		return false;
+    if (!fs::is_regular_file(fs::status(compPath)))
+        return false;
 
-	auto compTime = fs::last_write_time(compPath, ec);
+    auto compTime = fs::last_write_time(compPath, ec);
 
-	for (auto& srcFile : m_sources)
-	{
-		const string& srcPath = srcFile->path();
+    for (auto& srcFile : m_sources)
+    {
+        const string& srcPath = srcFile->path();
 
-		if (!fs::is_regular_file(fs::status(srcPath)))
-			return false;
+        if (!fs::is_regular_file(fs::status(srcPath)))
+            return false;
 
-		auto srcTime = fs::last_write_time(srcPath, ec);
-		if (srcTime > compTime)
-			return false;
-	}
+        auto srcTime = fs::last_write_time(srcPath, ec);
+        if (srcTime > compTime)
+            return false;
+    }
 
-	return true;
+    return true;
 }

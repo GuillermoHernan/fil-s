@@ -8,7 +8,7 @@
 extern "C" {
 #endif
 
-	void initActors();
+    void initActors();
 
 #ifdef __cplusplus
 }

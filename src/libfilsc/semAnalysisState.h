@@ -12,25 +12,25 @@
 class SemAnalysisState
 {
 public:
-	const Ref<SymbolScope>					rootScope;
-	std::map < std::string, Ref<AstNode>>	modules;
-	std::string								currentFile;
+    const Ref<SymbolScope>					rootScope;
+    std::map < std::string, Ref<AstNode>>	modules;
+    std::string								currentFile;
 
-	SemAnalysisState();
+    SemAnalysisState();
 
-	Ref<AstNode>		parent(unsigned index = 0)const;
+    Ref<AstNode>		parent(unsigned index = 0)const;
 
-	void				pushParent(Ref<AstNode> node);
-	Ref<AstNode>		popParent();
+    void				pushParent(Ref<AstNode> node);
+    Ref<AstNode>		popParent();
 
-	Ref<AstNode>		findParent(std::function<bool(Ref<AstNode>)> pred)const;
+    Ref<AstNode>		findParent(std::function<bool(Ref<AstNode>)> pred)const;
 
-	Ref<SymbolScope>	getScope(const AstNode* node)const;
-	Ref<SymbolScope>	getScope(Ref<AstNode> node)const;
+    Ref<SymbolScope>	getScope(const AstNode* node)const;
+    Ref<SymbolScope>	getScope(Ref<AstNode> node)const;
 
-	void				setScope(Ref<AstNode> node, Ref<SymbolScope> scope);
+    void				setScope(Ref<AstNode> node, Ref<SymbolScope> scope);
 
 private:
-	std::vector<Ref<AstNode>> m_parents;
-	std::map < const AstNode*, Ref<SymbolScope>> m_scopesMap;
+    std::vector<Ref<AstNode>> m_parents;
+    std::map < const AstNode*, Ref<SymbolScope>> m_scopesMap;
 };

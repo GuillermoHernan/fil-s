@@ -20,13 +20,13 @@ using namespace std;
 /// <returns></returns>
 BuildResult buildModule(const std::string& modulePath, const std::string& builderPath)
 {
-	StrSet		parents;
-	auto		result = getDependencies(modulePath, parents);
+    StrSet		parents;
+    auto		result = getDependencies(modulePath, parents);
 
-	if (!result.ok())
-		return BuildResult(result.errors);
+    if (!result.ok())
+        return BuildResult(result.errors);
 
-	return buildWithDependencies(result.result.get(), builderPath);
+    return buildWithDependencies(result.result.get(), builderPath);
 }
 
 /// <summary>
@@ -37,44 +37,44 @@ BuildResult buildModule(const std::string& modulePath, const std::string& builde
 /// <returns></returns>
 DependenciesResult getDependencies(const std::string& modulePath, StrSet& parents)
 {
-	try
-	{
-		preventCircularReferences(modulePath, parents);
+    try
+    {
+        preventCircularReferences(modulePath, parents);
 
-		//string				name = moduleNameFromPath(modulePath);
-		vector<string>		sources = getModuleSources(modulePath);
-		DepencencyTreePtr	node(new ModuleNode(modulePath, sources));
+        //string				name = moduleNameFromPath(modulePath);
+        vector<string>		sources = getModuleSources(modulePath);
+        DepencencyTreePtr	node(new ModuleNode(modulePath, sources));
 
-		auto parseRes = parseSourceFiles(node.get());
-		if (!parseRes.ok())
-			return DependenciesResult(parseRes.errors);
+        auto parseRes = parseSourceFiles(node.get());
+        if (!parseRes.ok())
+            return DependenciesResult(parseRes.errors);
 
-		auto depResult = getDependentModules(node.get());
-		auto errorList = depResult.errors;
-		auto childModules = depResult.result;
+        auto depResult = getDependentModules(node.get());
+        auto errorList = depResult.errors;
+        auto childModules = depResult.result;
 
-		parents.insert(modulePath);
-		for (auto& childPath : childModules)
-		{
-			auto childResult = getDependencies(childPath, parents);
+        parents.insert(modulePath);
+        for (auto& childPath : childModules)
+        {
+            auto childResult = getDependencies(childPath, parents);
 
-			if (childResult.ok())
-				node->addDependency(move(childResult.result));
-			else
-				childResult.appendErrorsTo(errorList);
-		}
-		parents.erase(modulePath);
+            if (childResult.ok())
+                node->addDependency(move(childResult.result));
+            else
+                childResult.appendErrorsTo(errorList);
+        }
+        parents.erase(modulePath);
 
-		if (errorList.empty())
-			return DependenciesResult(move(node));
-		else
-			return DependenciesResult(errorList);
-	}
-	catch (const CompileError& error)
-	{
-		parents.erase(modulePath);			//Just in case
-		return DependenciesResult(error);
-	}
+        if (errorList.empty())
+            return DependenciesResult(move(node));
+        else
+            return DependenciesResult(errorList);
+    }
+    catch (const CompileError& error)
+    {
+        parents.erase(modulePath);			//Just in case
+        return DependenciesResult(error);
+    }
 }
 
 /// <summary>
@@ -84,29 +84,29 @@ DependenciesResult getDependencies(const std::string& modulePath, StrSet& parent
 /// <returns></returns>
 BuildResult buildWithDependencies(ModuleNode* module, const std::string& builderPath)
 {
-	//TODO: This does not take into account the if the dependency modules are updated to 
-	//update the build of the current module.
-	if (module->buildNeeded())
-	{
-		vector<CompileError>	errors;
+    //TODO: This does not take into account the if the dependency modules are updated to 
+    //update the build of the current module.
+    if (module->buildNeeded())
+    {
+        vector<CompileError>	errors;
 
-		//First, check that all dependencies are up-to-date.
-		module->walkDependencies([&errors, builderPath](ModuleNode* dependency) {
-			//TODO: Optimization oportunity: The build of each module can be done in parallel.
-			auto r = buildWithDependencies(dependency, builderPath);
+        //First, check that all dependencies are up-to-date.
+        module->walkDependencies([&errors, builderPath](ModuleNode* dependency) {
+            //TODO: Optimization oportunity: The build of each module can be done in parallel.
+            auto r = buildWithDependencies(dependency, builderPath);
 
-			if (!r.ok())
-				r.appendErrorsTo(errors);
-		});
+            if (!r.ok())
+                r.appendErrorsTo(errors);
+        });
 
-		if (!errors.empty())
-			return BuildResult(errors);
+        if (!errors.empty())
+            return BuildResult(errors);
 
 
-		return buildModule(module, builderPath);
-	}
+        return buildModule(module, builderPath);
+    }
 
-	return SuccessfulResult(true);
+    return SuccessfulResult(true);
 }
 
 /// <summary>
@@ -116,42 +116,42 @@ BuildResult buildWithDependencies(ModuleNode* module, const std::string& builder
 /// <returns></returns>
 BuildResult	buildModule(ModuleNode* module, const std::string& builderPath)
 {
-	AstStr2NodesMap		modules;
-	AstStr2NodesMap		sources;
+    AstStr2NodesMap		modules;
+    AstStr2NodesMap		sources;
 
-	//Create the map which maps module names to its AST, needed to perform 
-	//semantic analysis.
-	module->walkDependencies([&modules](auto dependency) {
-		modules[dependency->name()] = dependency->getAST();
-	});
+    //Create the map which maps module names to its AST, needed to perform 
+    //semantic analysis.
+    module->walkDependencies([&modules](auto dependency) {
+        modules[dependency->name()] = dependency->getAST();
+    });
 
-	//Fill map of (source path)->(parsed AST)
-	module->walkSources([&sources](auto srcFile) {
-		sources[srcFile->path()] = srcFile->getAST();
-	});
+    //Fill map of (source path)->(parsed AST)
+    module->walkSources([&sources](auto srcFile) {
+        sources[srcFile->path()] = srcFile->getAST();
+    });
 
-	auto r = semanticAnalysis(sources, modules);
+    auto r = semanticAnalysis(sources, modules);
 
-	if (!r.ok())
-		return BuildResult(r.errors);
+    if (!r.ok())
+        return BuildResult(r.errors);
 
-	try
-	{
-		module->setAST(r.result);
-	}
-	catch (const exception& error)
-	{
-		return BuildResult(CompileError::create(
-			ScriptPosition(), 
-			ETYPE_WRITING_RESULT_FILE_2, 
-			module->getCompiledPath().c_str(),
-			error.what()));
-	}
+    try
+    {
+        module->setAST(r.result);
+    }
+    catch (const exception& error)
+    {
+        return BuildResult(CompileError::create(
+            ScriptPosition(),
+            ETYPE_WRITING_RESULT_FILE_2,
+            module->getCompiledPath().c_str(),
+            error.what()));
+    }
 
-	if (containsEntryPoint(r.result))
-		return buildExecutable(module, builderPath);
-	else
-		return SuccessfulResult(true);
+    if (containsEntryPoint(r.result))
+        return buildExecutable(module, builderPath);
+    else
+        return SuccessfulResult(true);
 
 }
 
@@ -163,20 +163,20 @@ BuildResult	buildModule(ModuleNode* module, const std::string& builderPath)
 /// <returns></returns>
 StrList getModuleSources(const std::string& modulePath)
 {
-	StrList		result;
+    StrList		result;
 
-	for (auto entry : fs::directory_iterator(modulePath))
-	{
-		bool isSource = fs::is_regular_file(entry.status());
+    for (auto entry : fs::directory_iterator(modulePath))
+    {
+        bool isSource = fs::is_regular_file(entry.status());
 
-		isSource = isSource && entry.path().extension() == ".fil";
-		isSource = isSource && entry.path().filename().c_str()[0] != '_';
+        isSource = isSource && entry.path().extension() == ".fil";
+        isSource = isSource && entry.path().filename().c_str()[0] != '_';
 
-		if (isSource)
-			result.push_back(entry.path().u8string());
-	}
+        if (isSource)
+            result.push_back(entry.path().u8string());
+    }
 
-	return result;
+    return result;
 }
 
 /// <summary>
@@ -190,30 +190,30 @@ StrList getModuleSources(const std::string& modulePath)
 /// <returns></returns>
 OperationResult<bool> parseSourceFiles(ModuleNode* module)
 {
-	typedef OperationResult<bool> RetType;
+    typedef OperationResult<bool> RetType;
 
-	if (!module->buildNeeded())
-		return RetType(true);
-	else
-	{
-		vector<CompileError>	errors;
+    if (!module->buildNeeded())
+        return RetType(true);
+    else
+    {
+        vector<CompileError>	errors;
 
-		//TODO: Optimization oportunity. Each file is parsed independently, so
-		//it can be done in parallel.
-		module->walkSources([&errors](auto file) {
-			auto parseRes = parseFile(file->ref());
+        //TODO: Optimization oportunity. Each file is parsed independently, so
+        //it can be done in parallel.
+        module->walkSources([&errors](auto file) {
+            auto parseRes = parseFile(file->ref());
 
-			if (parseRes.ok())
-				file->setAST(parseRes.result);
-			else
-				errors.push_back(parseRes.errorDesc);
-		});
+            if (parseRes.ok())
+                file->setAST(parseRes.result);
+            else
+                errors.push_back(parseRes.errorDesc);
+        });
 
-		if (errors.empty())
-			return RetType(true);
-		else
-			return RetType(errors);
-	}
+        if (errors.empty())
+            return RetType(true);
+        else
+            return RetType(errors);
+    }
 }
 
 /// <summary>
@@ -223,39 +223,39 @@ OperationResult<bool> parseSourceFiles(ModuleNode* module)
 /// <returns></returns>
 OperationResult<StrList> getDependentModules(ModuleNode* module)
 {
-	StrSet		modNames;
+    StrSet		modNames;
 
-	if (!module->buildNeeded())
-		scanImports(module->getAST(), &modNames);
-	else
-	{
-		module->walkSources([&modNames](auto file) {
-			scanImports(file->getAST(), &modNames);
-		});
-	}
+    if (!module->buildNeeded())
+        scanImports(module->getAST(), &modNames);
+    else
+    {
+        module->walkSources([&modNames](auto file) {
+            scanImports(file->getAST(), &modNames);
+        });
+    }
 
-	vector<CompileError>	errors;
-	StrList					modulePaths;
-	for (auto& modName : modNames)
-	{
-		auto resolveRes = resolveModuleName(module->path(), modName);
+    vector<CompileError>	errors;
+    StrList					modulePaths;
+    for (auto& modName : modNames)
+    {
+        auto resolveRes = resolveModuleName(module->path(), modName);
 
-		if (resolveRes.ok())
-			modulePaths.push_back(resolveRes.result);
-		else
-			resolveRes.appendErrorsTo(errors);
-	}
+        if (resolveRes.ok())
+            modulePaths.push_back(resolveRes.result);
+        else
+            resolveRes.appendErrorsTo(errors);
+    }
 
-	if (errors.empty())
-		return SuccessfulResult(modulePaths);
-	else
-	{
-		OperationResult<StrList>	failure(errors);
+    if (errors.empty())
+        return SuccessfulResult(modulePaths);
+    else
+    {
+        OperationResult<StrList>	failure(errors);
 
-		//In this case, we also return the dependencies sucessfully found.
-		failure.result = modulePaths;
-		return failure;
-	}
+        //In this case, we also return the dependencies sucessfully found.
+        failure.result = modulePaths;
+        return failure;
+    }
 }
 
 /// <summary>
@@ -266,9 +266,9 @@ OperationResult<StrList> getDependentModules(ModuleNode* module)
 /// <param name="parents"></param>
 void preventCircularReferences(const std::string& modulePath, StrSet& parents)
 {
-	//TODO: circular reference errors should have location.
-	if (parents.count(modulePath) > 0)
-		errorAt(ScriptPosition(), ETYPE_CIRCULAR_MODULE_REFERENCE_1, modulePath.c_str());
+    //TODO: circular reference errors should have location.
+    if (parents.count(modulePath) > 0)
+        errorAt(ScriptPosition(), ETYPE_CIRCULAR_MODULE_REFERENCE_1, modulePath.c_str());
 }
 
 
@@ -279,12 +279,12 @@ void preventCircularReferences(const std::string& modulePath, StrSet& parents)
 /// <param name="moduleNames">Set of strings in which module names are stored.</param>
 void scanImports(Ref<AstNode> ast, StrSet* moduleNames)
 {
-	//It is not scanned recursively because import statements are only allowed at top level.
-	for (auto node : ast->children())
-	{
-		if (node.notNull() && node->getType() == AST_IMPORT)
-			moduleNames->insert(node->child(0)->getValue());
-	}
+    //It is not scanned recursively because import statements are only allowed at top level.
+    for (auto node : ast->children())
+    {
+        if (node.notNull() && node->getType() == AST_IMPORT)
+            moduleNames->insert(node->child(0)->getValue());
+    }
 }
 
 /// <summary>
@@ -295,51 +295,51 @@ void scanImports(Ref<AstNode> ast, StrSet* moduleNames)
 /// <returns></returns>
 OperationResult<std::string> resolveModuleName(const std::string& basePath, const std::string& moduleName)
 {
-	fs::path	base(basePath);
-	string		result;
+    fs::path	base(basePath);
+    string		result;
 
-	//Current module directory.
-	result = findModuleInDir(moduleName, base);
-	if (!result.empty())
-		return SuccessfulResult(result);
+    //Current module directory.
+    result = findModuleInDir(moduleName, base);
+    if (!result.empty())
+        return SuccessfulResult(result);
 
-	//Current module parent directory
-	result = findModuleInDir(moduleName, base.parent_path());
-	if (!result.empty())
-		return SuccessfulResult(result);
+    //Current module parent directory
+    result = findModuleInDir(moduleName, base.parent_path());
+    if (!result.empty())
+        return SuccessfulResult(result);
 
-	StrList		systemLibPaths = getSystemLibPaths();
+    StrList		systemLibPaths = getSystemLibPaths();
 
-	for (auto& libPath : systemLibPaths)
-	{
-		result = findModuleInDir(moduleName, libPath);
-		if (!result.empty())
-			return SuccessfulResult(result);
-	}
+    for (auto& libPath : systemLibPaths)
+    {
+        result = findModuleInDir(moduleName, libPath);
+        if (!result.empty())
+            return SuccessfulResult(result);
+    }
 
-	//TODO: Module not found errors should have a location.
-	return OperationResult<std::string>(CompileError::create(
-		ScriptPosition(), ETYPE_MODULE_NOT_FOUND_1, moduleName.c_str()
-	));
+    //TODO: Module not found errors should have a location.
+    return OperationResult<std::string>(CompileError::create(
+        ScriptPosition(), ETYPE_MODULE_NOT_FOUND_1, moduleName.c_str()
+    ));
 }
 
 //Looks for a module in a given directory.
 std::string findModuleInDir(const std::string& moduleName, const fs::path& directory)
 {
-	fs::path modulePath = directory / moduleName;
+    fs::path modulePath = directory / moduleName;
 
-	if (isModuleDirectory(modulePath))
-		return modulePath.u8string();
-	else
-	{
-		error_code	ec;
-		
-		modulePath = directory / (moduleName + ".fast");
-		if (fs::is_regular_file(fs::status(modulePath, ec)))
-			return modulePath.u8string();
-		else
-			return "";
-	}
+    if (isModuleDirectory(modulePath))
+        return modulePath.u8string();
+    else
+    {
+        error_code	ec;
+
+        modulePath = directory / (moduleName + ".fast");
+        if (fs::is_regular_file(fs::status(modulePath, ec)))
+            return modulePath.u8string();
+        else
+            return "";
+    }
 }
 
 /// <summary>
@@ -349,17 +349,17 @@ std::string findModuleInDir(const std::string& moduleName, const fs::path& direc
 /// <returns></returns>
 bool isModuleDirectory(const fs::path& modulePath)
 {
-	//Check if the path exists and it is a directory
-	error_code	ec;
+    //Check if the path exists and it is a directory
+    error_code	ec;
 
-	if (!fs::is_directory(fs::status(modulePath, ec)))
-		return false;
+    if (!fs::is_directory(fs::status(modulePath, ec)))
+        return false;
 
-	auto isSourceFile = [](fs::path p) {
-		return p.extension() == ".fil";
-	};
+    auto isSourceFile = [](fs::path p) {
+        return p.extension() == ".fil";
+    };
 
-	return any_of(fs::directory_iterator(modulePath), fs::directory_iterator(), isSourceFile);
+    return any_of(fs::directory_iterator(modulePath), fs::directory_iterator(), isSourceFile);
 }
 
 /// <summary>
@@ -368,16 +368,16 @@ bool isModuleDirectory(const fs::path& modulePath)
 /// <returns></returns>
 StrList getSystemLibPaths()
 {
-	static StrList	paths;
+    static StrList	paths;
 
-	if (paths.empty())
-	{
-		string	varContent = getenv("FILS_LIBPATHS");
+    if (paths.empty())
+    {
+        string	varContent = getenv("FILS_LIBPATHS");
 
-		paths = split(varContent, ";");
-	}
+        paths = split(varContent, ";");
+    }
 
-	return paths;
+    return paths;
 }
 
 /// <summary>
@@ -388,9 +388,9 @@ StrList getSystemLibPaths()
 /// <returns></returns>
 bool containsEntryPoint(Ref<AstNode> ast)
 {
-	const auto & nodes = ast->children();
+    const auto & nodes = ast->children();
 
-	return any_of(nodes.begin(), nodes.end(), isEntryPoint);
+    return any_of(nodes.begin(), nodes.end(), isEntryPoint);
 }
 
 /// <summary>
@@ -400,7 +400,7 @@ bool containsEntryPoint(Ref<AstNode> ast)
 /// <returns></returns>
 bool isEntryPoint(Ref<AstNode> node)
 {
-	return node->getType() == AST_ACTOR && node->getName() == "_Main";
+    return node->getType() == AST_ACTOR && node->getName() == "_Main";
 }
 
 
@@ -411,21 +411,21 @@ bool isEntryPoint(Ref<AstNode> node)
 /// <returns></returns>
 BuildResult buildExecutable(ModuleNode* module, const std::string& builderPath)
 {
-	assert(!module->buildNeeded());
+    assert(!module->buildNeeded());
 
-	try
-	{
-		string code = generateCode(module->getAST(), isEntryPoint);
+    try
+    {
+        string code = generateCode(module->getAST(), isEntryPoint);
 
-		writeCCodeFile(code, module);
-		_flushall();	//To ensure all generated files are written to the disk.
+        writeCCodeFile(code, module);
+        _flushall();	//To ensure all generated files are written to the disk.
 
-		return compileC(module, builderPath);
-	}
-	catch (const CompileError & error)
-	{
-		return BuildResult(error);
-	}
+        return compileC(module, builderPath);
+    }
+    catch (const CompileError & error)
+    {
+        return BuildResult(error);
+    }
 }
 
 /// <summary>
@@ -435,14 +435,14 @@ BuildResult buildExecutable(ModuleNode* module, const std::string& builderPath)
 /// <param name="module">Module information</param>
 void writeCCodeFile(const std::string& code, ModuleNode* module)
 {
-	if (!writeTextFile(module->getCFilePath(), code))
-	{
-		throw CompileError::create(ScriptPosition(), 
-			ETYPE_WRITING_RESULT_FILE_2,
-			module->getCFilePath().c_str(),
-			"Cannot write to file"
-			);
-	}
+    if (!writeTextFile(module->getCFilePath(), code))
+    {
+        throw CompileError::create(ScriptPosition(),
+            ETYPE_WRITING_RESULT_FILE_2,
+            module->getCFilePath().c_str(),
+            "Cannot write to file"
+        );
+    }
 }
 
 /// <summary>
@@ -452,19 +452,19 @@ void writeCCodeFile(const std::string& code, ModuleNode* module)
 /// <returns></returns>
 BuildResult compileC(ModuleNode* module, const std::string& builderPath)
 {
-	string scriptPath = createCompileScript(module, builderPath);
-	string command = getCompileScriptCommand(module, builderPath);
+    string scriptPath = createCompileScript(module, builderPath);
+    string command = getCompileScriptCommand(module, builderPath);
 
-	_flushall();
-	int result = system(command.c_str());
-	if (result != 0)
-	{
-		return BuildResult(CompileError::create(ScriptPosition(),
-			ETYPE_ERROR_COMPILING_C_1,
-			module->path().c_str()));
-	}
-	else
-		return BuildResult(true);
+    _flushall();
+    int result = system(command.c_str());
+    if (result != 0)
+    {
+        return BuildResult(CompileError::create(ScriptPosition(),
+            ETYPE_ERROR_COMPILING_C_1,
+            module->path().c_str()));
+    }
+    else
+        return BuildResult(true);
 
 }
 
@@ -480,35 +480,35 @@ BuildResult compileC(ModuleNode* module, const std::string& builderPath)
 /// <returns>It returns the path of the created script on the filesystem</returns>
 std::string createCompileScript(ModuleNode* module, const std::string& builderPath)
 {
-	string scriptTemplate = getCompileScriptTemplate(builderPath);
-	string script = replaceScriptVariables(scriptTemplate, module);
+    string scriptTemplate = getCompileScriptTemplate(builderPath);
+    string script = replaceScriptVariables(scriptTemplate, module);
 
-	auto lines = split(script, "\n");
-	if (lines.size() < 3)
-	{
-		throw CompileError::create(ScriptPosition(), 
-			ETYPE_INVALID_COMPILE_SCRIPT_TEMPLATE_1,
-			"It should have, at least, 3 lines");
-	}
+    auto lines = split(script, "\n");
+    if (lines.size() < 3)
+    {
+        throw CompileError::create(ScriptPosition(),
+            ETYPE_INVALID_COMPILE_SCRIPT_TEMPLATE_1,
+            "It should have, at least, 3 lines");
+    }
 
-	//First line is the script name
-	//Second line, the command to execute the script.
-	//The script begins at the third line.
-	string fileName = trim(lines[0]);
-	string path = joinPaths(module->path(), fileName);
-	
-	script = join(lines, "\n", 2);
-	if (!writeTextFile(path, script))
-	{
-		throw CompileError::create(ScriptPosition(),
-			ETYPE_WRITING_RESULT_FILE_2,
-			module->getCFilePath().c_str(),
-			"Cannot write to file"
-		);
-	}
+    //First line is the script name
+    //Second line, the command to execute the script.
+    //The script begins at the third line.
+    string fileName = trim(lines[0]);
+    string path = joinPaths(module->path(), fileName);
 
-	//module->setCompileScriptPath(path);
-	return path;
+    script = join(lines, "\n", 2);
+    if (!writeTextFile(path, script))
+    {
+        throw CompileError::create(ScriptPosition(),
+            ETYPE_WRITING_RESULT_FILE_2,
+            module->getCFilePath().c_str(),
+            "Cannot write to file"
+        );
+    }
+
+    //module->setCompileScriptPath(path);
+    return path;
 }
 
 /// <summary>
@@ -518,18 +518,18 @@ std::string createCompileScript(ModuleNode* module, const std::string& builderPa
 /// <returns></returns>
 std::string getCompileScriptCommand(ModuleNode* module, const std::string& builderPath)
 {
-	string scriptTemplate = getCompileScriptTemplate(builderPath);
+    string scriptTemplate = getCompileScriptTemplate(builderPath);
 
-	auto lines = split(scriptTemplate, "\n");
-	if (lines.size() < 3)
-	{
-		throw CompileError::create(ScriptPosition(),
-			ETYPE_INVALID_COMPILE_SCRIPT_TEMPLATE_1,
-			"It should have, at least, 3 lines");
-	}
+    auto lines = split(scriptTemplate, "\n");
+    if (lines.size() < 3)
+    {
+        throw CompileError::create(ScriptPosition(),
+            ETYPE_INVALID_COMPILE_SCRIPT_TEMPLATE_1,
+            "It should have, at least, 3 lines");
+    }
 
-	//The script invokation command is at the second line of the script template.
-	return replaceScriptVariables(lines[1], module);
+    //The script invokation command is at the second line of the script template.
+    return replaceScriptVariables(lines[1], module);
 }
 
 /// <summary>
@@ -544,18 +544,18 @@ std::string getCompileScriptCommand(ModuleNode* module, const std::string& build
 /// <returns>Template contents in a std::string</returns>
 std::string getCompileScriptTemplate(const std::string& builderPath)
 {
-	string path = joinPaths(builderPath, "c_compile_script.tmpl");
+    string path = joinPaths(builderPath, "c_compile_script.tmpl");
 
-	string content = readTextFile(path);
+    string content = readTextFile(path);
 
-	if (content == "")
-	{
-		throw CompileError::create(ScriptPosition(),
-			ETYPE_COMPILE_SCRIPT_TEMPLATE_NOT_FOUND_1,
-			path.c_str());
-	}
-	else
-		return content;
+    if (content == "")
+    {
+        throw CompileError::create(ScriptPosition(),
+            ETYPE_COMPILE_SCRIPT_TEMPLATE_NOT_FOUND_1,
+            path.c_str());
+    }
+    else
+        return content;
 }
 
 /// <summary>
@@ -566,53 +566,53 @@ std::string getCompileScriptTemplate(const std::string& builderPath)
 /// <returns></returns>
 std::string	replaceScriptVariables(const std::string& scriptTemplate, ModuleNode* module)
 {
-	map<string, string>		internalVars;
+    map<string, string>		internalVars;
 
-	internalVars["ModulePath"] = module->path();
-	internalVars["ModuleName"] = module->name();
+    internalVars["ModulePath"] = module->path();
+    internalVars["ModuleName"] = module->name();
 
-	string	result;
-	size_t	curPosition = 0;
+    string	result;
+    size_t	curPosition = 0;
 
-	result.reserve((scriptTemplate.size() * 12) / 10);
+    result.reserve((scriptTemplate.size() * 12) / 10);
 
-	auto varInfo = findScriptVariable(scriptTemplate, 0);
+    auto varInfo = findScriptVariable(scriptTemplate, 0);
 
-	while (varInfo.found())
-	{
-		result += scriptTemplate.substr(curPosition, varInfo.begin() - curPosition);
+    while (varInfo.found())
+    {
+        result += scriptTemplate.substr(curPosition, varInfo.begin() - curPosition);
 
-		string	text = varInfo.text();
+        string	text = varInfo.text();
 
-		if (!text.empty())
-		{
-			if (!isAlpha(text[0]))
-				result += text;
-			else
-			{
-				auto	itVar = internalVars.find(varInfo.text());
+        if (!text.empty())
+        {
+            if (!isAlpha(text[0]))
+                result += text;
+            else
+            {
+                auto	itVar = internalVars.find(varInfo.text());
 
-				if (itVar != internalVars.end())
-					result += itVar->second;
-				else
-				{
-					const char *envValue = getenv(text.c_str());
+                if (itVar != internalVars.end())
+                    result += itVar->second;
+                else
+                {
+                    const char *envValue = getenv(text.c_str());
 
-					if (envValue != NULL)
-						result += envValue;
-					else
-						result += text + "_not_found";
-				}
-			}
-		}//if (!text.empty)
+                    if (envValue != NULL)
+                        result += envValue;
+                    else
+                        result += text + "_not_found";
+                }
+            }
+        }//if (!text.empty)
 
-		curPosition = varInfo.end();
-		varInfo = findScriptVariable(scriptTemplate, curPosition);
-	}//while
+        curPosition = varInfo.end();
+        varInfo = findScriptVariable(scriptTemplate, curPosition);
+    }//while
 
-	result += scriptTemplate.substr(curPosition);
+    result += scriptTemplate.substr(curPosition);
 
-	return result;
+    return result;
 }
 
 /// <summary>
@@ -623,17 +623,17 @@ std::string	replaceScriptVariables(const std::string& scriptTemplate, ModuleNode
 /// <returns></returns>
 FindVariableResult findScriptVariable(const std::string& scriptTemplate, size_t initialPosition)
 {
-	size_t begin = scriptTemplate.find("${");
+    size_t begin = scriptTemplate.find("${");
 
-	if (begin == string::npos)
-		return FindVariableResult("", string::npos);
+    if (begin == string::npos)
+        return FindVariableResult("", string::npos);
 
-	size_t	end = scriptTemplate.find_first_of("{}", begin+2);
-	if (end == string::npos)
-		return FindVariableResult("", string::npos);
-	else if (scriptTemplate[end] == '{')
-		return findScriptVariable(scriptTemplate, end+1);
-	else
-		return FindVariableResult(scriptTemplate.substr(begin+2, end - (begin+2)), begin);
+    size_t	end = scriptTemplate.find_first_of("{}", begin + 2);
+    if (end == string::npos)
+        return FindVariableResult("", string::npos);
+    else if (scriptTemplate[end] == '{')
+        return findScriptVariable(scriptTemplate, end + 1);
+    else
+        return FindVariableResult(scriptTemplate.substr(begin + 2, end - (begin + 2)), begin);
 
 }

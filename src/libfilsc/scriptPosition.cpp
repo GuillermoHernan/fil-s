@@ -10,25 +10,25 @@ using namespace std;
 
 /**
  * String representation of a Script position.
- * @return 
+ * @return
  */
 string ScriptPosition::toString()const
 {
-	string result = "[";
+    string result = "[";
 
-	result += to_string(line());
-	result += ",";
-	result += to_string(column());
-	result += "]";
+    result += to_string(line());
+    result += ",";
+    result += to_string(column());
+    result += "]";
 
-	if (m_file != nullptr)
-	{
-		result += "(";
-		result += m_file->toString();
-		result += ")";
-	}
+    if (m_file != nullptr)
+    {
+        result += "(";
+        result += m_file->toString();
+        result += ")";
+    }
 
-	return result;
+    return result;
 }
 
 /// <summary>
@@ -38,7 +38,7 @@ string ScriptPosition::toString()const
 /// <returns></returns>
 std::shared_ptr<SourceModule> SourceModule::create(const std::string& path)
 {
-	return shared_ptr<SourceModule>(new SourceModule(path));
+    return shared_ptr<SourceModule>(new SourceModule(path));
 }
 
 /// <summary>
@@ -49,7 +49,7 @@ std::shared_ptr<SourceModule> SourceModule::create(const std::string& path)
 /// <returns></returns>
 SourceFilePtr SourceFile::create(SourceModulePtr module, const std::string& name)
 {
-	return SourceFilePtr(new SourceFile(module, name));
+    return SourceFilePtr(new SourceFile(module, name));
 }
 
 /// <summary>
@@ -58,8 +58,8 @@ SourceFilePtr SourceFile::create(SourceModulePtr module, const std::string& name
 /// <returns></returns>
 std::string SourceFile::path()const
 {
-	if (m_module != nullptr)
-		return joinPaths(m_module->path(), m_name);
-	else
-		return m_name;
+    if (m_module != nullptr)
+        return joinPaths(m_module->path(), m_name);
+    else
+        return m_name;
 }

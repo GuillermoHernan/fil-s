@@ -12,69 +12,69 @@
 class CodeGeneratorState
 {
 public:
-	//typedef void(*TypeCodegenFN)(AstNode* type, CodeGeneratorState& state);
-	typedef std::function<void(AstNode*, CodeGeneratorState&)> TypeCodegenFN;
+    //typedef void(*TypeCodegenFN)(AstNode* type, CodeGeneratorState& state);
+    typedef std::function<void(AstNode*, CodeGeneratorState&)> TypeCodegenFN;
 
-	CodeGeneratorState(std::ostream* pOutput, TypeCodegenFN typeGenFN);
-	~CodeGeneratorState();
+    CodeGeneratorState(std::ostream* pOutput, TypeCodegenFN typeGenFN);
+    ~CodeGeneratorState();
 
-	CodeGeneratorState(const CodeGeneratorState&) = delete;
-	CodeGeneratorState& operator=(const CodeGeneratorState&) = delete;
+    CodeGeneratorState(const CodeGeneratorState&) = delete;
+    CodeGeneratorState& operator=(const CodeGeneratorState&) = delete;
 
-	std::string cname(Ref<AstNode> node);
-	std::string cname(AstNode* type);
-	//std::string tupleMemberCName(AstNode* tuple, int index);
-	bool hasName(AstNode* type)const;
+    std::string cname(Ref<AstNode> node);
+    std::string cname(AstNode* type);
+    //std::string tupleMemberCName(AstNode* tuple, int index);
+    bool hasName(AstNode* type)const;
 
-	void setCname(Ref<AstNode> node, const std::string& name);
+    void setCname(Ref<AstNode> node, const std::string& name);
 
-	std::ostream& output()
-	{
-		return *m_output;
-	}
+    std::ostream& output()
+    {
+        return *m_output;
+    }
 
-	void typeCodegen(AstNode* type, CodeGeneratorState& state);
+    void typeCodegen(AstNode* type, CodeGeneratorState& state);
 
 protected:
-	void enterBlock();
-	void exitBlock();
+    void enterBlock();
+    void exitBlock();
 
-	bool allocTemp(const std::string& cTypeName, std::string& outputName, bool ref);
-	bool releaseTemp(const std::string& varName);
+    bool allocTemp(const std::string& cTypeName, std::string& outputName, bool ref);
+    bool releaseTemp(const std::string& varName);
 
-	friend class TempVariable;
-	friend class CodegenBlock;
-	FRIEND_TEST(CodeGeneratorState, temporaries);
+    friend class TempVariable;
+    friend class CodegenBlock;
+    FRIEND_TEST(CodeGeneratorState, temporaries);
 
 private:
-	/// <summary>Info about a temporary variable.</summary>
-	struct TempVarInfo
-	{
-		const std::string	cType;
-		const std::string	cName;
-		const bool			ref;
-		bool				free = false;
-	};
+    /// <summary>Info about a temporary variable.</summary>
+    struct TempVarInfo
+    {
+        const std::string	cType;
+        const std::string	cName;
+        const bool			ref;
+        bool				free = false;
+    };
 
-	/// <summary> Keeps track of the temporaries of a block</summary>
-	struct BlockInfo
-	{
-		std::vector<TempVarInfo>	tempVars;
-	};
+    /// <summary> Keeps track of the temporaries of a block</summary>
+    struct BlockInfo
+    {
+        std::vector<TempVarInfo>	tempVars;
+    };
 
-	typedef std::tuple< AstNode*, int>	TupleMemberKey;
+    typedef std::tuple< AstNode*, int>	TupleMemberKey;
 
-	std::ostream*								m_output;
-	//TODO: Remove this callback. Is a horrible hack that is already causing problems.
-	//Replace it by a pass which declares all necessary structures.
-	TypeCodegenFN								m_typeGenFN;
-	std::vector<BlockInfo>						m_blockStack;
-	std::map< Ref<RefCountObj>, std::string>	m_objNames;
-	std::map< TupleMemberKey, std::string>		m_tupleMemberNames;
-	int											m_nextSymbolId = 0;
+    std::ostream*								m_output;
+    //TODO: Remove this callback. Is a horrible hack that is already causing problems.
+    //Replace it by a pass which declares all necessary structures.
+    TypeCodegenFN								m_typeGenFN;
+    std::vector<BlockInfo>						m_blockStack;
+    std::map< Ref<RefCountObj>, std::string>	m_objNames;
+    std::map< TupleMemberKey, std::string>		m_tupleMemberNames;
+    int											m_nextSymbolId = 0;
 
-	std::string		allocCName(std::string base);
-	TempVarInfo*	findTemporary(std::function<bool(const TempVarInfo&)> predicate);
+    std::string		allocCName(std::string base);
+    TempVarInfo*	findTemporary(std::function<bool(const TempVarInfo&)> predicate);
 };
 
 /// <summary>
@@ -83,18 +83,18 @@ private:
 class CodegenBlock
 {
 public:
-	CodegenBlock(CodeGeneratorState& state) : m_state(state)
-	{
-		state.enterBlock();
-	}
+    CodegenBlock(CodeGeneratorState& state) : m_state(state)
+    {
+        state.enterBlock();
+    }
 
-	~CodegenBlock()
-	{
-		m_state.exitBlock();
-	}
+    ~CodegenBlock()
+    {
+        m_state.exitBlock();
+    }
 
 private:
-	CodeGeneratorState& m_state;
+    CodeGeneratorState & m_state;
 };
 
 
@@ -103,18 +103,18 @@ private:
 /// </summary>
 struct IVariableInfo
 {
-	virtual const std::string&	cname()const=0;
-	virtual AstNode*		dataType()const=0;
+    virtual const std::string&	cname()const = 0;
+    virtual AstNode*		dataType()const = 0;
 
-	bool isVoid()const
-	{
-		return astIsVoidType(dataType());
-	}
+    bool isVoid()const
+    {
+        return astIsVoidType(dataType());
+    }
 
-	const bool isReference;
+    const bool isReference;
 
 protected:
-	IVariableInfo(bool ref) : isReference(ref) {}
+    IVariableInfo(bool ref) : isReference(ref) {}
 };
 
 std::ostream& operator << (std::ostream& output, const IVariableInfo& var);
@@ -126,24 +126,24 @@ std::ostream& operator << (std::ostream& output, const IVariableInfo& var);
 class TempVariable : public IVariableInfo
 {
 public:
-	TempVariable(AstNode* type, CodeGeneratorState& state, bool ref);
-	TempVariable(Ref<AstNode> node, CodeGeneratorState& state, bool ref);
-	~TempVariable();
+    TempVariable(AstNode* type, CodeGeneratorState& state, bool ref);
+    TempVariable(Ref<AstNode> node, CodeGeneratorState& state, bool ref);
+    ~TempVariable();
 
-	const std::string& cname()const override
-	{
-		return m_cName;
-	}
+    const std::string& cname()const override
+    {
+        return m_cName;
+    }
 
-	virtual AstNode* dataType()const override
-	{
-		return m_dataType;
-	}
+    virtual AstNode* dataType()const override
+    {
+        return m_dataType;
+    }
 
 private:
-	std::string			m_cName;
-	AstNode*		m_dataType;
-	CodeGeneratorState& m_state;
+    std::string			m_cName;
+    AstNode*		m_dataType;
+    CodeGeneratorState& m_state;
 };
 
 /// <summary>
@@ -151,10 +151,10 @@ private:
 /// </summary>
 struct VoidVariable : public IVariableInfo
 {
-	virtual const std::string&	cname()const override;
-	virtual AstNode*		dataType()const  override;
+    virtual const std::string&	cname()const override;
+    virtual AstNode*		dataType()const  override;
 
-	VoidVariable() : IVariableInfo(false) {}
+    VoidVariable() : IVariableInfo(false) {}
 };
 
 /// <summary>
@@ -163,14 +163,14 @@ struct VoidVariable : public IVariableInfo
 class NamedVariable : public IVariableInfo
 {
 public:
-	NamedVariable(Ref<AstNode> node, CodeGeneratorState& state);
+    NamedVariable(Ref<AstNode> node, CodeGeneratorState& state);
 
-	virtual const std::string&	cname()const override;
-	virtual AstNode*		dataType()const  override;
+    virtual const std::string&	cname()const override;
+    virtual AstNode*		dataType()const  override;
 
 private:
-	Ref<AstNode>		m_node;
-	std::string			m_cName;
+    Ref<AstNode>		m_node;
+    std::string			m_cName;
 };
 
 /// <summary>
@@ -179,12 +179,12 @@ private:
 class TupleField : public IVariableInfo
 {
 public:
-	TupleField(const IVariableInfo& tuple, int fieldIndex, CodeGeneratorState& state);
+    TupleField(const IVariableInfo& tuple, int fieldIndex, CodeGeneratorState& state);
 
-	virtual const std::string&	cname()const override;
-	virtual AstNode*		dataType()const  override;
+    virtual const std::string&	cname()const override;
+    virtual AstNode*		dataType()const  override;
 
 private:
-	AstNode*		m_type;
-	std::string			m_cName;
+    AstNode * m_type;
+    std::string			m_cName;
 };

@@ -4,25 +4,25 @@
 
 Ref<AstNode> SemAnalysisState::parent(unsigned index)const
 {
-	if (index < m_parents.size())
-		return *(m_parents.rbegin()+index);
-	else
-		return Ref<AstNode>();
+    if (index < m_parents.size())
+        return *(m_parents.rbegin() + index);
+    else
+        return Ref<AstNode>();
 }
 
 void SemAnalysisState::pushParent(Ref<AstNode> node)
 {
-	m_parents.push_back(node);
+    m_parents.push_back(node);
 }
 
 Ref<AstNode> SemAnalysisState::popParent()
 {
-	assert(!m_parents.empty());
+    assert(!m_parents.empty());
 
-	auto result = m_parents.back();
-	m_parents.pop_back();
+    auto result = m_parents.back();
+    m_parents.pop_back();
 
-	return result;
+    return result;
 }
 
 /// <summary>
@@ -32,17 +32,17 @@ Ref<AstNode> SemAnalysisState::popParent()
 /// <returns>The first parent node which fulfills the predicate or null</returns>
 Ref<AstNode> SemAnalysisState::findParent(std::function<bool(Ref<AstNode>)> pred)const
 {
-	for (auto it = m_parents.rbegin(); it != m_parents.rend(); ++it)
-	{
-		if (pred(*it))
-			return *it;
-	}
+    for (auto it = m_parents.rbegin(); it != m_parents.rend(); ++it)
+    {
+        if (pred(*it))
+            return *it;
+    }
 
-	return Ref<AstNode>();
+    return Ref<AstNode>();
 }
 
 SemAnalysisState::SemAnalysisState()
-	:rootScope (SymbolScope::create(Ref<SymbolScope>()))
+    :rootScope(SymbolScope::create(Ref<SymbolScope>()))
 {
 }
 
@@ -53,10 +53,10 @@ SemAnalysisState::SemAnalysisState()
 /// <returns></returns>
 Ref<SymbolScope> SemAnalysisState::getScope(const AstNode* node)const
 {
-	auto it = m_scopesMap.find(node);
+    auto it = m_scopesMap.find(node);
 
-	assert(it != m_scopesMap.end());
-	return it->second;
+    assert(it != m_scopesMap.end());
+    return it->second;
 }
 
 /// <summary>
@@ -66,7 +66,7 @@ Ref<SymbolScope> SemAnalysisState::getScope(const AstNode* node)const
 /// <returns></returns>
 Ref<SymbolScope> SemAnalysisState::getScope(Ref<AstNode> node)const
 {
-	return getScope(node.getPointer());
+    return getScope(node.getPointer());
 }
 
 /// <summary>
@@ -76,5 +76,5 @@ Ref<SymbolScope> SemAnalysisState::getScope(Ref<AstNode> node)const
 /// <param name=""></param>
 void SemAnalysisState::setScope(Ref<AstNode> node, Ref<SymbolScope> scope)
 {
-	m_scopesMap[node.getPointer()] = scope;
+    m_scopesMap[node.getPointer()] = scope;
 }

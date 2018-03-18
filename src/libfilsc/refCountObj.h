@@ -1,7 +1,7 @@
-/* 
+/*
  * File:   RefCountObj.h
  * Author: ghernan
- * 
+ *
  * Reference counted objects and references implementation.
  *
  * Created on November 28, 2016, 6:58 PM
@@ -13,9 +13,9 @@
 
 #include <stdlib.h>
 
-/**
- * Base class for reference counted objects.
- */
+ /**
+  * Base class for reference counted objects.
+  */
 class RefCountObj
 {
 public:
@@ -31,16 +31,16 @@ public:
     }
 
 protected:
-    
+
     RefCountObj() : m_refCount(1)
-    {        
+    {
     }
-    
-    virtual ~RefCountObj(){}
+
+    virtual ~RefCountObj() {}
 
 private:
     int m_refCount;
-    
+
     //Copy operations forbidden
     RefCountObj(const RefCountObj& orig);
     RefCountObj& operator=(const RefCountObj& orig);
@@ -94,12 +94,12 @@ public:
 
         if (srcPtr != NULL)
             srcPtr->addref();
-        
+
         if (m_ptr != NULL)
             m_ptr->release();
 
         m_ptr = srcPtr;
-        
+
         return *this;
     }
 
@@ -129,47 +129,47 @@ public:
         return m_ptr;
     }
 
-	void reset()
-	{
-		if (m_ptr != NULL)
-		{
-			m_ptr->release();
-			m_ptr = NULL;
-		}
-	}
+    void reset()
+    {
+        if (m_ptr != NULL)
+        {
+            m_ptr->release();
+            m_ptr = NULL;
+        }
+    }
 
-	template <class DestType>
-	Ref<DestType> staticCast()const
-	{
-		return Ref<DestType>(static_cast<DestType*> (m_ptr));
-	}
+    template <class DestType>
+    Ref<DestType> staticCast()const
+    {
+        return Ref<DestType>(static_cast<DestType*> (m_ptr));
+    }
 
-	template <class DestType>
-	Ref<DestType> dynamicCast()const
-	{
-		return Ref<DestType>(dynamic_cast<DestType*> (m_ptr));
-	}
+    template <class DestType>
+    Ref<DestType> dynamicCast()const
+    {
+        return Ref<DestType>(dynamic_cast<DestType*> (m_ptr));
+    }
 
     template <class DestType>
     bool operator == (const Ref<DestType>& x)const
     {
         return this->getPointer() == x.getPointer();
     }
-    
+
     bool operator < (const Ref<ObjType>& b)const
     {
         return this->getPointer() < b.getPointer();
     }
 
 private:
-    ObjType* m_ptr;
+    ObjType * m_ptr;
 };
 
 
 /**
  * Creates a reference for a pointer just returned from 'new' operator
  * @param ptr
- * @return 
+ * @return
  */
 template <class T>
 inline Ref<T> refFromNew(T* ptr)
@@ -183,12 +183,12 @@ inline Ref<T> refFromNew(T* ptr)
 /**
  * Creates a reference from a pointer
  * @param ptr
- * @return 
+ * @return
  */
 template <class T>
 inline Ref<T> ref(T* ptr)
 {
-    return Ref<T> (ptr);
+    return Ref<T>(ptr);
 }
 
 

@@ -10,7 +10,7 @@
 class LexToken;
 
 ExprResult parseList(LexToken token, ExprResult::ParseFunction parseFn,
-	const char* beginTok, const char* endTok, const char* separator);
+    const char* beginTok, const char* endTok, const char* separator);
 
 
 ExprResult parseTopLevelItem(LexToken token);

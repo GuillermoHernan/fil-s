@@ -18,20 +18,20 @@ using namespace std;
 /// <returns></returns>
 SemanticResult semanticAnalysis(Ref<AstNode> node)
 {
-	const auto &		passes = getSemAnalysisPasses();
-	SemAnalysisState	state;
+    const auto &		passes = getSemAnalysisPasses();
+    SemAnalysisState	state;
 
-	for (auto pass : passes)
-	{
-		auto result = pass(node, state);
+    for (auto pass : passes)
+    {
+        auto result = pass(node, state);
 
-		if (!result.ok())
-			return result;
-		else
-			node = result.result;
-	}
+        if (!result.ok())
+            return result;
+        else
+            node = result.result;
+    }
 
-	return SemanticResult(node);
+    return SemanticResult(node);
 }
 
 /// <summary>
@@ -44,32 +44,32 @@ SemanticResult semanticAnalysis(Ref<AstNode> node)
 /// <returns></returns>
 SemanticResult semanticAnalysis(const AstStr2NodesMap& sources, const AstStr2NodesMap& modules)
 {
-	const auto &		passes = getSemAnalysisPasses();
-	SemAnalysisState	state;
-	AstStr2NodesMap		resultNodes = sources;
+    const auto &		passes = getSemAnalysisPasses();
+    SemAnalysisState	state;
+    AstStr2NodesMap		resultNodes = sources;
 
-	state.modules = modules;
+    state.modules = modules;
 
-	for (auto pass : passes)
-	{
-		SemanticResult::ErrorList	errors;
+    for (auto pass : passes)
+    {
+        SemanticResult::ErrorList	errors;
 
-		for (auto& src : sources)
-		{
-			state.currentFile = src.first;
-			auto result = pass(resultNodes[src.first], state);
+        for (auto& src : sources)
+        {
+            state.currentFile = src.first;
+            auto result = pass(resultNodes[src.first], state);
 
-			if (!result.ok())
-				result.appendErrorsTo(errors);
-			else
-				resultNodes[src.first] = result.result;
-		}
+            if (!result.ok())
+                result.appendErrorsTo(errors);
+            else
+                resultNodes[src.first] = result.result;
+        }
 
-		if (!errors.empty())
-			return SemanticResult(errors);
-	}
+        if (!errors.empty())
+            return SemanticResult(errors);
+    }
 
-	return buildModuleNode(resultNodes);
+    return buildModuleNode(resultNodes);
 }
 
 
@@ -80,19 +80,19 @@ SemanticResult semanticAnalysis(const AstStr2NodesMap& sources, const AstStr2Nod
 /// <returns></returns>
 const PassList& getSemAnalysisPasses()
 {
-	static PassList passes;
+    static PassList passes;
 
-	if (passes.empty())
-	{
-		passes.push_back(modulesPass);
-		passes.push_back(scopeCreationPass);
-		passes.push_back(symbolGatherPass);
-		passes.push_back(preTypeCheckPass);
-		passes.push_back(typeCheckPass);
-		passes.push_back(typeCheckPass2);
-	}
+    if (passes.empty())
+    {
+        passes.push_back(modulesPass);
+        passes.push_back(scopeCreationPass);
+        passes.push_back(symbolGatherPass);
+        passes.push_back(preTypeCheckPass);
+        passes.push_back(typeCheckPass);
+        passes.push_back(typeCheckPass2);
+    }
 
-	return passes;
+    return passes;
 }
 
 /// <summary>
@@ -103,8 +103,8 @@ const PassList& getSemAnalysisPasses()
 /// <returns></returns>
 SemanticResult modulesPass(Ref<AstNode> node, SemAnalysisState& state)
 {
-	//TODO: implement it.
-	return SemanticResult(node);
+    //TODO: implement it.
+    return SemanticResult(node);
 }
 
 /// <summary>
@@ -116,9 +116,9 @@ SemanticResult modulesPass(Ref<AstNode> node, SemAnalysisState& state)
 /// <returns></returns>
 SemanticResult semInOrderWalk(const PassOperations& fnSet, SemAnalysisState& state, Ref<AstNode> node)
 {
-	return semInOrderWalk([&fnSet](Ref<AstNode> node, SemAnalysisState& state) {
-		return fnSet.processNode(node, state);
-	}, state, node);
+    return semInOrderWalk([&fnSet](Ref<AstNode> node, SemAnalysisState& state) {
+        return fnSet.processNode(node, state);
+    }, state, node);
 }
 
 /// <summary>
@@ -130,35 +130,35 @@ SemanticResult semInOrderWalk(const PassOperations& fnSet, SemAnalysisState& sta
 /// <returns></returns>
 SemanticResult semInOrderWalk(PassFunction fn, SemAnalysisState& state, Ref<AstNode> node)
 {
-	auto&						children = node->children();
-	std::vector<CompileError>	errors;
+    auto&						children = node->children();
+    std::vector<CompileError>	errors;
 
-	state.pushParent(node);
-	for (size_t i = 0; i < children.size(); ++i)
-	{
-		auto child = children[i];
+    state.pushParent(node);
+    for (size_t i = 0; i < children.size(); ++i)
+    {
+        auto child = children[i];
 
-		if (child.notNull())
-		{
-			auto result = semInOrderWalk(fn, state, child);
+        if (child.notNull())
+        {
+            auto result = semInOrderWalk(fn, state, child);
 
-			if (!result.ok())
-				errors.insert(errors.end(), result.errors.begin(), result.errors.end());
-			else
-				node->setChild(i, result.result);
-		}
-	}
-	state.popParent();
+            if (!result.ok())
+                errors.insert(errors.end(), result.errors.begin(), result.errors.end());
+            else
+                node->setChild(i, result.result);
+        }
+    }
+    state.popParent();
 
-	auto result = fn(node, state);
+    auto result = fn(node, state);
 
-	if (!errors.empty() || !result.ok())
-	{
-		errors.insert(errors.end(), result.errors.begin(), result.errors.end());
-		return SemanticResult(errors);
-	}
-	else
-		return result;
+    if (!errors.empty() || !result.ok())
+    {
+        errors.insert(errors.end(), result.errors.begin(), result.errors.end());
+        return SemanticResult(errors);
+    }
+    else
+        return result;
 }
 
 /// <summary>
@@ -170,9 +170,9 @@ SemanticResult semInOrderWalk(PassFunction fn, SemAnalysisState& state, Ref<AstN
 /// <returns></returns>
 SemanticResult semPreOrderWalk(const PassOperations& fnSet, SemAnalysisState& state, Ref<AstNode> node)
 {
-	return semPreOrderWalk([&fnSet](Ref<AstNode> node, SemAnalysisState& state) {
-		return fnSet.processNode(node, state);
-	}, state, node);
+    return semPreOrderWalk([&fnSet](Ref<AstNode> node, SemAnalysisState& state) {
+        return fnSet.processNode(node, state);
+    }, state, node);
 }
 
 /// <summary>
@@ -184,38 +184,38 @@ SemanticResult semPreOrderWalk(const PassOperations& fnSet, SemAnalysisState& st
 /// <returns></returns>
 SemanticResult semPreOrderWalk(PassFunction fn, SemAnalysisState& state, Ref<AstNode> node)
 {
-	auto&						children = node->children();
-	std::vector<CompileError>	errors;
+    auto&						children = node->children();
+    std::vector<CompileError>	errors;
 
-	auto result = fn(node, state);
+    auto result = fn(node, state);
 
-	if (!result.ok())
-		errors.insert(errors.end(), result.errors.begin(), result.errors.end());
-	else
-		node = result.result;
+    if (!result.ok())
+        errors.insert(errors.end(), result.errors.begin(), result.errors.end());
+    else
+        node = result.result;
 
-	state.pushParent(node);
-	//Walk children after root
-	for (size_t i = 0; i < children.size(); ++i)
-	{
-		auto child = children[i];
+    state.pushParent(node);
+    //Walk children after root
+    for (size_t i = 0; i < children.size(); ++i)
+    {
+        auto child = children[i];
 
-		if (child.notNull())
-		{
-			auto childResult = semPreOrderWalk(fn, state, child);
+        if (child.notNull())
+        {
+            auto childResult = semPreOrderWalk(fn, state, child);
 
-			if (!childResult.ok())
-				errors.insert(errors.end(), childResult.errors.begin(), childResult.errors.end());
-			else
-				node->setChild(i, childResult.result);
-		}
-	}
-	state.popParent();
+            if (!childResult.ok())
+                errors.insert(errors.end(), childResult.errors.begin(), childResult.errors.end());
+            else
+                node->setChild(i, childResult.result);
+        }
+    }
+    state.popParent();
 
-	if (!errors.empty())
-		return SemanticResult(errors);
-	else
-		return result;
+    if (!errors.empty())
+        return SemanticResult(errors);
+    else
+        return result;
 }
 
 /// <summary>
@@ -227,13 +227,13 @@ SemanticResult semPreOrderWalk(PassFunction fn, SemAnalysisState& state, Ref<Ast
 /// <returns></returns>
 CompileError semError(Ref<AstNode> node, ErrorTypes type, ...)
 {
-	va_list aptr;
+    va_list aptr;
 
-	va_start(aptr, type);
-	CompileError result = CompileError::create(node->position(), type, aptr);
-	va_end(aptr);
+    va_start(aptr, type);
+    CompileError result = CompileError::create(node->position(), type, aptr);
+    va_end(aptr);
 
-	return result;
+    return result;
 }
 
 /// <summary>
@@ -243,11 +243,11 @@ CompileError semError(Ref<AstNode> node, ErrorTypes type, ...)
 /// <returns></returns>
 SemanticResult buildModuleNode(const AstStr2NodesMap& nodes)
 {
-	//TODO: set real module name
-	auto moduleNode = astCreateModule("");
+    //TODO: set real module name
+    auto moduleNode = astCreateModule("");
 
-	for (auto& nodeEntry : nodes)
-		moduleNode->addChild(nodeEntry.second);
+    for (auto& nodeEntry : nodes)
+        moduleNode->addChild(nodeEntry.second);
 
-	return SemanticResult(moduleNode);
+    return SemanticResult(moduleNode);
 }

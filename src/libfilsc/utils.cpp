@@ -33,8 +33,8 @@ bool isNumber(const string &str)
 bool isHexadecimal(char ch)
 {
     return ((ch >= '0') && (ch <= '9')) ||
-            ((ch >= 'a') && (ch <= 'f')) ||
-            ((ch >= 'A') && (ch <= 'F'));
+        ((ch >= 'a') && (ch <= 'f')) ||
+        ((ch >= 'A') && (ch <= 'F'));
 }
 
 bool isOctal(char ch)
@@ -47,7 +47,7 @@ bool isOctal(const std::string& str)
     for (size_t i = 0; i < str.size(); ++i)
         if (!isOctal(str[i]))
             return false;
-    
+
     return true;
 }
 
@@ -84,27 +84,27 @@ void replace(string &str, char textFrom, const char *textTo)
  * Checks if 'str' starts with the given prefix.
  * @param str
  * @param prefix
- * @return 
+ * @return
  */
-bool startsWith (const std::string& str, const std::string& prefix)
+bool startsWith(const std::string& str, const std::string& prefix)
 {
     if (prefix.length() > str.length())
         return false;
-    
-    int i = int(prefix.length())-1;
-    
-    for (; i>=0 && str[i] == prefix[i]; --i);
-    
-    return i < 0;    
+
+    int i = int(prefix.length()) - 1;
+
+    for (; i >= 0 && str[i] == prefix[i]; --i);
+
+    return i < 0;
 }
 
 /**
  * Splits a string in several parts, at the occurrences of the separator string
  * @param inputStr
  * @param separator
- * @return 
+ * @return
  */
-StringVector split (const std::string& str, const std::string& separator)
+StringVector split(const std::string& str, const std::string& separator)
 {
     StringVector result;
 
@@ -127,15 +127,15 @@ StringVector split (const std::string& str, const std::string& separator)
  * string.
  * @param strings
  * @param separator
- * @return 
+ * @return
  */
-std::string join (const StringVector& strings, const std::string& separator, size_t firstLine)
+std::string join(const StringVector& strings, const std::string& separator, size_t firstLine)
 {
     ostringstream output;
     const size_t n = strings.size();
     for (size_t i = firstLine; i < n; i++)
     {
-        if (i > firstLine) 
+        if (i > firstLine)
             output << separator;
         output << strings[i];
     }
@@ -150,20 +150,20 @@ std::string join (const StringVector& strings, const std::string& separator, siz
 /// <returns></returns>
 std::string trim(const std::string& inputStr, const std::string& trimChars)
 {
-	auto begin = inputStr.find_first_not_of(trimChars);
+    auto begin = inputStr.find_first_not_of(trimChars);
 
-	if (begin == string::npos)
-		return "";
+    if (begin == string::npos)
+        return "";
 
-	auto end = inputStr.find_last_not_of(trimChars);
+    auto end = inputStr.find_last_not_of(trimChars);
 
-	return inputStr.substr(begin, (end - begin) + 1);
+    return inputStr.substr(begin, (end - begin) + 1);
 }
 
 
 
 
-int copyWhile(char* dest, const char* src, bool (*conditionFN)(char), int maxLen)
+int copyWhile(char* dest, const char* src, bool(*conditionFN)(char), int maxLen)
 {
     int i = 0;
     for (i = 0; src[i] && i < maxLen && conditionFN(src[i]); ++i)
@@ -209,11 +209,11 @@ const char* skipHexadecimal(const char* input)
 /// <returns></returns>
 std::string escapeString(const std::string &str, bool quote)
 {
-	//TODO: Test
+    //TODO: Test
     std::string result;
-    
+
     result.reserve((str.size() * 11) / 10);
-    
+
     for (size_t i = 0; i < str.size(); i++)
     {
         char					szTemp[16];
@@ -225,23 +225,23 @@ std::string escapeString(const std::string &str, bool quote)
         case '\n': result += "\\n";     break;
         case '\r': result += "\\r";     break;
         case '\t': result += "\\t";     break;
-		case '\a': result += "\\a";     break;
-		case '\b': result += "\\b";     break;
-		case '\f': result += "\\f";     break;
-		case '\v': result += "\\v";     break;
-		case '\"': result += "\\\"";    break;
+        case '\a': result += "\\a";     break;
+        case '\b': result += "\\b";     break;
+        case '\f': result += "\\f";     break;
+        case '\v': result += "\\v";     break;
+        case '\"': result += "\\\"";    break;
         default:
-            if (c >0 && (c < 32 || c > 127))
+            if (c > 0 && (c < 32 || c > 127))
             {
                 sprintf_s(szTemp, "\\x%02X", (int)c);
                 result += szTemp;
             }
             else
                 result += c;
-            break;            
+            break;
         }//switch
     }
-    
+
     if (quote)
         return "\"" + result + "\"";
     else
@@ -262,7 +262,7 @@ bool isAlphaNum(const std::string &str)
 /**
  * Transforms a double into a string.
  * @param x
- * @return 
+ * @return
  */
 std::string double_to_string(double x)
 {
@@ -271,7 +271,7 @@ std::string double_to_string(double x)
     else
     {
         char szTemp[128];
-        sprintf_s (szTemp, "%lg", x);
+        sprintf_s(szTemp, "%lg", x);
         return szTemp;
     }
 }
@@ -279,7 +279,7 @@ std::string double_to_string(double x)
 
 /**
  * Gets a 'Not a Number' value.
- * @return 
+ * @return
  */
 double getNaN()
 {
@@ -289,9 +289,9 @@ double getNaN()
 /**
  * Reads a text file an returns its contents as a string
  * @param szPath
- * @return 
+ * @return
  */
-std::string readTextFile (const std::string& szPath)
+std::string readTextFile(const std::string& szPath)
 {
     struct stat results;
     if (stat(szPath.c_str(), &results) != 0)
@@ -305,14 +305,14 @@ std::string readTextFile (const std::string& szPath)
 
     char *buffer = new char[size + 1];
     long actualRead = fread(buffer, 1, size, file);
-    memset (buffer + actualRead, 0, size - actualRead);
+    memset(buffer + actualRead, 0, size - actualRead);
     fclose(file);
-    
+
     string result(buffer, buffer + actualRead);
 
     delete[] buffer;
     return result;
-    
+
 }
 
 /**
@@ -321,20 +321,20 @@ std::string readTextFile (const std::string& szPath)
  * @param szContent
  * @return true if successful
  */
-bool writeTextFile (const std::string& szPath, const std::string& szContent)
+bool writeTextFile(const std::string& szPath, const std::string& szContent)
 {
-    string parent = parentPath (szPath);
-    
-    if (!createDirIfNotExist (parent))
+    string parent = parentPath(szPath);
+
+    if (!createDirIfNotExist(parent))
         return false;
-    
-    FILE* file = fopen (szPath.c_str(), "w");
+
+    FILE* file = fopen(szPath.c_str(), "w");
     if (file == NULL)
         return false;
-    
-    const size_t result = fwrite (szContent.c_str(), 1, szContent.size(), file);    
-    fclose (file);
-    
+
+    const size_t result = fwrite(szContent.c_str(), 1, szContent.size(), file);
+    fclose(file);
+
     return result == szContent.size();
 }
 
@@ -345,39 +345,39 @@ bool writeTextFile (const std::string& szPath, const std::string& szContent)
  * @return true if created successfully or it already existed. False if it has not
  * been able to create it (for example, because it exists and is not a directory)
  */
-bool createDirIfNotExist (const std::string& szPath)
+bool createDirIfNotExist(const std::string& szPath)
 {
     if (szPath.empty())
         return true;
-    
+
     struct stat st;
-    
+
     if (stat(szPath.c_str(), &st) == 0)
         return S_ISDIR(st.st_mode);
     else
     {
-        createDirIfNotExist( parentPath(szPath) );
-        return _mkdir (szPath.c_str()) == 0;
+        createDirIfNotExist(parentPath(szPath));
+        return _mkdir(szPath.c_str()) == 0;
     }
 }
 
 #ifdef _WIN32
-    const char* DIR_SEPARATORS = "\\/";
+const char* DIR_SEPARATORS = "\\/";
 #else
-    const char* DIR_SEPARATORS = "/";
+const char* DIR_SEPARATORS = "/";
 #endif
 
 /**
  * Gets the directory of a file. If the path is already a directory, it returns
  * the input path.
  * @param szPath
- * @return 
+ * @return
  */
-std::string dirFromPath (const std::string& szPath)
+std::string dirFromPath(const std::string& szPath)
 {
     const size_t  len = szPath.size();
-    
-    if (len == 0 || szPath.find_last_of(DIR_SEPARATORS) == len-1)
+
+    if (len == 0 || szPath.find_last_of(DIR_SEPARATORS) == len - 1)
         return szPath;
     else
         return parentPath(szPath);
@@ -387,17 +387,17 @@ std::string dirFromPath (const std::string& szPath)
 /**
  * Gets the parent path (parent directory) of a given path.
  * @param szPath
- * @return 
+ * @return
  */
-std::string parentPath (const std::string& szPath)
+std::string parentPath(const std::string& szPath)
 {
-    size_t index = szPath.find_last_of (DIR_SEPARATORS);
-    
-    if (index == szPath.size()-1 && szPath.size() > 0)
-        index = szPath.find_last_of (DIR_SEPARATORS, index-1);
-    
+    size_t index = szPath.find_last_of(DIR_SEPARATORS);
+
+    if (index == szPath.size() - 1 && szPath.size() > 0)
+        index = szPath.find_last_of(DIR_SEPARATORS, index - 1);
+
     if (index != string::npos)
-        return szPath.substr(0, index+1);
+        return szPath.substr(0, index + 1);
     else
         return "";
 }
@@ -405,12 +405,12 @@ std::string parentPath (const std::string& szPath)
 /**
  * Removes extension from a file path
  * @param szPath
- * @return 
+ * @return
  */
-std::string removeExt (const std::string& szPath)
+std::string removeExt(const std::string& szPath)
 {
-    const size_t index = szPath.rfind ('.');
-    
+    const size_t index = szPath.rfind('.');
+
     if (index != string::npos)
         return szPath.substr(0, index);
     else
@@ -420,14 +420,14 @@ std::string removeExt (const std::string& szPath)
 /**
  * Returns the filename + extension part of a path.
  * @param szPath
- * @return 
+ * @return
  */
-std::string fileFromPath (const std::string& szPath)
+std::string fileFromPath(const std::string& szPath)
 {
-    const size_t index = szPath.find_last_of (DIR_SEPARATORS);
-    
+    const size_t index = szPath.find_last_of(DIR_SEPARATORS);
+
     if (index != string::npos)
-        return szPath.substr(index+1);
+        return szPath.substr(index + 1);
     else
         return szPath;
 }
@@ -435,22 +435,22 @@ std::string fileFromPath (const std::string& szPath)
 /**
  * Transforms the path into a normalized form, in order to avoid two equivalent
  * paths having different representations.
- * 
+ *
  * @param path
- * @return 
+ * @return
  */
-std::string normalizePath (const std::string& path)
+std::string normalizePath(const std::string& path)
 {
     string temp = path;
-    
+
 #ifdef _WIN32
     replace(temp, '\\', "/");
 #endif
-    
+
     StringVector components = split(temp, "/");
     StringVector filteredComp;
     bool first = true;
-    
+
     for (const string& comp : components)
     {
         if (first || (comp != "" && comp != "."))
@@ -460,25 +460,25 @@ std::string normalizePath (const std::string& path)
             else
                 filteredComp.push_back(comp);
         }
-        
+
         first = false;
     }
-    
+
 #ifdef _WIN32
-	return join(filteredComp, "\\");
+    return join(filteredComp, "\\");
 #else
-	return join(filteredComp, "/");
+    return join(filteredComp, "/");
 #endif
 }
 
 /**
  * Joins two paths
- * 
+ *
  * @param base
  * @param relative
- * @return 
+ * @return
  */
-std::string joinPaths (const std::string& base, const std::string& relative)
+std::string joinPaths(const std::string& base, const std::string& relative)
 {
     if (base.size() > 0 && *base.rbegin() != '/')
         return base + "/" + relative;
@@ -489,9 +489,9 @@ std::string joinPaths (const std::string& base, const std::string& relative)
 /**
  * Checks if a path is relative
  * @param path
- * @return 
+ * @return
  */
-bool isPathRelative (const std::string& path)
+bool isPathRelative(const std::string& path)
 {
 #ifdef _WIN32
     if (path.size() >= 3 && path[1] == ':')
@@ -503,21 +503,21 @@ bool isPathRelative (const std::string& path)
 #else
     if (path.empty())
         return true;
-    else 
+    else
         return path[0] != '/';
 #endif
 }
 
 /**
  * Gets the current working directory of the process
- * @return 
+ * @return
  */
 std::string getCurrentDirectory()
 {
     char * dir = getcwd(NULL, 0);
     string result = dir;
-    
-    free (dir);
+
+    free(dir);
     return result;
 }
 
@@ -526,16 +526,16 @@ std::string getCurrentDirectory()
 /**
  * Indents a text in two space increments.
  * @param indent
- * @return 
+ * @return
  */
 std::string indentText(int indent)
 {
     std::string result;
-    
+
     result.reserve(indent * 2);
-    
-    for (int i=0; i < indent; ++i)
+
+    for (int i = 0; i < indent; ++i)
         result += "  ";
-    
+
     return result;
 }

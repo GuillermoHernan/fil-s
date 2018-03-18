@@ -19,41 +19,41 @@ typedef std::vector<std::string>	StrList;
 class ModuleNode
 {
 public:
-	ModuleNode(const std::string& modulePath, const StrList& sourcePaths);
+    ModuleNode(const std::string& modulePath, const StrList& sourcePaths);
 
-	void addDependency(DepencencyTreePtr node);
+    void addDependency(DepencencyTreePtr node);
 
-	bool buildNeeded()const
-	{
-		return m_compiledAst.isNull();
-	}
+    bool buildNeeded()const
+    {
+        return m_compiledAst.isNull();
+    }
 
-	void walkSources(std::function<void(SourceFileNode*)> fn)const;
-	void walkDependencies(std::function<void(ModuleNode*)> fn)const;
+    void walkSources(std::function<void(SourceFileNode*)> fn)const;
+    void walkDependencies(std::function<void(ModuleNode*)> fn)const;
 
-	std::string		name()const;
+    std::string		name()const;
 
-	Ref<AstNode> getAST()const
-	{
-		return m_compiledAst;
-	}
-	void setAST(Ref<AstNode> ast);
+    Ref<AstNode> getAST()const
+    {
+        return m_compiledAst;
+    }
+    void setAST(Ref<AstNode> ast);
 
-	//Paths
-	const std::string&	path()const					{return m_path;}
-	std::string			getCompiledPath()const;
-	std::string			getCFilePath()const;
-
-private:
-	bool tryLoadAst (const std::string& path);
-	bool checkUpdated(const std::string& compPath);
+    //Paths
+    const std::string&	path()const { return m_path; }
+    std::string			getCompiledPath()const;
+    std::string			getCFilePath()const;
 
 private:
-	std::string						m_path;
-	std::vector<SourceFileNodePtr>	m_sources;
-	std::vector<DepencencyTreePtr>	m_dependencies;
-	
-	Ref<AstNode>					m_compiledAst;
+    bool tryLoadAst(const std::string& path);
+    bool checkUpdated(const std::string& compPath);
+
+private:
+    std::string						m_path;
+    std::vector<SourceFileNodePtr>	m_sources;
+    std::vector<DepencencyTreePtr>	m_dependencies;
+
+    Ref<AstNode>					m_compiledAst;
 };
 
 /// <summary>
@@ -62,30 +62,30 @@ private:
 class SourceFileNode
 {
 public:
-	SourceFileNode(SourceFilePtr ref)
-		:m_ref(ref)
-	{}
+    SourceFileNode(SourceFilePtr ref)
+        :m_ref(ref)
+    {}
 
-	std::string path()const
-	{
-		return m_ref->path();
-	}
+    std::string path()const
+    {
+        return m_ref->path();
+    }
 
-	SourceFilePtr ref()const
-	{
-		return m_ref;
-	}
-	
-	Ref<AstNode> getAST()const
-	{
-		return m_ast;
-	}
-	void setAST(Ref<AstNode> ast)
-	{
-		m_ast = ast;
-	}
+    SourceFilePtr ref()const
+    {
+        return m_ref;
+    }
+
+    Ref<AstNode> getAST()const
+    {
+        return m_ast;
+    }
+    void setAST(Ref<AstNode> ast)
+    {
+        m_ast = ast;
+    }
 
 private:
-	SourceFilePtr	m_ref;
-	Ref<AstNode>	m_ast;
+    SourceFilePtr	m_ref;
+    Ref<AstNode>	m_ast;
 };

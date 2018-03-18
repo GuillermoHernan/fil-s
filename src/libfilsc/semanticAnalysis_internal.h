@@ -12,7 +12,7 @@ class SemAnalysisState;
 class PassOperations;
 class SymbolScope;
 
-typedef std::function <SemanticResult (Ref<AstNode>, SemAnalysisState&)> PassFunction;
+typedef std::function <SemanticResult(Ref<AstNode>, SemAnalysisState&)> PassFunction;
 //typedef std::function <Ref<AstNode> (Ref<AstNode>, SemAnalysisState&)> TransformFunction;
 //typedef std::function <CompileError (Ref<AstNode>, SemAnalysisState&)> CheckFunction;
 

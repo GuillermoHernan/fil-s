@@ -8,7 +8,7 @@
 
 Ref<SymbolScope> SymbolScope::create(Ref<SymbolScope> parent)
 {
-	return refFromNew(new SymbolScope(parent));
+    return refFromNew(new SymbolScope(parent));
 }
 
 /// <summary>
@@ -18,10 +18,10 @@ Ref<SymbolScope> SymbolScope::create(Ref<SymbolScope> parent)
 /// <param name="node">AST node in which the symbol is defined.</param>
 void SymbolScope::add(const std::string& name, Ref<AstNode> node)
 {
-	assert(!name.empty());
-	assert(m_symbols.count(name) == 0);
+    assert(!name.empty());
+    assert(m_symbols.count(name) == 0);
 
-	m_symbols[name] = node;
+    m_symbols[name] = node;
 }
 
 /// <summary>
@@ -31,12 +31,12 @@ void SymbolScope::add(const std::string& name, Ref<AstNode> node)
 /// <returns></returns>
 bool SymbolScope::contains(const std::string& name, bool checkParents)const
 {
-	if (m_symbols.count(name) > 0)
-		return true;
-	else if (checkParents && m_parent.notNull())
-		return m_parent->contains(name, true);
-	else
-		return false;
+    if (m_symbols.count(name) > 0)
+        return true;
+    else if (checkParents && m_parent.notNull())
+        return m_parent->contains(name, true);
+    else
+        return false;
 }
 
 /// <summary>
@@ -48,33 +48,33 @@ bool SymbolScope::contains(const std::string& name, bool checkParents)const
 /// <returns></returns>
 Ref<AstNode> SymbolScope::get(const std::string& name, bool solveAlias)const
 {
-	auto it = m_symbols.find(name);
+    auto it = m_symbols.find(name);
 
-	if (it == m_symbols.end())
-	{
-		if (m_parent.notNull())
-			return m_parent->get(name, solveAlias);
-		else
-			return Ref<AstNode>();
-	}
-	else
-	{
-		auto node = it->second;
+    if (it == m_symbols.end())
+    {
+        if (m_parent.notNull())
+            return m_parent->get(name, solveAlias);
+        else
+            return Ref<AstNode>();
+    }
+    else
+    {
+        auto node = it->second;
 
-		if (solveAlias)
-		{
-			if (node->getType() == AST_TYPEDEF)
-			{
-				assert(node->childExists(0));
-				node = node->children().front();
+        if (solveAlias)
+        {
+            if (node->getType() == AST_TYPEDEF)
+            {
+                assert(node->childExists(0));
+                node = node->children().front();
 
-				if (node->getType() == AST_TYPE_NAME)
-					node = this->get(node->getName(), true);
-			}
-		}
+                if (node->getType() == AST_TYPE_NAME)
+                    node = this->get(node->getName(), true);
+            }
+        }
 
-		return node;
-	}
+        return node;
+    }
 }
 
 

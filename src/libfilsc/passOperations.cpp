@@ -16,10 +16,10 @@ using namespace std;
 /// <param name="checkFn"></param>
 void PassOperations::add(AstNodeTypes type, CheckFunction checkFn)
 {
-	if (m_checkFunctions.count(type) == 0)
-		m_checkFunctions[type] = CheckFnList();
+    if (m_checkFunctions.count(type) == 0)
+        m_checkFunctions[type] = CheckFnList();
 
-	m_checkFunctions[type].push_back(checkFn);
+    m_checkFunctions[type].push_back(checkFn);
 }
 
 /// <summary>
@@ -29,10 +29,10 @@ void PassOperations::add(AstNodeTypes type, CheckFunction checkFn)
 /// <param name="transformFn"></param>
 void PassOperations::add(AstNodeTypes type, TransformFunction transformFn)
 {
-	if (m_transformFunctions.count(type) == 0)
-		m_transformFunctions[type] = TransformFnList();
+    if (m_transformFunctions.count(type) == 0)
+        m_transformFunctions[type] = TransformFnList();
 
-	m_transformFunctions[type].push_back(transformFn);
+    m_transformFunctions[type].push_back(transformFn);
 }
 
 /// <summary>
@@ -41,7 +41,7 @@ void PassOperations::add(AstNodeTypes type, TransformFunction transformFn)
 /// <returns></returns>
 bool PassOperations::empty()const
 {
-	return m_checkFunctions.empty() && m_transformFunctions.empty();
+    return m_checkFunctions.empty() && m_transformFunctions.empty();
 }
 
 /// <summary>Calls all functions on a node.</summary>
@@ -51,32 +51,32 @@ bool PassOperations::empty()const
 /// <returns></returns>
 SemanticResult PassOperations::processNode(Ref<AstNode> node, SemAnalysisState& state)const
 {
-	vector<CompileError>	errors;
-	auto					itCheck = m_checkFunctions.find(node->getType());
+    vector<CompileError>	errors;
+    auto					itCheck = m_checkFunctions.find(node->getType());
 
-	//Perform checks
-	if (itCheck != m_checkFunctions.end())
-	{
-		for (auto checkFn : itCheck->second)
-		{
-			auto err = checkFn(node, state);
+    //Perform checks
+    if (itCheck != m_checkFunctions.end())
+    {
+        for (auto checkFn : itCheck->second)
+        {
+            auto err = checkFn(node, state);
 
-			if (!err.isOk())
-				errors.push_back(err);
-		}
-	}
+            if (!err.isOk())
+                errors.push_back(err);
+        }
+    }
 
-	if (!errors.empty())
-		return SemanticResult(errors);
+    if (!errors.empty())
+        return SemanticResult(errors);
 
-	//Perform transformations if no errors have been found.
-	auto itTransform = m_transformFunctions.find(node->getType());
+    //Perform transformations if no errors have been found.
+    auto itTransform = m_transformFunctions.find(node->getType());
 
-	if (itTransform != m_transformFunctions.end())
-	{
-		for (auto transformFn : itTransform->second)
-			node = transformFn(node, state);
-	}
+    if (itTransform != m_transformFunctions.end())
+    {
+        for (auto transformFn : itTransform->second)
+            node = transformFn(node, state);
+    }
 
-	return SemanticResult(node);
+    return SemanticResult(node);
 }

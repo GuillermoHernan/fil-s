@@ -21,14 +21,14 @@ int AstNode::ms_nodeCount = 0;
 /// <param name="flags">Node flags.</param>
 /// <returns></returns>
 Ref<AstNode> AstNode::create(
-	AstNodeTypes type,
-	ScriptPosition pos,
-	const std::string& name,
-	const std::string& value,
-	int flags
+    AstNodeTypes type,
+    ScriptPosition pos,
+    const std::string& name,
+    const std::string& value,
+    int flags
 )
 {
-	return refFromNew(new AstNode(type, pos, name, value, flags));
+    return refFromNew(new AstNode(type, pos, name, value, flags));
 }
 
 /// <summary>
@@ -40,21 +40,21 @@ Ref<AstNode> AstNode::create(
 /// <param name="value">Node value (can be empty)</param>
 /// <param name="flags">Flags. See 'AstFlags' enum</param>
 AstNode::AstNode(
-	AstNodeTypes type,
-	const ScriptPosition& pos,
-	const std::string& name,
-	const std::string& value,
-	int flags)
-	:m_position(pos), m_type(type), m_name(name), m_value(value), m_flags(flags)
+    AstNodeTypes type,
+    const ScriptPosition& pos,
+    const std::string& name,
+    const std::string& value,
+    int flags)
+    :m_position(pos), m_type(type), m_name(name), m_value(value), m_flags(flags)
 {
-	//TODO: This has been done to prevent an infinite loop. Find another solution...
-	//Also to fix the data type of default types...
-	if (type == AST_TUPLE_DEF || type == AST_DEFAULT_TYPE)
-		m_reference = this;
-	else
-		m_reference = astGetVoid();
+    //TODO: This has been done to prevent an infinite loop. Find another solution...
+    //Also to fix the data type of default types...
+    if (type == AST_TUPLE_DEF || type == AST_DEFAULT_TYPE)
+        m_reference = this;
+    else
+        m_reference = astGetVoid();
 
-	++ms_nodeCount;
+    ++ms_nodeCount;
 }
 
 /// <summary>
@@ -63,10 +63,10 @@ AstNode::AstNode(
 /// <returns></returns>
 AstNode* AstNode::getDataType()const
 {
-	if (getType() == AST_IDENTIFIER)
-		return m_reference->getDataType();
-	else
-		return m_reference;
+    if (getType() == AST_IDENTIFIER)
+        return m_reference->getDataType();
+    else
+        return m_reference;
 }
 
 /// <summary>
@@ -75,8 +75,8 @@ AstNode* AstNode::getDataType()const
 /// <param name="dataType"></param>
 void AstNode::setDataType(AstNode* dataType)
 {
-	assert(getType() != AST_IDENTIFIER);
-	m_reference = dataType;
+    assert(getType() != AST_IDENTIFIER);
+    m_reference = dataType;
 }
 
 /// <summary>
@@ -85,8 +85,8 @@ void AstNode::setDataType(AstNode* dataType)
 /// <param name="node"></param>
 void AstNode::setReference(AstNode* node)
 {
-	assert(getType() == AST_IDENTIFIER);
-	m_reference = node;
+    assert(getType() == AST_IDENTIFIER);
+    m_reference = node;
 }
 
 //  Functions to create specific AST node types.
@@ -96,12 +96,12 @@ void AstNode::setReference(AstNode* node)
 
 Ref<AstNode> astCreateModule(const std::string& name)
 {
-	return AstNode::create (AST_MODULE, ScriptPosition(), name, "");
+    return AstNode::create(AST_MODULE, ScriptPosition(), name, "");
 }
 
 Ref<AstNode> astCreateScript(ScriptPosition pos, const std::string& name)
 {
-	return AstNode::create(AST_SCRIPT, pos, name, "");
+    return AstNode::create(AST_SCRIPT, pos, name, "");
 }
 
 /// <summary>
@@ -113,10 +113,10 @@ Ref<AstNode> astCreateScript(ScriptPosition pos, const std::string& name)
 /// <param name="initExpr"></param>
 /// <returns></returns>
 Ref<AstNode> astCreateDeclaration(LexToken token,
-	Ref<AstNode> typeDesc,
-	Ref<AstNode> initExpr)
+    Ref<AstNode> typeDesc,
+    Ref<AstNode> initExpr)
 {
-	return astCreateDeclaration(token.getPosition(), token.text(), typeDesc, initExpr);
+    return astCreateDeclaration(token.getPosition(), token.text(), typeDesc, initExpr);
 }
 
 /// <summary>
@@ -128,15 +128,15 @@ Ref<AstNode> astCreateDeclaration(LexToken token,
 /// <param name="initExpr"></param>
 /// <returns></returns>
 Ref<AstNode> astCreateDeclaration(ScriptPosition pos,
-	const std::string& name,
-	Ref<AstNode> typeDesc,
-	Ref<AstNode> initExpr)
+    const std::string& name,
+    Ref<AstNode> typeDesc,
+    Ref<AstNode> initExpr)
 {
-	auto result = AstNode::create(AST_DECLARATION, pos, name, "");
+    auto result = AstNode::create(AST_DECLARATION, pos, name, "");
 
-	result->addChild(typeDesc);
-	result->addChild(initExpr);
-	return result;
+    result->addChild(typeDesc);
+    result->addChild(initExpr);
+    return result;
 }
 
 
@@ -149,10 +149,10 @@ Ref<AstNode> astCreateDeclaration(ScriptPosition pos,
 /// <returns></returns>
 Ref<AstNode> astCreateTypedef(ScriptPosition pos, const std::string& name, Ref<AstNode> typeDesc)
 {
-	auto result = AstNode::create(AST_TYPEDEF, pos, name, "");
+    auto result = AstNode::create(AST_TYPEDEF, pos, name, "");
 
-	result->addChild(typeDesc);
-	return result;
+    result->addChild(typeDesc);
+    return result;
 }
 
 
@@ -166,67 +166,67 @@ Ref<AstNode> astCreateTypedef(ScriptPosition pos, const std::string& name, Ref<A
 /// <param name="bodyExpr"></param>
 /// <returns></returns>
 Ref<AstNode> astCreateFunction(ScriptPosition pos,
-	const std::string& name,
-	Ref<AstNode> params,
-	Ref<AstNode> returnType,
-	Ref<AstNode> bodyExpr)
+    const std::string& name,
+    Ref<AstNode> params,
+    Ref<AstNode> returnType,
+    Ref<AstNode> bodyExpr)
 {
-	auto result = AstNode::create(AST_FUNCTION, pos, name, "");
+    auto result = AstNode::create(AST_FUNCTION, pos, name, "");
 
-	result->addChild(params);
-	result->addChild(returnType);
-	result->addChild(bodyExpr);
+    result->addChild(params);
+    result->addChild(returnType);
+    result->addChild(bodyExpr);
 
-	return result;
+    return result;
 }
 
 
 Ref<AstNode> astCreateBlock(LexToken token)
 {
-	return AstNode::create(AST_BLOCK, token.getPosition(), "", "");
+    return AstNode::create(AST_BLOCK, token.getPosition(), "", "");
 }
 
 Ref<AstNode> astCreateTuple(LexToken token)
 {
-	return AstNode::create(AST_TUPLE, token.getPosition(), "", "");
+    return AstNode::create(AST_TUPLE, token.getPosition(), "", "");
 }
 
 Ref<AstNode> astCreateTupleDef(ScriptPosition pos, const std::string& name)
 {
-	return AstNode::create(AST_TUPLE_DEF, pos, name, "");
+    return AstNode::create(AST_TUPLE_DEF, pos, name, "");
 }
 
 Ref<AstNode> astCreateTupleAdapter(Ref<AstNode> tupleNode)
 {
-	auto result = AstNode::create(AST_TUPLE_ADAPTER, tupleNode->position(), "", "");
+    auto result = AstNode::create(AST_TUPLE_ADAPTER, tupleNode->position(), "", "");
 
-	result->addChild(tupleNode);
-	return result;
+    result->addChild(tupleNode);
+    return result;
 }
 
 
-Ref<AstNode> astCreateIf (ScriptPosition pos, 
-                          Ref<AstNode> condition,
-                          Ref<AstNode> thenSt,
-                          Ref<AstNode> elseSt)
+Ref<AstNode> astCreateIf(ScriptPosition pos,
+    Ref<AstNode> condition,
+    Ref<AstNode> thenSt,
+    Ref<AstNode> elseSt)
 {
-	auto result = AstNode::create(AST_IF, pos, "", "");
+    auto result = AstNode::create(AST_IF, pos, "", "");
 
     result->addChild(condition);
     result->addChild(thenSt);
     result->addChild(elseSt);
-    
+
     return result;
 }
 
-Ref<AstNode> astCreateFor (ScriptPosition pos, 
-                          Ref<AstNode> initSt,
-                          Ref<AstNode> condition,
-                          Ref<AstNode> incrementSt,
-                          Ref<AstNode> body)
-{    
-	auto result = AstNode::create(AST_FOR, pos, "", "");
-    
+Ref<AstNode> astCreateFor(ScriptPosition pos,
+    Ref<AstNode> initSt,
+    Ref<AstNode> condition,
+    Ref<AstNode> incrementSt,
+    Ref<AstNode> body)
+{
+    auto result = AstNode::create(AST_FOR, pos, "", "");
+
     result->addChild(initSt);
     result->addChild(condition);
     result->addChild(incrementSt);
@@ -235,12 +235,12 @@ Ref<AstNode> astCreateFor (ScriptPosition pos,
     return result;
 }
 
-Ref<AstNode> astCreateForEach (ScriptPosition pos, 
-                          Ref<AstNode> itemDeclaration,
-                          Ref<AstNode> sequenceExpr,
-                          Ref<AstNode> body)
+Ref<AstNode> astCreateForEach(ScriptPosition pos,
+    Ref<AstNode> itemDeclaration,
+    Ref<AstNode> sequenceExpr,
+    Ref<AstNode> body)
 {
-	auto result = AstNode::create(AST_FOR_EACH, pos, "", "");
+    auto result = AstNode::create(AST_FOR_EACH, pos, "", "");
 
     result->addChild(itemDeclaration);
     result->addChild(sequenceExpr);
@@ -250,10 +250,10 @@ Ref<AstNode> astCreateForEach (ScriptPosition pos,
 }
 
 
-Ref<AstNode> astCreateReturn (ScriptPosition pos, Ref<AstNode> expr)
+Ref<AstNode> astCreateReturn(ScriptPosition pos, Ref<AstNode> expr)
 {
-	auto result = AstNode::create(AST_RETURN, pos, "", "");
-    
+    auto result = AstNode::create(AST_RETURN, pos, "", "");
+
     result->addChild(expr);
     return result;
 }
@@ -266,11 +266,11 @@ Ref<AstNode> astCreateReturn (ScriptPosition pos, Ref<AstNode> expr)
 /// <param name="rexpr"></param>
 /// <returns></returns>
 Ref<AstNode> astCreateAssignment(LexToken opToken,
-                                 Ref<AstNode> lexpr, 
-                                 Ref<AstNode> rexpr)
+    Ref<AstNode> lexpr,
+    Ref<AstNode> rexpr)
 {
-	auto result = AstNode::create(AST_ASSIGNMENT, opToken.getPosition(), "", opToken.text());
-    
+    auto result = AstNode::create(AST_ASSIGNMENT, opToken.getPosition(), "", opToken.text());
+
     result->addChild(lexpr);
     result->addChild(rexpr);
     return result;
@@ -278,26 +278,26 @@ Ref<AstNode> astCreateAssignment(LexToken opToken,
 
 Ref<AstNode> astCreatePrefixOp(LexToken token, Ref<AstNode> rexpr)
 {
-	auto result = AstNode::create(AST_PREFIXOP, token.getPosition(), "", token.text());
-    
+    auto result = AstNode::create(AST_PREFIXOP, token.getPosition(), "", token.text());
+
     result->addChild(rexpr);
     return result;
 }
 
 Ref<AstNode> astCreatePostfixOp(LexToken token, Ref<AstNode> lexpr)
 {
-	auto result = AstNode::create(AST_POSTFIXOP, token.getPosition(), "", token.text());
-    
+    auto result = AstNode::create(AST_POSTFIXOP, token.getPosition(), "", token.text());
+
     result->addChild(lexpr);
     return result;
 }
 
-Ref<AstNode> astCreateBinaryOp(LexToken token, 
-                                 Ref<AstNode> lexpr, 
-                                 Ref<AstNode> rexpr)
+Ref<AstNode> astCreateBinaryOp(LexToken token,
+    Ref<AstNode> lexpr,
+    Ref<AstNode> rexpr)
 {
-	auto result = AstNode::create(AST_BINARYOP, token.getPosition(), "", token.text());
-    
+    auto result = AstNode::create(AST_BINARYOP, token.getPosition(), "", token.text());
+
     result->addChild(lexpr);
     result->addChild(rexpr);
     return result;
@@ -305,28 +305,28 @@ Ref<AstNode> astCreateBinaryOp(LexToken token,
 
 Ref<AstNode> astCreateFnCall(ScriptPosition pos, Ref<AstNode> fnExpr, Ref<AstNode> params)
 {
-	auto result = AstNode::create(AST_FNCALL, pos);
-    
-	result->addChild(fnExpr);
-	result->addChild(params);
-	return result;
+    auto result = AstNode::create(AST_FNCALL, pos);
+
+    result->addChild(fnExpr);
+    result->addChild(params);
+    return result;
 }
 
 /**
  * Creates an array literal AST node.
  * @param pos
- * @return 
+ * @return
  */
 Ref<AstNode> astCreateArray(ScriptPosition pos)
 {
-	return AstNode::create(AST_ARRAY, pos);
+    return AstNode::create(AST_ARRAY, pos);
 }
 
 Ref<AstNode> astCreateArrayAccess(ScriptPosition pos,
-                                  Ref<AstNode> arrayExpr, 
-                                  Ref<AstNode> indexExpr)
-{    
-	auto result = AstNode::create(AST_ARRAY_ACCESS, pos);
+    Ref<AstNode> arrayExpr,
+    Ref<AstNode> indexExpr)
+{
+    auto result = AstNode::create(AST_ARRAY_ACCESS, pos);
 
     result->addChild(arrayExpr);
     result->addChild(indexExpr);
@@ -335,11 +335,11 @@ Ref<AstNode> astCreateArrayAccess(ScriptPosition pos,
 }
 
 Ref<AstNode> astCreateMemberAccess(ScriptPosition pos,
-                                  Ref<AstNode> objExpr, 
-                                  Ref<AstNode> identifier)
-{    
-	auto result = AstNode::create(AST_MEMBER_ACCESS, pos);
-    
+    Ref<AstNode> objExpr,
+    Ref<AstNode> identifier)
+{
+    auto result = AstNode::create(AST_MEMBER_ACCESS, pos);
+
     result->addChild(objExpr);
     result->addChild(identifier);
 
@@ -348,43 +348,43 @@ Ref<AstNode> astCreateMemberAccess(ScriptPosition pos,
 
 Ref<AstNode> astCreateActor(ScriptPosition pos, const std::string& name)
 {
-	return AstNode::create(AST_ACTOR, pos, name);
+    return AstNode::create(AST_ACTOR, pos, name);
 }
 
 Ref<AstNode> astCreateInputMsg(ScriptPosition pos, const std::string& name)
 {
-	return AstNode::create(AST_INPUT, pos, name);
+    return AstNode::create(AST_INPUT, pos, name);
 }
 
 Ref<AstNode> astCreateOutputMsg(ScriptPosition pos, const std::string& name)
 {
-	return AstNode::create(AST_OUTPUT, pos, name);
+    return AstNode::create(AST_OUTPUT, pos, name);
 }
 
 /**
  * Creates an 'AstLiteral' object from a source token.
  * @param token
- * @return 
+ * @return
  */
 Ref<AstNode> astCreateLiteral(LexToken token)
 {
-	string	value;
-	auto	pos = token.getPosition();
+    string	value;
+    auto	pos = token.getPosition();
 
-	if (token.type() == LEX_STR)
-		value = token.strValue();
-	else
-		value = token.text();
+    if (token.type() == LEX_STR)
+        value = token.strValue();
+    else
+        value = token.text();
 
     switch (token.type())
     {
-	case LEX_STR:	return AstNode::create(AST_STRING, pos, "", value);
+    case LEX_STR:	return AstNode::create(AST_STRING, pos, "", value);
     case LEX_INT:	return AstNode::create(AST_INTEGER, pos, "", value);
-	case LEX_FLOAT:	return AstNode::create(AST_FLOAT, pos, "", value);
-        
+    case LEX_FLOAT:	return AstNode::create(AST_FLOAT, pos, "", value);
+
     default:
         assert(!"Invalid token for a literal");
-		return Ref<AstNode>();
+        return Ref<AstNode>();
     }
 }
 
@@ -396,8 +396,8 @@ Ref<AstNode> astCreateLiteral(LexToken token)
 /// <returns></returns>
 Ref<AstNode> astCreateBool(ScriptPosition pos, bool value)
 {
-	const char* strValue = value ? "1" : "0";
-	return AstNode::create ( AST_BOOL, pos, "", strValue);
+    const char* strValue = value ? "1" : "0";
+    return AstNode::create(AST_BOOL, pos, "", strValue);
 }
 
 //TODO: Which will be the role of this function after the refactor?
@@ -422,27 +422,27 @@ Ref<AstNode> astCreateBool(ScriptPosition pos, bool value)
 /// <param name="code"></param>
 /// <returns></returns>
 Ref<AstNode> astCreateUnnamedInput(ScriptPosition pos,
-	Ref<AstNode> outputPath,
-	Ref<AstNode> params,
-	Ref<AstNode> code)
+    Ref<AstNode> outputPath,
+    Ref<AstNode> params,
+    Ref<AstNode> code)
 {
-	auto result = AstNode::create(AST_UNNAMED_INPUT, pos);
+    auto result = AstNode::create(AST_UNNAMED_INPUT, pos);
 
-	result->addChild(outputPath);
-	result->addChild(params);
-	result->addChild(code);
+    result->addChild(outputPath);
+    result->addChild(params);
+    result->addChild(code);
 
-	return result;
+    return result;
 }
 
 static void astGatherTypes(Ref<AstNode> root, set<AstNode*>& types)
 {
-	types.insert(root->getDataType());
-	for (auto child : root->children())
-	{
-		if (child.notNull())
-			astGatherTypes(child, types);
-	}
+    types.insert(root->getDataType());
+    for (auto child : root->children())
+    {
+        if (child.notNull())
+            astGatherTypes(child, types);
+    }
 }
 
 /// <summary>
@@ -453,27 +453,27 @@ static void astGatherTypes(Ref<AstNode> root, set<AstNode*>& types)
 /// <returns></returns>
 std::vector<AstNode*> astGatherTypes(Ref<AstNode> root)
 {
-	set<AstNode*>	types;
+    set<AstNode*>	types;
 
-	astGatherTypes(root, types);
+    astGatherTypes(root, types);
 
-	vector<AstNode*> typesV(types.begin(), types.end());
+    vector<AstNode*> typesV(types.begin(), types.end());
 
-	return dependencySort<AstNode*>(typesV, [](AstNode* node) {
-		set<AstNode*>	types;
+    return dependencySort<AstNode*>(typesV, [](AstNode* node) {
+        set<AstNode*>	types;
 
-		for (auto child : node->children())
-		{
-			if (child.notNull())
-			{
-				auto type = child->getDataType();
-				if (!astIsVoidType(type))
-					types.insert(type);
-			}
-		}
+        for (auto child : node->children())
+        {
+            if (child.notNull())
+            {
+                auto type = child->getDataType();
+                if (!astIsVoidType(type))
+                    types.insert(type);
+            }
+        }
 
-		return types;
-	});
+        return types;
+    });
 }
 
 
@@ -486,55 +486,55 @@ std::string astTypeToString(AstNodeTypes type)
 {
     typedef map<AstNodeTypes, string>   TypesMap;
     static TypesMap types;
-    
+
     if (types.empty())
     {
-		types[AST_MODULE] = "AST_MODULE";
-		types[AST_SCRIPT] = "AST_SCRIPT";
-		types[AST_TYPEDEF] = "AST_TYPEDEF";
-		types[AST_LIST] = "AST_LIST";
-		types[AST_BLOCK] = "AST_BLOCK";
-		types[AST_TUPLE] = "AST_TUPLE";
-		types[AST_DECLARATION] = "AST_DECLARATION";
-		types[AST_TUPLE_DEF] = "AST_TUPLE_DEF";
-		types[AST_TUPLE_ADAPTER] = "AST_TUPLE_ADAPTER";
-		types[AST_IF] = "AST_IF";
-		types[AST_FOR] = "AST_FOR";
-		types[AST_FOR_EACH] = "AST_FOR_EACH";
-		types[AST_RETURN] = "AST_RETURN";
-		types[AST_FUNCTION] = "AST_FUNCTION";
-		types[AST_ASSIGNMENT] = "AST_ASSIGNMENT";
-		types[AST_FNCALL] = "AST_FNCALL";
-		types[AST_INTEGER] = "AST_INTEGER";
-		types[AST_FLOAT] = "AST_FLOAT";
-		types[AST_STRING] = "AST_STRING";
-		types[AST_BOOL] = "AST_BOOL";
-		types[AST_IDENTIFIER] = "AST_IDENTIFIER";
-		types[AST_ARRAY] = "AST_ARRAY";
-		types[AST_ARRAY_ACCESS] = "AST_ARRAY_ACCESS";
-		types[AST_MEMBER_ACCESS] = "AST_MEMBER_ACCESS";
-		types[AST_MEMBER_NAME] = "AST_MEMBER_NAME";
-		types[AST_BINARYOP] = "AST_BINARYOP";
-		types[AST_PREFIXOP] = "AST_PREFIXOP";
-		types[AST_POSTFIXOP] = "AST_POSTFIXOP";
-		types[AST_ACTOR] = "AST_ACTOR";
-		types[AST_DEFAULT_TYPE] = "AST_DEFAULT_TYPE";
-		types[AST_TYPE_NAME] = "AST_TYPE_NAME";
-		types[AST_INPUT] = "AST_INPUT";
-		types[AST_OUTPUT] = "AST_OUTPUT";
-		types[AST_UNNAMED_INPUT] = "AST_UNNAMED_INPUT";
-		types[AST_IMPORT] = "AST_IMPORT";
-		//types[AST_TYPES_COUNT] = "AST_TYPES_COUNT";
+        types[AST_MODULE] = "AST_MODULE";
+        types[AST_SCRIPT] = "AST_SCRIPT";
+        types[AST_TYPEDEF] = "AST_TYPEDEF";
+        types[AST_LIST] = "AST_LIST";
+        types[AST_BLOCK] = "AST_BLOCK";
+        types[AST_TUPLE] = "AST_TUPLE";
+        types[AST_DECLARATION] = "AST_DECLARATION";
+        types[AST_TUPLE_DEF] = "AST_TUPLE_DEF";
+        types[AST_TUPLE_ADAPTER] = "AST_TUPLE_ADAPTER";
+        types[AST_IF] = "AST_IF";
+        types[AST_FOR] = "AST_FOR";
+        types[AST_FOR_EACH] = "AST_FOR_EACH";
+        types[AST_RETURN] = "AST_RETURN";
+        types[AST_FUNCTION] = "AST_FUNCTION";
+        types[AST_ASSIGNMENT] = "AST_ASSIGNMENT";
+        types[AST_FNCALL] = "AST_FNCALL";
+        types[AST_INTEGER] = "AST_INTEGER";
+        types[AST_FLOAT] = "AST_FLOAT";
+        types[AST_STRING] = "AST_STRING";
+        types[AST_BOOL] = "AST_BOOL";
+        types[AST_IDENTIFIER] = "AST_IDENTIFIER";
+        types[AST_ARRAY] = "AST_ARRAY";
+        types[AST_ARRAY_ACCESS] = "AST_ARRAY_ACCESS";
+        types[AST_MEMBER_ACCESS] = "AST_MEMBER_ACCESS";
+        types[AST_MEMBER_NAME] = "AST_MEMBER_NAME";
+        types[AST_BINARYOP] = "AST_BINARYOP";
+        types[AST_PREFIXOP] = "AST_PREFIXOP";
+        types[AST_POSTFIXOP] = "AST_POSTFIXOP";
+        types[AST_ACTOR] = "AST_ACTOR";
+        types[AST_DEFAULT_TYPE] = "AST_DEFAULT_TYPE";
+        types[AST_TYPE_NAME] = "AST_TYPE_NAME";
+        types[AST_INPUT] = "AST_INPUT";
+        types[AST_OUTPUT] = "AST_OUTPUT";
+        types[AST_UNNAMED_INPUT] = "AST_UNNAMED_INPUT";
+        types[AST_IMPORT] = "AST_IMPORT";
+        //types[AST_TYPES_COUNT] = "AST_TYPES_COUNT";
 
-		assert(types.size() == AST_TYPES_COUNT);
+        assert(types.size() == AST_TYPES_COUNT);
     }
-    
+
     TypesMap::const_iterator it = types.find(type);
-    
-	if (it != types.end())
-		return it->second;
-	else
-		return "BAD_AST_TYPE";
+
+    if (it != types.end())
+        return it->second;
+    else
+        return "BAD_AST_TYPE";
 }
 
 /// <summary>
@@ -544,113 +544,113 @@ std::string astTypeToString(AstNodeTypes type)
 /// <returns></returns>
 AstNodeTypes astTypeFromString(const std::string& str)
 {
-	typedef map<string, AstNodeTypes>   TypesMap;
-	static TypesMap types;
+    typedef map<string, AstNodeTypes>   TypesMap;
+    static TypesMap types;
 
-	if (types.empty())
-	{
-		types["AST_MODULE"] = AST_MODULE;
-		types["AST_SCRIPT"] = AST_SCRIPT;
-		types["AST_TYPEDEF"] = AST_TYPEDEF;
-		types["AST_LIST"] = AST_LIST;
-		types["AST_BLOCK"] = AST_BLOCK;
-		types["AST_TUPLE"] = AST_TUPLE;
-		types["AST_DECLARATION"] = AST_DECLARATION;
-		types["AST_TUPLE_DEF"] = AST_TUPLE_DEF;
-		types["AST_TUPLE_ADAPTER"] = AST_TUPLE_ADAPTER;
-		types["AST_IF"] = AST_IF;
-		types["AST_FOR"] = AST_FOR;
-		types["AST_FOR_EACH"] = AST_FOR_EACH;
-		types["AST_RETURN"] = AST_RETURN;
-		types["AST_FUNCTION"] = AST_FUNCTION;
-		types["AST_ASSIGNMENT"] = AST_ASSIGNMENT;
-		types["AST_FNCALL"] = AST_FNCALL;
-		types["AST_INTEGER"] = AST_INTEGER;
-		types["AST_FLOAT"] = AST_FLOAT;
-		types["AST_STRING"] = AST_STRING;
-		types["AST_BOOL"] = AST_BOOL;
-		types["AST_IDENTIFIER"] = AST_IDENTIFIER;
-		types["AST_ARRAY"] = AST_ARRAY;
-		types["AST_ARRAY_ACCESS"] = AST_ARRAY_ACCESS;
-		types["AST_MEMBER_ACCESS"] = AST_MEMBER_ACCESS;
-		types["AST_MEMBER_NAME"] = AST_MEMBER_NAME;
-		types["AST_BINARYOP"] = AST_BINARYOP;
-		types["AST_PREFIXOP"] = AST_PREFIXOP;
-		types["AST_POSTFIXOP"] = AST_POSTFIXOP;
-		types["AST_ACTOR"] = AST_ACTOR;
-		types["AST_DEFAULT_TYPE"] = AST_DEFAULT_TYPE;
-		types["AST_TYPE_NAME"] = AST_TYPE_NAME;
-		types["AST_INPUT"] = AST_INPUT;
-		types["AST_OUTPUT"] = AST_OUTPUT;
-		types["AST_UNNAMED_INPUT"] = AST_UNNAMED_INPUT;
-		types["AST_IMPORT"] = AST_IMPORT;
-		//types[AST_TYPES_COUNT"] = AST_TYPES_COUNT";
+    if (types.empty())
+    {
+        types["AST_MODULE"] = AST_MODULE;
+        types["AST_SCRIPT"] = AST_SCRIPT;
+        types["AST_TYPEDEF"] = AST_TYPEDEF;
+        types["AST_LIST"] = AST_LIST;
+        types["AST_BLOCK"] = AST_BLOCK;
+        types["AST_TUPLE"] = AST_TUPLE;
+        types["AST_DECLARATION"] = AST_DECLARATION;
+        types["AST_TUPLE_DEF"] = AST_TUPLE_DEF;
+        types["AST_TUPLE_ADAPTER"] = AST_TUPLE_ADAPTER;
+        types["AST_IF"] = AST_IF;
+        types["AST_FOR"] = AST_FOR;
+        types["AST_FOR_EACH"] = AST_FOR_EACH;
+        types["AST_RETURN"] = AST_RETURN;
+        types["AST_FUNCTION"] = AST_FUNCTION;
+        types["AST_ASSIGNMENT"] = AST_ASSIGNMENT;
+        types["AST_FNCALL"] = AST_FNCALL;
+        types["AST_INTEGER"] = AST_INTEGER;
+        types["AST_FLOAT"] = AST_FLOAT;
+        types["AST_STRING"] = AST_STRING;
+        types["AST_BOOL"] = AST_BOOL;
+        types["AST_IDENTIFIER"] = AST_IDENTIFIER;
+        types["AST_ARRAY"] = AST_ARRAY;
+        types["AST_ARRAY_ACCESS"] = AST_ARRAY_ACCESS;
+        types["AST_MEMBER_ACCESS"] = AST_MEMBER_ACCESS;
+        types["AST_MEMBER_NAME"] = AST_MEMBER_NAME;
+        types["AST_BINARYOP"] = AST_BINARYOP;
+        types["AST_PREFIXOP"] = AST_PREFIXOP;
+        types["AST_POSTFIXOP"] = AST_POSTFIXOP;
+        types["AST_ACTOR"] = AST_ACTOR;
+        types["AST_DEFAULT_TYPE"] = AST_DEFAULT_TYPE;
+        types["AST_TYPE_NAME"] = AST_TYPE_NAME;
+        types["AST_INPUT"] = AST_INPUT;
+        types["AST_OUTPUT"] = AST_OUTPUT;
+        types["AST_UNNAMED_INPUT"] = AST_UNNAMED_INPUT;
+        types["AST_IMPORT"] = AST_IMPORT;
+        //types[AST_TYPES_COUNT"] = AST_TYPES_COUNT";
 
-		assert(types.size() == AST_TYPES_COUNT);
-	}
+        assert(types.size() == AST_TYPES_COUNT);
+    }
 
-	auto it = types.find(str);
+    auto it = types.find(str);
 
-	if (it != types.end())
-		return it->second;
-	else
-	{
-		string message = "Unknown AST type string: " + str;
-		throw exception(message.c_str());
-	}
+    if (it != types.end())
+        return it->second;
+    else
+    {
+        string message = "Unknown AST type string: " + str;
+        throw exception(message.c_str());
+    }
 }
 
 /// <summary>Gets void data type</summary>
 AstNode* astGetVoid()
 {
-	static auto node = astCreateTupleDef(ScriptPosition(), "");
-	return node.getPointer();
+    static auto node = astCreateTupleDef(ScriptPosition(), "");
+    return node.getPointer();
 }
 
 // Gets bool default type.
 AstNode* astGetBool()
 {
-	static auto node = AstNode::create(AST_DEFAULT_TYPE, ScriptPosition(), "bool");
-	return node.getPointer();
+    static auto node = AstNode::create(AST_DEFAULT_TYPE, ScriptPosition(), "bool");
+    return node.getPointer();
 }
 
 //Gets int default type.
 AstNode* astGetInt()
 {
-	static auto node = AstNode::create(AST_DEFAULT_TYPE, ScriptPosition(), "int");
-	return node.getPointer();
+    static auto node = AstNode::create(AST_DEFAULT_TYPE, ScriptPosition(), "int");
+    return node.getPointer();
 }
 
 //String representation of a tuple type, for debug purposes
 static string astTupleTypeToString(AstNode* node)
 {
-	ostringstream	output;
+    ostringstream	output;
 
-	output << "(";
-	const int count = node->childCount();
+    output << "(";
+    const int count = node->childCount();
 
-	for (int i = 0; i < count; ++i)
-	{
-		if (i > 0)
-			output << ",";
+    for (int i = 0; i < count; ++i)
+    {
+        if (i > 0)
+            output << ",";
 
-		output << astTypeToString(node->child(i)->getDataType());
-	}
-	output << ")";
+        output << astTypeToString(node->child(i)->getDataType());
+    }
+    output << ")";
 
-	return output.str();
+    return output.str();
 
 }
 
 //String representation of a function type, for debug purposes
 static string astFunctionTypeToString(AstNode* node)
 {
-	string result = "function" + astTypeToString(astGetParameters(node));
+    string result = "function" + astTypeToString(astGetParameters(node));
 
-	if (node->childExists(1))
-		result += ":" + astTypeToString(astGetReturnType(node));
+    if (node->childExists(1))
+        result += ":" + astTypeToString(astGetReturnType(node));
 
-	return result;
+    return result;
 }
 
 /// <summary>
@@ -660,30 +660,30 @@ static string astFunctionTypeToString(AstNode* node)
 /// <returns></returns>
 std::string astTypeToString(AstNode* node)
 {
-	switch (node->getType())
-	{
-	case AST_DEFAULT_TYPE:
-		return node->getName();
+    switch (node->getType())
+    {
+    case AST_DEFAULT_TYPE:
+        return node->getName();
 
-	case AST_TUPLE:
-	case AST_TUPLE_DEF:
-		return astTupleTypeToString(node);
+    case AST_TUPLE:
+    case AST_TUPLE_DEF:
+        return astTupleTypeToString(node);
 
-	case AST_FUNCTION:
-		return astFunctionTypeToString(node);
+    case AST_FUNCTION:
+        return astFunctionTypeToString(node);
 
-	case AST_ACTOR:
-		return string("actor '") + node->getName() + "'";
+    case AST_ACTOR:
+        return string("actor '") + node->getName() + "'";
 
-	case AST_INPUT:
-		return "input" + astTypeToString(astGetParameters(node));
+    case AST_INPUT:
+        return "input" + astTypeToString(astGetParameters(node));
 
-	case AST_OUTPUT:
-		return "output" + astTypeToString(astGetParameters(node));
+    case AST_OUTPUT:
+        return "output" + astTypeToString(astGetParameters(node));
 
-	default:
-		return "";
-	}
+    default:
+        return "";
+    }
 }
 
 /// <summary>
@@ -693,21 +693,21 @@ std::string astTypeToString(AstNode* node)
 /// <returns>Parameters data type (should be a tuple) or void type if the node has no parameters</returns>
 AstNode* astGetParameters(AstNode* node)
 {
-	switch (node->getType())
-	{
-	case AST_FUNCTION:
-	case AST_ACTOR:
-	case AST_INPUT:
-	case AST_OUTPUT:
-		return node->child(0)->getDataType();
+    switch (node->getType())
+    {
+    case AST_FUNCTION:
+    case AST_ACTOR:
+    case AST_INPUT:
+    case AST_OUTPUT:
+        return node->child(0)->getDataType();
 
-	case AST_TUPLE:
-	case AST_TUPLE_DEF:
-		return node;
+    case AST_TUPLE:
+    case AST_TUPLE_DEF:
+        return node;
 
-	default:
-		return astGetVoid();
-	}
+    default:
+        return astGetVoid();
+    }
 }
 
 /// <summary>
@@ -717,14 +717,14 @@ AstNode* astGetParameters(AstNode* node)
 /// <returns></returns>
 AstNode* astGetReturnType(AstNode* node)
 {
-	switch (node->getType())
-	{
-	case AST_FUNCTION:
-		return node->child(1)->getDataType();
+    switch (node->getType())
+    {
+    case AST_FUNCTION:
+        return node->child(1)->getDataType();
 
-	default:
-		return astGetVoid();
-	}
+    default:
+        return astGetVoid();
+    }
 }
 
 /// <summary>
@@ -734,9 +734,9 @@ AstNode* astGetReturnType(AstNode* node)
 /// <returns></returns>
 bool astIsTupleType(const AstNode* node)
 {
-	auto t = node->getType();
+    auto t = node->getType();
 
-	return t == AST_TUPLE || t == AST_TUPLE_DEF;
+    return t == AST_TUPLE || t == AST_TUPLE_DEF;
 }
 
 /// <summary>
@@ -746,27 +746,27 @@ bool astIsTupleType(const AstNode* node)
 /// <returns></returns>
 bool astCanBeCalled(const AstNode* node)
 {
-	auto t = node->getType();
+    auto t = node->getType();
 
-	return t == AST_FUNCTION || t == AST_INPUT || t == AST_OUTPUT;
+    return t == AST_FUNCTION || t == AST_INPUT || t == AST_OUTPUT;
 }
 
 /// <summary>Checks if a type is boolean</summary>
 bool astIsBoolType(const AstNode* type)
 {
-	return type->getType() == AST_DEFAULT_TYPE && type->getName() == "bool";
+    return type->getType() == AST_DEFAULT_TYPE && type->getName() == "bool";
 }
 
 /// <summary>Checks if a type is integer</summary>
 bool astIsIntType(const AstNode* type)
 {
-	return type->getType() == AST_DEFAULT_TYPE && type->getName() == "int";
+    return type->getType() == AST_DEFAULT_TYPE && type->getName() == "int";
 }
 
 /// <summary>Checks if a type is boolean</summary>
 bool astIsVoidType(const AstNode* type)
 {
-	return astIsTupleType(type) && type->childCount() == 0;
+    return astIsTupleType(type) && type->childCount() == 0;
 }
 
 /// <summary>
@@ -777,11 +777,11 @@ bool astIsVoidType(const AstNode* type)
 /// <returns>Child index or -1 if does not find it.</returns>
 int astFindMemberByName(AstNode* node, const std::string& name)
 {
-	for (size_t i = 0; i < node->childCount(); ++i)
-	{
-		if (node->child(i)->getName() == name)
-			return i;
-	}
+    for (size_t i = 0; i < node->childCount(); ++i)
+    {
+        if (node->child(i)->getName() == name)
+            return i;
+    }
 
-	return -1;
+    return -1;
 }

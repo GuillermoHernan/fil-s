@@ -12,19 +12,19 @@
 class SymbolScope : public RefCountObj
 {
 public:
-	static Ref<SymbolScope> create(Ref<SymbolScope> parent);
+    static Ref<SymbolScope> create(Ref<SymbolScope> parent);
 
-	void add(const std::string& name, Ref<AstNode> node);
+    void add(const std::string& name, Ref<AstNode> node);
 
-	bool			contains(const std::string& name, bool checkParents=true)const;
-	Ref<AstNode>	get(const std::string& name, bool solveAlias = false)const;
+    bool			contains(const std::string& name, bool checkParents = true)const;
+    Ref<AstNode>	get(const std::string& name, bool solveAlias = false)const;
 
 protected:
-	SymbolScope(Ref<SymbolScope> parent);
-	~SymbolScope();
+    SymbolScope(Ref<SymbolScope> parent);
+    ~SymbolScope();
 
 private:
-	std::map<std::string, Ref<AstNode>>		m_symbols;
-	Ref<SymbolScope>						m_parent;
+    std::map<std::string, Ref<AstNode>>		m_symbols;
+    Ref<SymbolScope>						m_parent;
 };
 

@@ -15,26 +15,26 @@ using namespace std;
 /// <returns></returns>    
 bool isAssignment(LexToken token)
 {
-	static set<string> operators;
+    static set<string> operators;
 
-	if (operators.empty())
-	{
-		operators.insert("=");
-		operators.insert(">>>=");
-		operators.insert(">>=");
-		operators.insert("<<=");
-		operators.insert("**=");
-		operators.insert("+=");
-		operators.insert("-=");
-		operators.insert("*=");
-		operators.insert("/=");
-		operators.insert("%=");
-		operators.insert("&=");
-		operators.insert("|=");
-		operators.insert("^=");
-	}
+    if (operators.empty())
+    {
+        operators.insert("=");
+        operators.insert(">>>=");
+        operators.insert(">>=");
+        operators.insert("<<=");
+        operators.insert("**=");
+        operators.insert("+=");
+        operators.insert("-=");
+        operators.insert("*=");
+        operators.insert("/=");
+        operators.insert("%=");
+        operators.insert("&=");
+        operators.insert("|=");
+        operators.insert("^=");
+    }
 
-	return (token.type() == LEX_OPERATOR && operators.count(token.text()) > 0);
+    return (token.type() == LEX_OPERATOR && operators.count(token.text()) > 0);
 }
 
 /// <summary>
@@ -44,33 +44,33 @@ bool isAssignment(LexToken token)
 /// <returns></returns>
 bool isBinaryOp(LexToken token)
 {
-	static set<string> operators;
+    static set<string> operators;
 
-	if (operators.empty())
-	{
-		operators.insert(">>>");
-		operators.insert(">>");
-		operators.insert("<<");
-		operators.insert("**");
-		operators.insert("+");
-		operators.insert("-");
-		operators.insert("*");
-		operators.insert("/");
-		operators.insert("%");
-		operators.insert("&");
-		operators.insert("|");
-		operators.insert("&&");
-		operators.insert("||");
-		operators.insert("^");
-		operators.insert("<");
-		operators.insert(">");
-		operators.insert(">=");
-		operators.insert("<=");
-		operators.insert("==");
-		operators.insert("!=");
-	}
+    if (operators.empty())
+    {
+        operators.insert(">>>");
+        operators.insert(">>");
+        operators.insert("<<");
+        operators.insert("**");
+        operators.insert("+");
+        operators.insert("-");
+        operators.insert("*");
+        operators.insert("/");
+        operators.insert("%");
+        operators.insert("&");
+        operators.insert("|");
+        operators.insert("&&");
+        operators.insert("||");
+        operators.insert("^");
+        operators.insert("<");
+        operators.insert(">");
+        operators.insert(">=");
+        operators.insert("<=");
+        operators.insert("==");
+        operators.insert("!=");
+    }
 
-	return (token.type() == LEX_OPERATOR && operators.count(token.text()) > 0);
+    return (token.type() == LEX_OPERATOR && operators.count(token.text()) > 0);
 }
 
 /// <summary>
@@ -80,19 +80,19 @@ bool isBinaryOp(LexToken token)
 /// <returns></returns>
 bool isPrefixOp(LexToken token)
 {
-	static set<string> operators;
+    static set<string> operators;
 
-	if (operators.empty())
-	{
-		operators.insert("-");
-		operators.insert("+");
-		operators.insert("--");
-		operators.insert("++");
-		operators.insert("!");
-		operators.insert("~");
-	}
+    if (operators.empty())
+    {
+        operators.insert("-");
+        operators.insert("+");
+        operators.insert("--");
+        operators.insert("++");
+        operators.insert("!");
+        operators.insert("~");
+    }
 
-	return (token.type() == LEX_OPERATOR && operators.count(token.text()) > 0);
+    return (token.type() == LEX_OPERATOR && operators.count(token.text()) > 0);
 }
 
 /// <summary>
@@ -102,15 +102,15 @@ bool isPrefixOp(LexToken token)
 /// <returns></returns>
 bool isPostfixOp(LexToken token)
 {
-	static set<string> operators;
+    static set<string> operators;
 
-	if (operators.empty())
-	{
-		operators.insert("--");
-		operators.insert("++");
-	}
+    if (operators.empty())
+    {
+        operators.insert("--");
+        operators.insert("++");
+    }
 
-	return (token.type() == LEX_OPERATOR && operators.count(token.text()) > 0);
+    return (token.type() == LEX_OPERATOR && operators.count(token.text()) > 0);
 }
 
 
@@ -126,37 +126,37 @@ bool isPostfixOp(LexToken token)
 /// not use a separator token.</param>
 /// <returns></returns>
 ExprResult parseList(LexToken token, ExprResult::ParseFunction itemParseFn,
-	const char* beginTok, const char* endTok, const char* separator)
+    const char* beginTok, const char* endTok, const char* separator)
 {
-	auto		result = AstNode::create(AST_LIST, token.getPosition(), "");
-	ExprResult	r = ExprResult::ok(token, result);
+    auto		result = AstNode::create(AST_LIST, token.getPosition(), "");
+    ExprResult	r = ExprResult::ok(token, result);
 
-	if (*beginTok)
-		r = ExprResult::require(beginTok, token);
-	else if (token.text() != endTok)
-	{
-		r = itemParseFn(token);
-		result->addChild(r.result);
-	}
-	else
-		return r;
+    if (*beginTok)
+        r = ExprResult::require(beginTok, token);
+    else if (token.text() != endTok)
+    {
+        r = itemParseFn(token);
+        result->addChild(r.result);
+    }
+    else
+        return r;
 
-	while (r.ok() && r.nextText() != endTok)
-	{
-		if (*separator && result->childCount() > 0)
-			r = r.requireOp(separator);
+    while (r.ok() && r.nextText() != endTok)
+    {
+        if (*separator && result->childCount() > 0)
+            r = r.requireOp(separator);
 
-		r = r.then(itemParseFn);
+        r = r.then(itemParseFn);
 
-		result->addChild(r.result);
-	}
+        result->addChild(r.result);
+    }
 
-	r = r.requireOp(endTok);
+    r = r.requireOp(endTok);
 
-	if (r.ok())
-		r.result = result;
+    if (r.ok())
+        r.result = result;
 
-	return r;
+    return r;
 }
 
 /// <summary>
@@ -166,9 +166,9 @@ ExprResult parseList(LexToken token, ExprResult::ParseFunction itemParseFn,
 /// <returns></returns>
 ExprResult parseFile(SourceFilePtr fileRef)
 {
-	std::string content = readTextFile(fileRef->path());
+    std::string content = readTextFile(fileRef->path());
 
-	return parseScript(content.c_str(), fileRef);
+    return parseScript(content.c_str(), fileRef);
 }
 
 
@@ -187,41 +187,41 @@ ExprResult parseFile(SourceFilePtr fileRef)
 /// <returns></returns>
 ExprResult parseScript(const char* script, SourceFilePtr fileRef)
 {
-	LexToken tok(script, fileRef);
+    LexToken tok(script, fileRef);
 
-	return parseScript(tok.next());
+    return parseScript(tok.next());
 }
 
 
 /**
  * Parses an script, which is a list of statements
  * @param token
- * @return 
+ * @return
  */
 ExprResult parseScript(LexToken token)
 {
-	//TODO: Set script name
+    //TODO: Set script name
     auto		script = astCreateScript(token.getPosition(), "");
 
-	if (token.eof())
-		return ExprResult::ok(token, script);
+    if (token.eof())
+        return ExprResult::ok(token, script);
 
-	ExprResult	r = parseTopLevelItem(token);
+    ExprResult	r = parseTopLevelItem(token);
 
-	script->addChild(r.result);
+    script->addChild(r.result);
 
     while (r.ok() && r.nextType() != LEX_EOF)
     {
-		r = parseStatementSeparator(r);
-		if (r.ok() && r.nextType() != LEX_EOF)
-		{
-			r = r.then(parseTopLevelItem);
-			script->addChild(r.result);
-		}
+        r = parseStatementSeparator(r);
+        if (r.ok() && r.nextType() != LEX_EOF)
+        {
+            r = r.then(parseTopLevelItem);
+            script->addChild(r.result);
+        }
     }
 
-	if (r.ok())
-		r.result = script;
+    if (r.ok())
+        r.result = script;
 
     return r;
 }
@@ -233,10 +233,10 @@ ExprResult parseScript(LexToken token)
 /// <returns></returns>
 ExprResult parseTopLevelItem(LexToken token)
 {
-	return parseConst(token)
-		.orElse(parseActorDef)
-		.orElse(parseFunctionDef)
-		.orElse(parseTypedef);
+    return parseConst(token)
+        .orElse(parseActorDef)
+        .orElse(parseFunctionDef)
+        .orElse(parseTypedef);
 }
 
 /// <summary>
@@ -246,19 +246,19 @@ ExprResult parseTopLevelItem(LexToken token)
 /// <returns></returns>
 ExprResult parseTypedef(LexToken token)
 {
-	string		name;
+    string		name;
 
-	ExprResult r = ExprResult::requireReserved("type", token).then(parseIdentifier);
+    ExprResult r = ExprResult::requireReserved("type", token).then(parseIdentifier);
 
-	if (r.ok())
-		name = r.result->getName();
+    if (r.ok())
+        name = r.result->getName();
 
-	r = r.requireId("is").then(parseTypeDescriptor);
+    r = r.requireId("is").then(parseTypeDescriptor);
 
-	if (r.ok())
-		r.result = astCreateTypedef(token.getPosition(), name, r.result);
+    if (r.ok())
+        r.result = astCreateTypedef(token.getPosition(), name, r.result);
 
-	return r.final();
+    return r.final();
 }
 
 
@@ -268,39 +268,39 @@ ExprResult parseTypedef(LexToken token)
  * @return Code block object
  */
 
-/// <summary>Parses a block expression.</summary>
-/// <remarks>
-/// A block expression is a list of expressions delimited by brackets {...},
-/// which yields the value of the last expression on the list.
-/// </remarks>
-/// <param name="token"></param>
-/// <returns></returns>
-ExprResult parseBlock (LexToken token)
+ /// <summary>Parses a block expression.</summary>
+ /// <remarks>
+ /// A block expression is a list of expressions delimited by brackets {...},
+ /// which yields the value of the last expression on the list.
+ /// </remarks>
+ /// <param name="token"></param>
+ /// <returns></returns>
+ExprResult parseBlock(LexToken token)
 {
     Ref<AstNode>    block = astCreateBlock(token);
     ExprResult      r = ExprResult::require("{", token);
-    
+
     while (r.ok() && r.nextText() != "}")
     {
-		r = r.then(parseReturn)
-			.orElse(parseVar)
-			.orElse(parseConst)
-			.orElse(parseTypedef);
+        r = r.then(parseReturn)
+            .orElse(parseVar)
+            .orElse(parseConst)
+            .orElse(parseTypedef);
 
-		if (r.ok())
-		{
-			block->addChild(r.result);
+        if (r.ok())
+        {
+            block->addChild(r.result);
 
-			if (r.nextText() != "}")
-				r = parseStatementSeparator(r);
-		}
+            if (r.nextText() != "}")
+                r = parseStatementSeparator(r);
+        }
     }
-    
+
     r = r.requireOp("}");
-    
+
     if (r.ok())
         r.result = block;
-    
+
     return r.final();
 }
 
@@ -310,34 +310,34 @@ ExprResult parseBlock (LexToken token)
 /// </summary>
 /// <param name="token"></param>
 /// <returns></returns>
-ExprResult parseDeclaration (LexToken token)
+ExprResult parseDeclaration(LexToken token)
 {
-	Ref<AstNode>	typeDescriptor;
-	Ref<AstNode>	initExp;
+    Ref<AstNode>	typeDescriptor;
+    Ref<AstNode>	initExp;
 
-	auto r = ExprResult::require(LEX_ID, token);
-	if (!r.ok())
-		return r.final();
+    auto r = ExprResult::require(LEX_ID, token);
+    if (!r.ok())
+        return r.final();
 
-	//Type descriptor is optional.
-	if (r.nextText() == ":")
-	{
-		r = r.then(parseTypeSpecifier);
-		typeDescriptor = r.result;
-	}
+    //Type descriptor is optional.
+    if (r.nextText() == ":")
+    {
+        r = r.then(parseTypeSpecifier);
+        typeDescriptor = r.result;
+    }
 
-	//Initialization is also optional.
-	if (r.nextText() == "=")
-	{
-		r = r.skip().then(parseExpression);
+    //Initialization is also optional.
+    if (r.nextText() == "=")
+    {
+        r = r.skip().then(parseExpression);
 
-		initExp = r.result;
-	}
+        initExp = r.result;
+    }
 
-	if (r.ok())
-		r.result = astCreateDeclaration(token, typeDescriptor, initExp);
+    if (r.ok())
+        r.result = astCreateDeclaration(token, typeDescriptor, initExp);
 
-	return r;
+    return r;
 }
 
 /// <summary>
@@ -347,7 +347,7 @@ ExprResult parseDeclaration (LexToken token)
 /// <returns></returns>
 ExprResult parseAnyDeclaration(LexToken token)
 {
-	return parseConst(token).orElse(parseVar).orElse(parseDeclaration);
+    return parseConst(token).orElse(parseVar).orElse(parseDeclaration);
 }
 
 /// <summary>
@@ -357,12 +357,12 @@ ExprResult parseAnyDeclaration(LexToken token)
 /// <returns></returns>
 ExprResult parseConst(LexToken token)
 {
-	auto r = ExprResult::requireReserved("const", token).then(parseDeclaration);
+    auto r = ExprResult::requireReserved("const", token).then(parseDeclaration);
 
-	if (r.ok())
-		r.result->addFlag(ASTF_CONST);
+    if (r.ok())
+        r.result->addFlag(ASTF_CONST);
 
-	return r.final();
+    return r.final();
 }
 
 /// <summary>
@@ -372,12 +372,12 @@ ExprResult parseConst(LexToken token)
 /// <returns></returns>
 ExprResult parseVar(LexToken token)
 {
-	auto r = ExprResult::requireReserved("var", token).then(parseDeclaration);
+    auto r = ExprResult::requireReserved("var", token).then(parseDeclaration);
 
-	if (r.ok())
-		r.result->addFlag(ASTF_VAR);
+    if (r.ok())
+        r.result->addFlag(ASTF_VAR);
 
-	return r.final();
+    return r.final();
 }
 
 /// <summary>
@@ -387,7 +387,7 @@ ExprResult parseVar(LexToken token)
 /// <returns></returns>
 ExprResult parseTypeSpecifier(LexToken token)
 {
-	return ExprResult::require(":", token).then(parseTypeDescriptor);
+    return ExprResult::require(":", token).then(parseTypeDescriptor);
 }
 
 /// <summary>
@@ -398,12 +398,12 @@ ExprResult parseTypeSpecifier(LexToken token)
 /// <returns></returns>
 ExprResult parseTypeDescriptor(LexToken token)
 {
-	ExprResult r = parseIdentifier(token).orElse(parseTupleDef);
+    ExprResult r = parseIdentifier(token).orElse(parseTupleDef);
 
-	if (r.ok() && r.result->getType() == AST_IDENTIFIER)
-		r.result->changeType(AST_TYPE_NAME);
+    if (r.ok() && r.result->getType() == AST_IDENTIFIER)
+        r.result->changeType(AST_TYPE_NAME);
 
-	return r;
+    return r;
 }
 
 /// <summary>
@@ -413,12 +413,12 @@ ExprResult parseTypeDescriptor(LexToken token)
 /// <returns></returns>
 ExprResult parseTupleDef(LexToken token)
 {
-	ExprResult r = parseList(token, parseTupleDefItem, "(", ")", ",");
+    ExprResult r = parseList(token, parseTupleDefItem, "(", ")", ",");
 
-	if (r.ok())
-		r.result->changeType(AST_TUPLE_DEF);
+    if (r.ok())
+        r.result->changeType(AST_TUPLE_DEF);
 
-	return r.final();
+    return r.final();
 }
 
 /// <summary>
@@ -428,24 +428,24 @@ ExprResult parseTupleDef(LexToken token)
 /// <returns></returns>
 ExprResult parseTupleDefItem(LexToken token)
 {
-	if (token.type() == LEX_ID)
-	{
-		LexToken next = token.next();
+    if (token.type() == LEX_ID)
+    {
+        LexToken next = token.next();
 
-		if (next.type() == LEX_OPERATOR && (next.text() == ":" || next.text() == "="))
-			return parseAnyDeclaration(token);
-		else
-		{
-			auto r = parseTypeDescriptor(token);
+        if (next.type() == LEX_OPERATOR && (next.text() == ":" || next.text() == "="))
+            return parseAnyDeclaration(token);
+        else
+        {
+            auto r = parseTypeDescriptor(token);
 
-			if (r.ok())
-				r.result = astCreateDeclaration(r.result->position(), "", r.result, Ref<AstNode>());
+            if (r.ok())
+                r.result = astCreateDeclaration(r.result->position(), "", r.result, Ref<AstNode>());
 
-			return r;
-		}
-	}
-	else
-		return parseAnyDeclaration(token).orElse(parseTypeDescriptor);
+            return r;
+        }
+    }
+    else
+        return parseAnyDeclaration(token).orElse(parseTypeDescriptor);
 }
 
 /// <summary>
@@ -455,31 +455,31 @@ ExprResult parseTupleDefItem(LexToken token)
 /// <returns></returns>
 ExprResult parseIf(LexToken token)
 {
-	auto r = ExprResult::requireReserved("if", token).requireOp("(").then(parseExpression);
+    auto r = ExprResult::requireReserved("if", token).requireOp("(").then(parseExpression);
 
-	auto conditionExpr = r.result;
+    auto conditionExpr = r.result;
 
-	r = r.requireOp(")").then(parseReturn);
+    r = r.requireOp(")").then(parseReturn);
 
-	auto			thenExpr = r.result;
+    auto			thenExpr = r.result;
 
-	//A single semicolon may follow 'then' expression.
-	if (r.ok() && r.nextText() == ";")
-		r = r.skip();
+    //A single semicolon may follow 'then' expression.
+    if (r.ok() && r.nextText() == ";")
+        r = r.skip();
 
-	Ref<AstNode>	elseExpr;
+    Ref<AstNode>	elseExpr;
 
-	//Check for the presence of 'else'
-	if (r.ok() && r.nextText() == "else")
-	{
-		r = r.requireReserved("else").then(parseReturn);
-		elseExpr = r.result;
-	}
+    //Check for the presence of 'else'
+    if (r.ok() && r.nextText() == "else")
+    {
+        r = r.requireReserved("else").then(parseReturn);
+        elseExpr = r.result;
+    }
 
-	if (r.ok())
-		r.result = astCreateIf(token.getPosition(), conditionExpr, thenExpr, elseExpr);
+    if (r.ok())
+        r.result = astCreateIf(token.getPosition(), conditionExpr, thenExpr, elseExpr);
 
-	return r.final();
+    return r.final();
 }
 
 /// <summary>
@@ -489,12 +489,12 @@ ExprResult parseIf(LexToken token)
 /// <returns></returns>
 ExprResult parseSelect(LexToken token)
 {
-	auto r = ExprResult::requireReserved("select", token);
+    auto r = ExprResult::requireReserved("select", token);
 
-	if (r.ok())
-		r = r.getError(ETYPE_NOT_IMPLEMENTED_1, "'select' parsing");
+    if (r.ok())
+        r = r.getError(ETYPE_NOT_IMPLEMENTED_1, "'select' parsing");
 
-	return r.final();
+    return r.final();
 }
 
 
@@ -503,29 +503,29 @@ ExprResult parseSelect(LexToken token)
 /// </summary>
 /// <param name="token"></param>
 /// <returns></returns>
-ExprResult parseReturn (LexToken token)
+ExprResult parseReturn(LexToken token)
 {
-	auto r = ExprResult::requireReserved("return", token);
+    auto r = ExprResult::requireReserved("return", token);
 
-	//If it is not a return, fallback to parse an expression.
-	if (!r.ok())
-		return parseExpression(token);
-	else
-	{
-		if (followsStatementSeparator(r))
-		{
-			r.result = astCreateReturn(token.getPosition(), Ref<AstNode>());
-			return r;
-		}
-		else
-		{
-			r = r.then(parseExpression);
-			if (r.ok())
-				r.result = astCreateReturn(token.getPosition(), r.result);
-		}
-	}
+    //If it is not a return, fallback to parse an expression.
+    if (!r.ok())
+        return parseExpression(token);
+    else
+    {
+        if (followsStatementSeparator(r))
+        {
+            r.result = astCreateReturn(token.getPosition(), Ref<AstNode>());
+            return r;
+        }
+        else
+        {
+            r = r.then(parseExpression);
+            if (r.ok())
+                r.result = astCreateReturn(token.getPosition(), r.result);
+        }
+    }
 
-	return r.final();
+    return r.final();
 }
 
 /// <summary>
@@ -533,13 +533,13 @@ ExprResult parseReturn (LexToken token)
 /// </summary>
 /// <param name="token"></param>
 /// <returns></returns>
-ExprResult parseExpression (LexToken token)
+ExprResult parseExpression(LexToken token)
 {
-    return parseAssignment (token)
-		.orElse(parseBinaryExpr)
-		.orElse(parsePrefixExpr)
-		.orElse(parsePostfixExpr)
-		.orElse(parseTerm);
+    return parseAssignment(token)
+        .orElse(parseBinaryExpr)
+        .orElse(parsePrefixExpr)
+        .orElse(parsePostfixExpr)
+        .orElse(parseTerm);
 }
 
 /// <summary>
@@ -549,8 +549,8 @@ ExprResult parseExpression (LexToken token)
 /// <returns></returns>
 ExprResult parseTerm(LexToken token)
 {
-	return parseConditional(token)
-		.orElse(parseLeftExpr);
+    return parseConditional(token)
+        .orElse(parseLeftExpr);
 }
 
 
@@ -559,19 +559,19 @@ ExprResult parseTerm(LexToken token)
 /// </summary>
 /// <param name="token"></param>
 /// <returns></returns>
-ExprResult parseAssignment (LexToken token)
+ExprResult parseAssignment(LexToken token)
 {
     ExprResult r = parseLeftExpr(token);
 
     auto	lexpr = r.result;
-	auto	opToken = r.nextToken();
+    auto	opToken = r.nextToken();
 
-    r = r.require(isAssignment).then (parseExpression);
-    
-	if (r.ok())
+    r = r.require(isAssignment).then(parseExpression);
+
+    if (r.ok())
         r.result = astCreateAssignment(opToken, lexpr, r.result);
 
-	return r.final();
+    return r.final();
 }
 
 /// <summary>
@@ -579,9 +579,9 @@ ExprResult parseAssignment (LexToken token)
 /// </summary>
 /// <param name="token"></param>
 /// <returns></returns>
-ExprResult parseLeftExpr (LexToken token)
+ExprResult parseLeftExpr(LexToken token)
 {
-	return parsePostfixExpr(token).orElse(parsePrimaryExpr);
+    return parsePostfixExpr(token).orElse(parsePrimaryExpr);
 }
 
 
@@ -592,35 +592,35 @@ ExprResult parseLeftExpr (LexToken token)
 /// <returns></returns>
 ExprResult parseBinaryExpr(LexToken token)
 {
-	ExprResult	r = parseTerm(token);
-	auto		leftExpr = r.result;
-	auto		opToken = r.nextToken();
+    ExprResult	r = parseTerm(token);
+    auto		leftExpr = r.result;
+    auto		opToken = r.nextToken();
 
-	r = r.require(isBinaryOp).then(parseTerm);
-	if (r.ok())
-	{
-		auto result = astCreateBinaryOp(opToken, leftExpr, r.result);
+    r = r.require(isBinaryOp).then(parseTerm);
+    if (r.ok())
+    {
+        auto result = astCreateBinaryOp(opToken, leftExpr, r.result);
 
-		//Parse chained operations.
-		while (r.ok() && r.nextText() == opToken.text())
-		{
-			opToken = r.nextToken();
-			r = r.skip().then(parseTerm);
+        //Parse chained operations.
+        while (r.ok() && r.nextText() == opToken.text())
+        {
+            opToken = r.nextToken();
+            r = r.skip().then(parseTerm);
 
-			if (r.ok())
-				result = astCreateBinaryOp(opToken, result, r.result);
-		}
+            if (r.ok())
+                result = astCreateBinaryOp(opToken, result, r.result);
+        }
 
-		if (r.ok())
-		{
-			if (isBinaryOp(r.nextToken()))
-				r = r.skip().getError(ETYPE_INVALID_EXP_CHAIN);
-			else
-				r.result = result;
-		}
-	}
+        if (r.ok())
+        {
+            if (isBinaryOp(r.nextToken()))
+                r = r.skip().getError(ETYPE_INVALID_EXP_CHAIN);
+            else
+                r.result = result;
+        }
+    }
 
-	return r.final();
+    return r.final();
 }
 
 /// <summary>
@@ -630,12 +630,12 @@ ExprResult parseBinaryExpr(LexToken token)
 /// <returns></returns>
 ExprResult parsePrefixExpr(LexToken token)
 {
-	auto r = ExprResult::require(isPrefixOp, token).noNewLine().then(parseTerm);
+    auto r = ExprResult::require(isPrefixOp, token).noNewLine().then(parseTerm);
 
-	if (r.ok())
-		r.result = astCreatePrefixOp(token, r.result);
+    if (r.ok())
+        r.result = astCreatePrefixOp(token, r.result);
 
-	return r.final();
+    return r.final();
 }
 
 /// <summary>
@@ -643,33 +643,33 @@ ExprResult parsePrefixExpr(LexToken token)
 /// </summary>
 /// <param name="token"></param>
 /// <returns></returns>
-ExprResult parsePostfixExpr (LexToken token)
+ExprResult parsePostfixExpr(LexToken token)
 {
-	ExprResult	r = parsePrimaryExpr(token);
+    ExprResult	r = parsePrimaryExpr(token);
 
-	if (isPostfixOp(r.nextToken()))
-		return r.noNewLine().then(parsePostfixOperator).final();
+    if (isPostfixOp(r.nextToken()))
+        return r.noNewLine().then(parsePostfixOperator).final();
 
-	while (r.ok())
-	{
-		string	opText = r.nextText(LexToken::NEWLINE);
-		bool	newLine = false;
+    while (r.ok())
+    {
+        string	opText = r.nextText(LexToken::NEWLINE);
+        bool	newLine = false;
 
-		if (opText == "\n")
-		{
-			newLine = true;
-			opText = r.nextText();
-		}
+        if (opText == "\n")
+        {
+            newLine = true;
+            opText = r.nextText();
+        }
 
-		if (opText == ".")
-			r = r.then(parseMemberAccess);
-		else if (opText == "(" && !newLine)
-			r = r.then(parseCallExpr);
-		else
-			break;
-	}
+        if (opText == ".")
+            r = r.then(parseMemberAccess);
+        else if (opText == "(" && !newLine)
+            r = r.then(parseCallExpr);
+        else
+            break;
+    }
 
-	return r.final();
+    return r.final();
 }
 
 /// <summary>
@@ -680,11 +680,11 @@ ExprResult parsePostfixExpr (LexToken token)
 /// <returns></returns>
 ExprResult parsePostfixOperator(LexToken token, Ref<AstNode> termExpr)
 {
-	auto r = ExprResult::require(isPostfixOp, token);
-	if (r.ok())
-		r.result = astCreatePostfixOp(token, termExpr);
+    auto r = ExprResult::require(isPostfixOp, token);
+    if (r.ok())
+        r.result = astCreatePostfixOp(token, termExpr);
 
-	return r.final();
+    return r.final();
 }
 
 /// <summary>
@@ -695,12 +695,12 @@ ExprResult parsePostfixOperator(LexToken token, Ref<AstNode> termExpr)
 /// <returns></returns>
 ExprResult parseCallExpr(LexToken token, Ref<AstNode> fnExpr)
 {
-	ExprResult	r = parseTuple(token);
+    ExprResult	r = parseTuple(token);
 
-	if (r.ok())
-		r.result = astCreateFnCall(token.getPosition(), fnExpr, r.result);
+    if (r.ok())
+        r.result = astCreateFnCall(token.getPosition(), fnExpr, r.result);
 
-	return r.final();
+    return r.final();
 }
 
 /// <summary>
@@ -710,31 +710,31 @@ ExprResult parseCallExpr(LexToken token, Ref<AstNode> fnExpr)
 /// <returns></returns>
 ExprResult parseLiteral(LexToken token)
 {
-	Ref<AstNode>		value;
+    Ref<AstNode>		value;
 
-	switch ((int)token.type())
-	{
-	case LEX_RESERVED:
-		if (token.text() == "true")
-			value = astCreateBool(token.getPosition(), true);
-		else if (token.text() == "false")
-			value = astCreateBool(token.getPosition(), false);
-		break;
+    switch ((int)token.type())
+    {
+    case LEX_RESERVED:
+        if (token.text() == "true")
+            value = astCreateBool(token.getPosition(), true);
+        else if (token.text() == "false")
+            value = astCreateBool(token.getPosition(), false);
+        break;
 
-	case LEX_FLOAT:
-	case LEX_INT:
-	case LEX_STR:
-		value = astCreateLiteral(token);
-		break;
+    case LEX_FLOAT:
+    case LEX_INT:
+    case LEX_STR:
+        value = astCreateLiteral(token);
+        break;
 
-	default:
-		break;
-	}//switch
+    default:
+        break;
+    }//switch
 
-	if (value.notNull())
-		return ExprResult::ok(token, value);
-	else
-		return ExprResult::getError(token, ETYPE_UNEXPECTED_TOKEN_2, token.text().c_str(), "literal");
+    if (value.notNull())
+        return ExprResult::ok(token, value);
+    else
+        return ExprResult::getError(token, ETYPE_UNEXPECTED_TOKEN_2, token.text().c_str(), "literal");
 }
 
 
@@ -745,10 +745,10 @@ ExprResult parseLiteral(LexToken token)
 /// <returns></returns>
 ExprResult parseParenthesisExpr(LexToken token)
 {
-	return ExprResult::require("(", token)
-		.then(parseExpression)
-		.requireOp(")")
-		.final();
+    return ExprResult::require("(", token)
+        .then(parseExpression)
+        .requireOp(")")
+        .final();
 }
 
 /// <summary>
@@ -758,26 +758,26 @@ ExprResult parseParenthesisExpr(LexToken token)
 /// <returns></returns>
 ExprResult parseTuple(LexToken token)
 {
-	Ref<AstNode>	result = astCreateTuple(token);
-	auto			r = ExprResult::require("(", token);
+    Ref<AstNode>	result = astCreateTuple(token);
+    auto			r = ExprResult::require("(", token);
 
-	if (r.nextText() != ")")
-	{
-		r = r.then(parseExpression);
-		result->addChild(r.result);
+    if (r.nextText() != ")")
+    {
+        r = r.then(parseExpression);
+        result->addChild(r.result);
 
-		while (r.ok() && r.nextText() != ")")
-		{
-			r = r.requireOp(",").then(parseExpression);
-			result->addChild(r.result);
-		}
-	}
+        while (r.ok() && r.nextText() != ")")
+        {
+            r = r.requireOp(",").then(parseExpression);
+            result->addChild(r.result);
+        }
+    }
 
-	r = r.requireOp(")");
-	if (r.ok())
-		r.result = result;
+    r = r.requireOp(")");
+    if (r.ok())
+        r.result = result;
 
-	return r.final();
+    return r.final();
 }
 
 /// <summary>
@@ -787,63 +787,63 @@ ExprResult parseTuple(LexToken token)
 /// <returns></returns>
 ExprResult parseConditional(LexToken token)
 {
-	return parseIf(token).orElse(parseSelect);
+    return parseIf(token).orElse(parseSelect);
 }
 
 /// <summary>
 /// Parses an identifier
 /// </summary>
-ExprResult parseIdentifier (LexToken token)
+ExprResult parseIdentifier(LexToken token)
 {
     ExprResult  r = ExprResult::require(LEX_ID, token);
-    
-	if (r.ok())
-	{
-		string name = token.text();
-		r.result = AstNode::create(AST_IDENTIFIER, token.getPosition(), name, name);
-	}
-    
+
+    if (r.ok())
+    {
+        string name = token.text();
+        r.result = AstNode::create(AST_IDENTIFIER, token.getPosition(), name, name);
+    }
+
     return r.final();
 }
 
 /// <summary>
 /// Parses a function definition
 /// </summary>
-ExprResult parseFunctionDef (LexToken token)
+ExprResult parseFunctionDef(LexToken token)
 {
     ScriptPosition  pos = token.getPosition();
     string          name;
     auto			r = ExprResult::requireReserved("function", token);
 
-	//function name is optional, since unnamed functions are legal.
-	if (r.ok() && r.nextType() == LEX_ID)
-	{
-		name = r.nextText();
-		r = r.skip();
-	}
+    //function name is optional, since unnamed functions are legal.
+    if (r.ok() && r.nextType() == LEX_ID)
+    {
+        name = r.nextText();
+        r = r.skip();
+    }
 
-	//Parameters tuple.
-	r = r.then(parseTupleDef);
-	auto params = r.result;
+    //Parameters tuple.
+    r = r.then(parseTupleDef);
+    auto params = r.result;
 
-	if (r.ok())
-		addFlagsToChildren(params, ASTF_FUNCTION_PARAMETER);
+    if (r.ok())
+        addFlagsToChildren(params, ASTF_FUNCTION_PARAMETER);
 
-	//return type (optional)
-	Ref<AstNode>	returnType;
+    //return type (optional)
+    Ref<AstNode>	returnType;
 
-	if (r.ok() && r.nextText() == ":")
-	{
-		r = r.skip().then(parseTypeDescriptor);
-		returnType = r.result;
-	}
+    if (r.ok() && r.nextText() == ":")
+    {
+        r = r.skip().then(parseTypeDescriptor);
+        returnType = r.result;
+    }
 
-	r = r.then(parseExpression);
+    r = r.then(parseExpression);
 
-	if (r.ok())
-		r.result = astCreateFunction(token.getPosition(), name, params, returnType, r.result);
+    if (r.ok())
+        r.result = astCreateFunction(token.getPosition(), name, params, returnType, r.result);
 
-	return r.final();
+    return r.final();
 }
 
 /// <summary>
@@ -853,12 +853,12 @@ ExprResult parseFunctionDef (LexToken token)
 /// <returns></returns>
 ExprResult parsePrimaryExpr(LexToken token)
 {
-	return parseIdentifier(token)
-		.orElse(parseLiteral)
-		.orElse(parseParenthesisExpr)
-		.orElse(parseTuple)
-		.orElse(parseBlock)
-		.final();
+    return parseIdentifier(token)
+        .orElse(parseLiteral)
+        .orElse(parseParenthesisExpr)
+        .orElse(parseTuple)
+        .orElse(parseBlock)
+        .final();
 }
 
 /// <summary>
@@ -867,80 +867,80 @@ ExprResult parsePrimaryExpr(LexToken token)
 /// <param name="token"></param>
 /// <param name="objExpr"></param>
 /// <returns></returns>
-ExprResult parseMemberAccess (LexToken token, Ref<AstNode> objExpr)
+ExprResult parseMemberAccess(LexToken token, Ref<AstNode> objExpr)
 {
     auto r = ExprResult::require(".", token).then(parseIdentifier);
-    
-	if (r.ok())
-	{
-		auto memberNameNode = r.result;
 
-		memberNameNode->changeType(AST_MEMBER_NAME);
-		r.result = astCreateMemberAccess(token.getPosition(), objExpr, memberNameNode);
-	}
-    
+    if (r.ok())
+    {
+        auto memberNameNode = r.result;
+
+        memberNameNode->changeType(AST_MEMBER_NAME);
+        r.result = astCreateMemberAccess(token.getPosition(), objExpr, memberNameNode);
+    }
+
     return r.final();
 }
 
 /**
  * Parses an actor definition.
  * @param token
- * @return 
+ * @return
  */
-ExprResult parseActorDef (LexToken token)
+ExprResult parseActorDef(LexToken token)
 {
     auto	r = ExprResult::requireReserved("actor", token).then(parseIdentifier);
 
-	if (!r.ok())
-		return r.final();
+    if (!r.ok())
+        return r.final();
 
-	string			name = r.result->getName();
-	Ref<AstNode>    actor = astCreateActor(token.getPosition(), name);
+    string			name = r.result->getName();
+    Ref<AstNode>    actor = astCreateActor(token.getPosition(), name);
 
-	if (r.nextText() == "(")
-	{
-		r = r.then(parseTupleDef);
-		auto params = r.result;
+    if (r.nextText() == "(")
+    {
+        r = r.then(parseTupleDef);
+        auto params = r.result;
 
-		if (r.ok())
-		{
-			addFlagsToChildren(params, ASTF_FUNCTION_PARAMETER | ASTF_ACTOR_MEMBER);
-			actor->addChild(params);
-		}
-	}
-	else
-	{
-		//No parameters, add an empty tuple definition.
-		actor->addChild(astCreateTupleDef(r.nextToken().getPosition(), ""));
-	}
+        if (r.ok())
+        {
+            addFlagsToChildren(params, ASTF_FUNCTION_PARAMETER | ASTF_ACTOR_MEMBER);
+            actor->addChild(params);
+        }
+    }
+    else
+    {
+        //No parameters, add an empty tuple definition.
+        actor->addChild(astCreateTupleDef(r.nextToken().getPosition(), ""));
+    }
 
-	r = r.requireOp("{");
+    r = r.requireOp("{");
 
-	while (r.ok() && r.nextText() != "}")
-	{
-		r = r.then(parseInputMsg)
-			.orElse(parseOutputMsg)
-			.orElse(parseVar)
-			.orElse(parseConst)
-			.orElse(parseTypedef)
-			.orElse(parseUnnamedInput);
+    while (r.ok() && r.nextText() != "}")
+    {
+        r = r.then(parseInputMsg)
+            .orElse(parseOutputMsg)
+            .orElse(parseVar)
+            .orElse(parseConst)
+            .orElse(parseTypedef)
+            .orElse(parseUnnamedInput);
 
-		if (r.ok())
-		{
-			r.result->addFlag(ASTF_ACTOR_MEMBER);
-			actor->addChild(r.result);
+        if (r.ok())
+        {
+            r.result->addFlag(ASTF_ACTOR_MEMBER);
+            actor->addChild(r.result);
 
-			if (r.nextText() != "}")
-				r = parseStatementSeparator(r);
-		}
-	}
+            if (r.nextText() != "}")
+                r = parseStatementSeparator(r);
+        }
+    }
 
-	r = r.requireOp("}");
+    r = r.requireOp("}");
 
-	if (r.ok())
-		r.result = actor;
+    if (r.ok())
+        r.result = actor;
 
-	return r.final();
+    return r.final();
 }
 
 /// <summary>
@@ -950,20 +950,20 @@ ExprResult parseActorDef (LexToken token)
 /// <returns></returns>
 ExprResult parseInputMsg(LexToken token)
 {
-	auto	r = ExprResult::requireReserved("input", token).then(parseMsgHeader);
+    auto	r = ExprResult::requireReserved("input", token).then(parseMsgHeader);
 
-	auto header = r.result;
-	r = r.then(parseBlock);
+    auto header = r.result;
+    r = r.then(parseBlock);
 
-	if (r.ok())
-	{
-		auto block = r.result;
-		r.result = astCreateInputMsg(token.getPosition(), header->getName());
-		r.result->addChild(header->child(0));
-		r.result->addChild(block);
-	}
+    if (r.ok())
+    {
+        auto block = r.result;
+        r.result = astCreateInputMsg(token.getPosition(), header->getName());
+        r.result->addChild(header->child(0));
+        r.result->addChild(block);
+    }
 
-	return r;
+    return r;
 }
 
 
@@ -974,16 +974,16 @@ ExprResult parseInputMsg(LexToken token)
 /// <returns></returns>
 ExprResult parseOutputMsg(LexToken token)
 {
-	auto	r = ExprResult::requireReserved("output", token).then(parseMsgHeader);
+    auto	r = ExprResult::requireReserved("output", token).then(parseMsgHeader);
 
-	if (r.ok())
-	{
-		auto header = r.result;
-		r.result = astCreateOutputMsg(token.getPosition(), header->getName());
-		r.result->addChild(header->child(0));
-	}
+    if (r.ok())
+    {
+        auto header = r.result;
+        r.result = astCreateOutputMsg(token.getPosition(), header->getName());
+        r.result->addChild(header->child(0));
+    }
 
-	return r;
+    return r;
 }
 
 /// <summary>
@@ -993,25 +993,25 @@ ExprResult parseOutputMsg(LexToken token)
 /// <returns></returns>
 ExprResult parseMsgHeader(LexToken token)
 {
-	auto	r = parseIdentifier(token);
+    auto	r = parseIdentifier(token);
 
-	if (!r.ok())
-		return r.final();
-	
-	string name = r.result->getName();
+    if (!r.ok())
+        return r.final();
 
-	//Parameters tuple.
-	r = r.then(parseTupleDef);
+    string name = r.result->getName();
 
-	if (r.ok())
-	{
-		auto params = r.result;
-		r.result = AstNode::create(AST_LIST, token.getPosition(), name);
-		addFlagsToChildren(params, ASTF_FUNCTION_PARAMETER);
-		r.result->addChild(params);
-	}
+    //Parameters tuple.
+    r = r.then(parseTupleDef);
 
-	return r.final();
+    if (r.ok())
+    {
+        auto params = r.result;
+        r.result = AstNode::create(AST_LIST, token.getPosition(), name);
+        addFlagsToChildren(params, ASTF_FUNCTION_PARAMETER);
+        r.result->addChild(params);
+    }
+
+    return r.final();
 }
 
 /// <summary>
@@ -1021,26 +1021,26 @@ ExprResult parseMsgHeader(LexToken token)
 /// <returns></returns>
 ExprResult parseUnnamedInput(LexToken token)
 {
-	auto r = parseList(token, parseIdentifier, "", "->", ".");
-	auto messageRoute = r.result;
+    auto r = parseList(token, parseIdentifier, "", "->", ".");
+    auto messageRoute = r.result;
 
-	r = r.then(parseTupleDef);
-	auto params = r.result;
+    r = r.then(parseTupleDef);
+    auto params = r.result;
 
-	r = r.then(parseBlock);
-	auto code = r.result;
+    r = r.then(parseBlock);
+    auto code = r.result;
 
-	if (r.ok())
-	{
-		//Change to member names, in oder to not be type-checked.
-		for (auto pathItem : messageRoute->children())
-			pathItem->changeType(AST_MEMBER_NAME);
+    if (r.ok())
+    {
+        //Change to member names, in oder to not be type-checked.
+        for (auto pathItem : messageRoute->children())
+            pathItem->changeType(AST_MEMBER_NAME);
 
-		addFlagsToChildren(params, ASTF_FUNCTION_PARAMETER);
-		r.result = astCreateUnnamedInput(token.getPosition(), messageRoute, params, code);
-	}
+        addFlagsToChildren(params, ASTF_FUNCTION_PARAMETER);
+        r.result = astCreateUnnamedInput(token.getPosition(), messageRoute, params, code);
+    }
 
-	return r.final();
+    return r.final();
 }
 
 
@@ -1051,25 +1051,25 @@ ExprResult parseUnnamedInput(LexToken token)
 /// <returns></returns>
 ExprResult parseStatementSeparator(ExprResult r)
 {
-	if (!r.ok())
-		return r;
+    if (!r.ok())
+        return r;
 
-	bool		found = false;
-	LexToken	next = r.nextToken(LexToken::NEWLINE);
+    bool		found = false;
+    LexToken	next = r.nextToken(LexToken::NEWLINE);
 
-	while (next.type() == LEX_NEWLINE || next.text() == ";")
-	{
-		found = true;
-		r = ExprResult::ok(next, r.result);
-		next = r.nextToken(LexToken::NEWLINE);
-	}
+    while (next.type() == LEX_NEWLINE || next.text() == ";")
+    {
+        found = true;
+        r = ExprResult::ok(next, r.result);
+        next = r.nextToken(LexToken::NEWLINE);
+    }
 
-	if (found)
-		return r;
-	else
-		return r.skip().getError(ETYPE_UNEXPECTED_TOKEN_2, 
-			next.text().c_str(), 
-			"statement separator (';' or new line)");
+    if (found)
+        return r;
+    else
+        return r.skip().getError(ETYPE_UNEXPECTED_TOKEN_2,
+            next.text().c_str(),
+            "statement separator (';' or new line)");
 }
 
 /// <summary>
@@ -1077,12 +1077,12 @@ ExprResult parseStatementSeparator(ExprResult r)
 /// </summary>
 bool followsStatementSeparator(ExprResult r)
 {
-	if (!r.ok())
-		return false;
+    if (!r.ok())
+        return false;
 
-	LexToken	next = r.nextToken(LexToken::NEWLINE);
+    LexToken	next = r.nextToken(LexToken::NEWLINE);
 
-	return (next.type() == LEX_NEWLINE || next.text() == ";");
+    return (next.type() == LEX_NEWLINE || next.text() == ";");
 }
 
 
@@ -1093,6 +1093,6 @@ bool followsStatementSeparator(ExprResult r)
 /// <param name="paramsNode"></param>
 void addFlagsToChildren(Ref<AstNode> node, int flags)
 {
-	for (auto child : node->children())
-		child->addFlags(flags);
+    for (auto child : node->children())
+        child->addFlags(flags);
 }

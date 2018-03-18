@@ -15,7 +15,7 @@ using namespace std;
 /// <returns></returns>
 LexToken testToken(const char* code)
 {
-	return LexToken(code, SourceFilePtr());
+    return LexToken(code, SourceFilePtr());
 }
 
 /// <summary>
@@ -25,7 +25,7 @@ LexToken testToken(const char* code)
 /// <returns></returns>
 ExprResult testParse(const char* code)
 {
-	return parseScript(code, SourceFilePtr());
+    return parseScript(code, SourceFilePtr());
 }
 
 
@@ -37,18 +37,18 @@ ExprResult testParse(const char* code)
 /// <returns></returns>
 ::testing::AssertionResult checkExprOk(const ExprResult& res)
 {
-	if (res.ok())
-		return ::testing::AssertionSuccess();
-	else
-		return ::testing::AssertionFailure() << res.errorDesc.what();
+    if (res.ok())
+        return ::testing::AssertionSuccess();
+    else
+        return ::testing::AssertionFailure() << res.errorDesc.what();
 }
 
 ::testing::AssertionResult checkExprError(const ExprResult& res)
 {
-	if (res.error())
-		return ::testing::AssertionSuccess();
-	else
-		return ::testing::AssertionFailure() << "Compilation error expected";
+    if (res.error())
+        return ::testing::AssertionSuccess();
+    else
+        return ::testing::AssertionFailure() << "Compilation error expected";
 }
 
 /// <summary>
@@ -59,17 +59,17 @@ ExprResult testParse(const char* code)
 /// <returns></returns>
 ::testing::AssertionResult checkSemOk(const SemanticResult& res)
 {
-	if (res.ok())
-		return ::testing::AssertionSuccess();
-	else
-	{
-		auto result = ::testing::AssertionFailure() << "Found " << res.errors.size() << " errors:\n";
+    if (res.ok())
+        return ::testing::AssertionSuccess();
+    else
+    {
+        auto result = ::testing::AssertionFailure() << "Found " << res.errors.size() << " errors:\n";
 
-		for (auto error : res.errors)
-			result << error.what() << "\n";
+        for (auto error : res.errors)
+            result << error.what() << "\n";
 
-		return result;
-	}
+        return result;
+    }
 }
 
 /// <summary>
@@ -79,10 +79,10 @@ ExprResult testParse(const char* code)
 /// <returns></returns>
 ::testing::AssertionResult checkSemError(const SemanticResult& res)
 {
-	if (!res.ok())
-		return ::testing::AssertionSuccess();
-	else
-		return ::testing::AssertionFailure() << "Semantic error expected";
+    if (!res.ok())
+        return ::testing::AssertionSuccess();
+    else
+        return ::testing::AssertionFailure() << "Semantic error expected";
 }
 
 /// <summary>
@@ -93,11 +93,11 @@ ExprResult testParse(const char* code)
 /// <returns></returns>
 ExprResult checkAllParsed(const char* code, ParseFunction parseFn)
 {
-	auto r = parseFn(LexToken(code, SourceFilePtr()).next());
+    auto r = parseFn(LexToken(code, SourceFilePtr()).next());
 
-	if (r.ok() && !r.nextToken().eof())
-		r = r.skip().getError(ETYPE_UNEXPECTED_TOKEN_2, r.nextText().c_str(), "<EOF>");
-	return r;
+    if (r.ok() && !r.nextToken().eof())
+        r = r.skip().getError(ETYPE_UNEXPECTED_TOKEN_2, r.nextText().c_str(), "<EOF>");
+    return r;
 };
 
 /// <summary>
@@ -107,12 +107,12 @@ ExprResult checkAllParsed(const char* code, ParseFunction parseFn)
 /// <returns></returns>
 SemanticResult semAnalysisCheck(const char* code)
 {
-	auto parseRes = parseScript(code, SourceFilePtr());
+    auto parseRes = parseScript(code, SourceFilePtr());
 
-	if (parseRes.error())
-		return SemanticResult(parseRes.errorDesc);
-	else
-		return semanticAnalysis(parseRes.result);
+    if (parseRes.error())
+        return SemanticResult(parseRes.errorDesc);
+    else
+        return semanticAnalysis(parseRes.result);
 }
 
 /// <summary>
@@ -123,14 +123,14 @@ SemanticResult semAnalysisCheck(const char* code)
 /// <param name="result">The nodes found are appened to this vector</param>
 void findNodes(Ref<AstNode> root, std::function<bool(Ref<AstNode>)> predicate, AstNodeList& result)
 {
-	if (predicate(root))
-		result.push_back(root);
+    if (predicate(root))
+        result.push_back(root);
 
-	for (auto child : root->children())
-	{
-		if (child.notNull())
-			findNodes(child, predicate, result);
-	}
+    for (auto child : root->children())
+    {
+        if (child.notNull())
+            findNodes(child, predicate, result);
+    }
 }
 
 /// <summary>
@@ -141,10 +141,10 @@ void findNodes(Ref<AstNode> root, std::function<bool(Ref<AstNode>)> predicate, A
 /// <returns>Nodes are returned as a flat vector</returns>
 AstNodeList findNodes(Ref<AstNode> root, std::function<bool(Ref<AstNode>)> predicate)
 {
-	AstNodeList result;
+    AstNodeList result;
 
-	findNodes(root, predicate, result);
-	return result;
+    findNodes(root, predicate, result);
+    return result;
 }
 
 /// <summary>
@@ -155,27 +155,27 @@ AstNodeList findNodes(Ref<AstNode> root, std::function<bool(Ref<AstNode>)> predi
 /// <returns></returns>
 Ref<AstNode> findNode(Ref<AstNode> root, std::function<bool(Ref<AstNode>)> predicate)
 {
-	AstNodeList result;
+    AstNodeList result;
 
-	findNodes(root, predicate, result);
-	if (result.empty())
-		return Ref<AstNode>();
-	else
-		return result.front();
+    findNodes(root, predicate, result);
+    if (result.empty())
+        return Ref<AstNode>();
+    else
+        return result.front();
 }
 
 Ref<AstNode> findNode(Ref<AstNode> root, AstNodeTypes nodeType)
 {
-	return findNode(root, [nodeType](auto node) {
-		return node->getType() == nodeType;
-	});
+    return findNode(root, [nodeType](auto node) {
+        return node->getType() == nodeType;
+    });
 }
 
 Ref<AstNode> findNode(Ref<AstNode> root, const std::string& name)
 {
-	return findNode(root, [&name](auto node) {
-		return node->getName() == name;
-	});
+    return findNode(root, [&name](auto node) {
+        return node->getName() == name;
+    });
 }
 
 /// <summary>Prints an AST tree.</summary>
@@ -183,10 +183,10 @@ Ref<AstNode> findNode(Ref<AstNode> root, const std::string& name)
 /// <returns></returns>
 std::string printAST(Ref<AstNode> node, int indentLevel)
 {
-	ostringstream	output;
+    ostringstream	output;
 
-	printAST(node, output, indentLevel);
-	return output.str();
+    printAST(node, output, indentLevel);
+    return output.str();
 }
 
 /// <summary>Prints out an AST tree to a stream</summary>
@@ -195,17 +195,17 @@ std::string printAST(Ref<AstNode> node, int indentLevel)
 /// <param name="indentLevel"></param>
 void printAST(Ref<AstNode> node, std::ostream& output, int indentLevel)
 {
-	output << string(indentLevel * 2, ' ');
-	if (node.isNull())
-		output << "[NULL]\n";
-	else
-	{
-		output << astTypeToString(node->getType()) << "(";
-		output << node->getName() << "," << node->getValue() << "): ";
-		output << astTypeToString (node->getDataType()) << "\n";
+    output << string(indentLevel * 2, ' ');
+    if (node.isNull())
+        output << "[NULL]\n";
+    else
+    {
+        output << astTypeToString(node->getType()) << "(";
+        output << node->getName() << "," << node->getValue() << "): ";
+        output << astTypeToString(node->getDataType()) << "\n";
 
-		++indentLevel;
-		for (auto child : node->children())
-			printAST(child, output, indentLevel);
-	}
+        ++indentLevel;
+        for (auto child : node->children())
+            printAST(child, output, indentLevel);
+    }
 }
