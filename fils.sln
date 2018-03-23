@@ -17,6 +17,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "filSim", "src\filSim\filSim
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "json11", "lib\json11\json11.vcxproj", "{FA22A9CC-10EE-4FB4-9274-3BC40B97D40E}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "filsc", "src\filsc\filsc.vcxproj", "{F44FB88E-9EB9-4796-82D9-D21DC07FD0B3}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -65,6 +67,14 @@ Global
 		{FA22A9CC-10EE-4FB4-9274-3BC40B97D40E}.Release|x64.Build.0 = Release|x64
 		{FA22A9CC-10EE-4FB4-9274-3BC40B97D40E}.Release|x86.ActiveCfg = Release|Win32
 		{FA22A9CC-10EE-4FB4-9274-3BC40B97D40E}.Release|x86.Build.0 = Release|Win32
+		{F44FB88E-9EB9-4796-82D9-D21DC07FD0B3}.Debug|x64.ActiveCfg = Debug|x64
+		{F44FB88E-9EB9-4796-82D9-D21DC07FD0B3}.Debug|x64.Build.0 = Debug|x64
+		{F44FB88E-9EB9-4796-82D9-D21DC07FD0B3}.Debug|x86.ActiveCfg = Debug|Win32
+		{F44FB88E-9EB9-4796-82D9-D21DC07FD0B3}.Debug|x86.Build.0 = Debug|Win32
+		{F44FB88E-9EB9-4796-82D9-D21DC07FD0B3}.Release|x64.ActiveCfg = Release|x64
+		{F44FB88E-9EB9-4796-82D9-D21DC07FD0B3}.Release|x64.Build.0 = Release|x64
+		{F44FB88E-9EB9-4796-82D9-D21DC07FD0B3}.Release|x86.ActiveCfg = Release|Win32
+		{F44FB88E-9EB9-4796-82D9-D21DC07FD0B3}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
