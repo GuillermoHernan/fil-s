@@ -1,0 +1,12 @@
+c_compile.bat
+cmd /C "${ModulePath}\c_compile.bat" >NUL
+
+REM script starts here
+call "H:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvars32.bat"
+cd "${ModulePath}"
+
+SET DRIVE="${ModulePath}"
+SET DRIVE=%DRIVE:~0,2%
+%DRIVE%
+
+cl ${ModuleName}.c -nologo /FAs /Ox >${ModuleName}.compiler.out;
