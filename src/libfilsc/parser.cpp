@@ -815,6 +815,14 @@ ExprResult parseFunctionDef(LexToken token)
     ScriptPosition  pos = token.getPosition();
     string          name;
     auto			r = ExprResult::requireReserved("function", token);
+    int             flags = 0;
+
+    auto r2 = r.then(parseCMark);
+    if (r2.ok())
+    {
+        r = r2;
+        flags |= ASTF_EXTERN_C;
+    }
 
     //function name is optional, since unnamed functions are legal.
     if (r.ok() && r.nextType() == LEX_ID)
@@ -838,11 +846,28 @@ ExprResult parseFunctionDef(LexToken token)
         r = r.skip().then(parseTypeDescriptor);
         returnType = r.result;
     }
+    
+    Ref<AstNode>	body;
+    if (r.ok())
+    {
+        //Parse body. Optional for external C functions.
+        //TODO: Body always optional on parse, check if mandatory in semantic analysis.
+        r2 = r.then(parseExpression);
 
-    r = r.then(parseExpression);
+        if (r2.ok())
+        {
+            body = r2.result;
+            r = r2;
+        }
+        else if (flags == 0)
+            r = r2;     //Failure
+    }
 
     if (r.ok())
-        r.result = astCreateFunction(token.getPosition(), name, params, returnType, r.result);
+    {
+        r.result = astCreateFunction(token.getPosition(), name, params, returnType, body);
+        r.result->addFlags(flags);
+    }
 
     return r.final();
 }

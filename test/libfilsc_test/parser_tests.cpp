@@ -620,6 +620,14 @@ TEST(Parser, parseFunctionDef)
     EXPECT_PARSE_OK(parseFunctionDef_(
         "function testFn (a:float, b:float): float {(a + b) /2}"
     ));
+    EXPECT_PARSE_OK(parseFunctionDef_(
+        "function[C] testFn (a:int, b:int):int"
+    ));
+
+    //This is an error, but it is not detected by the parser.
+    EXPECT_PARSE_OK(parseFunctionDef_(
+        "function[C] testFn (a:int, b:int):int {(a + b) /2}"
+    ));
 
     EXPECT_PARSE_ERROR(parseFunctionDef_("(x:int):int {x*2}"));
     EXPECT_PARSE_ERROR(parseFunctionDef_("function (x:int):int"));
