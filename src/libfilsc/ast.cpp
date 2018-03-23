@@ -435,6 +435,19 @@ Ref<AstNode> astCreateUnnamedInput(ScriptPosition pos,
     return result;
 }
 
+/// <summary>
+/// Creates an 'import' node.
+/// </summary>
+/// <param name="pos"></param>
+/// <param name="value"></param>
+/// <param name="flags"></param>
+/// <returns></returns>
+Ref<AstNode> astCreateImport(ScriptPosition pos, const std::string& value, int flags)
+{
+    return AstNode::create(AST_IMPORT, pos, "", value, flags);
+}
+
+
 static void astGatherTypes(Ref<AstNode> root, set<AstNode*>& types)
 {
     types.insert(root->getDataType());

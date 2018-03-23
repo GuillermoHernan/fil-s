@@ -896,3 +896,30 @@ TEST(Parser, parseUnnamedInput)
     EXPECT_PARSE_ERROR(parseUnnamedInput_("actorA.o1 <- (){}"));
     EXPECT_PARSE_ERROR(parseUnnamedInput_("actorA.o1 (){}"));
 }
+
+
+/// <summary>
+/// Tests for 'parseImport' function, which parses 'import' statements.
+/// </summary>
+TEST(Parser, parseImport)
+{
+    auto parseImport_ = [](const char* code)
+    {
+        return checkAllParsed(code, parseImport);
+    };
+
+    EXPECT_PARSE_OK(parseImport_("import \"ModuleA\""));
+    EXPECT_PARSE_OK(parseImport_("import[C] \"cLibraryA\""));
+    EXPECT_PARSE_ERROR(parseImport_("import 14"));
+    EXPECT_PARSE_ERROR(parseImport_("import"));
+    EXPECT_PARSE_ERROR(parseImport_("function \"ModuleA\""));
+    EXPECT_PARSE_ERROR(parseImport_("\"ModuleA\""));
+
+    auto r = parseImport_("import[C] \"test\"");
+    auto node = r.result;
+
+    EXPECT_EQ(0, node->childCount());
+    EXPECT_STREQ("", node->getName().c_str());
+    EXPECT_STREQ("test", node->getValue().c_str());
+    EXPECT_TRUE(node->hasFlag(ASTF_EXTERN_C));
+}

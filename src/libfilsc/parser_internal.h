@@ -58,6 +58,9 @@ ExprResult parseOutputMsg(LexToken token);
 ExprResult parseMsgHeader(LexToken token);
 ExprResult parseUnnamedInput(LexToken token);
 
+ExprResult parseImport(LexToken token);
+ExprResult parseCMark(LexToken token);
+
 ExprResult parseStatementSeparator(ExprResult prevResult);
 bool followsStatementSeparator(ExprResult prevResult);
 

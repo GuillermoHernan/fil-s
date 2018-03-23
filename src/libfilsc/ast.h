@@ -67,6 +67,7 @@ enum AstFlags
     ASTF_CONST = 2,
     ASTF_VAR = 4,
     ASTF_ACTOR_MEMBER = 8,
+    ASTF_EXTERN_C = 16,
 };
 
 class AstNode;
@@ -156,6 +157,8 @@ Ref<AstNode> astCreateUnnamedInput(ScriptPosition pos,
     Ref<AstNode> outputPath,
     Ref<AstNode> params,
     Ref<AstNode> code);
+Ref<AstNode> astCreateImport(ScriptPosition pos, const std::string& value, int flags);
+
 
 std::vector<AstNode*> astGatherTypes(Ref<AstNode> root);
 

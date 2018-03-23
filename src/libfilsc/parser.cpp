@@ -236,7 +236,8 @@ ExprResult parseTopLevelItem(LexToken token)
     return parseConst(token)
         .orElse(parseActorDef)
         .orElse(parseFunctionDef)
-        .orElse(parseTypedef);
+        .orElse(parseTypedef)
+        .orElse(parseImport);
 }
 
 /// <summary>
@@ -1041,6 +1042,50 @@ ExprResult parseUnnamedInput(LexToken token)
     }
 
     return r.final();
+}
+
+/// <summary>
+/// Parses an 'import statement.
+/// </summary>
+ExprResult parseImport(LexToken token)
+{
+    auto    r = ExprResult::requireReserved("import", token);
+    int     flags = 0;
+
+    //Optional '[C]' mark
+    auto r2 = r.then(parseCMark);
+    if (r2.ok())
+    {
+        r = r2;
+        flags |= ASTF_EXTERN_C;
+    }
+
+    if (r.ok())
+    {
+        auto paramTok = r.nextToken();
+        if (paramTok.type() != LEX_STR)
+            r = r.getError(ETYPE_UNEXPECTED_TOKEN_2, paramTok.text().c_str(), "string");
+        else
+        {
+            auto importNode = astCreateImport(token.getPosition(), paramTok.strValue(), flags);
+
+            return ExprResult::ok(paramTok, importNode);
+        }
+    }
+
+    return r.final();
+}
+
+/// <summary>
+/// Parses the '[C]' mark, which is used to indicate that an item is a reference to
+/// an external entity from 'C' language.
+/// </summary>
+/// <remarks>It is used in 'function' and 'import' declarations.</remarks>
+/// <param name="token"></param>
+/// <returns></returns>
+ExprResult parseCMark(LexToken token)
+{
+    return ExprResult::require("[", token).requireId("C").requireOp("]");
 }
 
 
