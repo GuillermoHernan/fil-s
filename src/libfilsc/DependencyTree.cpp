@@ -38,10 +38,10 @@ ModuleNode::ModuleNode(const std::string& modulePath)
     }
     else
     {
+        //It is a source folder, create source objects.
         auto moduleObj = SourceModule::create(modulePath);
         auto sourcePaths = getModuleSources(modulePath);
 
-        //It is a source folder, create source objects.
         for (auto& srcFile : sourcePaths)
         {
             //TODO: Verify that this is a reliable way to get the file name.
