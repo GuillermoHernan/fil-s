@@ -19,7 +19,7 @@ typedef std::vector<std::string>	StrList;
 class ModuleNode
 {
 public:
-    ModuleNode(const std::string& modulePath, const StrList& sourcePaths);
+    ModuleNode(const std::string& modulePath);
 
     void addDependency(DepencencyTreePtr node);
 
@@ -47,6 +47,8 @@ public:
 private:
     bool tryLoadAst(const std::string& path);
     bool checkUpdated(const std::string& compPath);
+
+    static StrList getModuleSources(const std::string& modulePath);
 
 private:
     std::string						m_path;

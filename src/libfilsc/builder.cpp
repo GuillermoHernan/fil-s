@@ -41,9 +41,7 @@ DependenciesResult getDependencies(const std::string& modulePath, StrSet& parent
     {
         preventCircularReferences(modulePath, parents);
 
-        //string				name = moduleNameFromPath(modulePath);
-        vector<string>		sources = getModuleSources(modulePath);
-        DepencencyTreePtr	node(new ModuleNode(modulePath, sources));
+        DepencencyTreePtr	node(new ModuleNode(modulePath));
 
         auto parseRes = parseSourceFiles(node.get());
         if (!parseRes.ok())
@@ -155,31 +153,7 @@ BuildResult	buildModule(ModuleNode* module, const std::string& builderPath)
 
 }
 
-/// <summary>
-/// Gets the list of source files of a module, given its path.
-/// It looks for them in the file system.
-/// </summary>
-/// <param name="modulePath"></param>
-/// <returns></returns>
-StrList getModuleSources(const std::string& modulePath)
-{
-    StrList		result;
-
-    for (auto entry : fs::directory_iterator(modulePath))
-    {
-        bool isSource = fs::is_regular_file(entry.status());
-
-        isSource = isSource && entry.path().extension() == ".fil";
-        isSource = isSource && entry.path().filename().c_str()[0] != '_';
-
-        if (isSource)
-            result.push_back(entry.path().u8string());
-    }
-
-    return result;
-}
-
-/// <summary>
+/// /// <summary>
 /// It ensures that the files belonging to the node (module) have been 
 /// parsed. If some file is not parsed, it parses it.
 /// </summary>

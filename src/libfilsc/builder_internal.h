@@ -24,7 +24,6 @@ DependenciesResult			getDependencies(const std::string& modulePath, StrSet& pare
 BuildResult					buildWithDependencies(ModuleNode* module, const std::string& builderPath);
 BuildResult					buildModule(ModuleNode* module, const std::string& builderPath);
 
-StrList						getModuleSources(const std::string& modulePath);
 BuildResult					parseSourceFiles(ModuleNode* module);
 OperationResult<StrList>	getDependentModules(ModuleNode* module);
 void						preventCircularReferences(const std::string& modulePath, StrSet& parents);

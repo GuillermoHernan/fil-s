@@ -18,8 +18,7 @@ using namespace std;
 /// Constructor. Initialiaces the module path, and the list of sources.
 /// </summary>
 /// <param name="modulePath"></param>
-/// <param name="sourcePaths"></param>
-ModuleNode::ModuleNode(const std::string& modulePath, const StrList& sourcePaths)
+ModuleNode::ModuleNode(const std::string& modulePath)
     :m_path(modulePath)
 {
     fs::path	modPath(modulePath);
@@ -40,6 +39,7 @@ ModuleNode::ModuleNode(const std::string& modulePath, const StrList& sourcePaths
     else
     {
         auto moduleObj = SourceModule::create(modulePath);
+        auto sourcePaths = getModuleSources(modulePath);
 
         //It is a source folder, create source objects.
         for (auto& srcFile : sourcePaths)
@@ -199,4 +199,30 @@ bool ModuleNode::checkUpdated(const std::string& compPath)
     }
 
     return true;
+}
+
+
+
+/// <summary>
+/// Gets the list of source files of a module, given its path.
+/// It looks for them in the file system.
+/// </summary>
+/// <param name="modulePath"></param>
+/// <returns></returns>
+StrList ModuleNode::getModuleSources(const std::string& modulePath)
+{
+    StrList		result;
+
+    for (auto entry : fs::directory_iterator(modulePath))
+    {
+        bool isSource = fs::is_regular_file(entry.status());
+
+        isSource = isSource && entry.path().extension() == ".fil";
+        isSource = isSource && entry.path().filename().c_str()[0] != '_';
+
+        if (isSource)
+            result.push_back(entry.path().u8string());
+    }
+
+    return result;
 }
