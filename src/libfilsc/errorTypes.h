@@ -43,6 +43,7 @@ enum ErrorTypes
     ETYPE_COMPILE_SCRIPT_TEMPLATE_NOT_FOUND_1,
     ETYPE_ERROR_LOADING_COMPILED_MODULE_1,
     ETYPE_NOT_CALLABLE,
+    ETYPE_CANNOT_FIND_RUNTIME,
 
     //Add new error types above this line.
     //REMEMBER to add the description to 'errorTypeTemplate' function.

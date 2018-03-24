@@ -26,6 +26,14 @@ BuildResult buildModule(const std::string& modulePath, const std::string& builde
     if (!result.ok())
         return BuildResult(result.errors);
 
+    //Add dependency to runtime.
+    auto frt = findRuntime(builderPath);
+    if (frt == nullptr)
+    {
+        auto error = CompileError::create(ScriptPosition(), ETYPE_CANNOT_FIND_RUNTIME);
+        return BuildResult(error);
+    }
+
     return buildWithDependencies(result.result.get(), builderPath);
 }
 
@@ -153,7 +161,22 @@ BuildResult	buildModule(ModuleNode* module, const std::string& builderPath)
 
 }
 
-/// /// <summary>
+/// <summary>
+/// Looks for FIL-S runtime module in builder path
+/// </summary>
+/// <param name="builderPath"></param>
+/// <returns></returns>
+DepencencyTreePtr findRuntime(const std::string& builderPath)
+{
+    string path = findModuleInDir("frt", fs::path(builderPath));
+
+    if (path == "")
+        return nullptr;
+    else
+        return DepencencyTreePtr (new ModuleNode(path));
+}
+
+/// <summary>
 /// It ensures that the files belonging to the node (module) have been 
 /// parsed. If some file is not parsed, it parses it.
 /// </summary>

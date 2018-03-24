@@ -144,6 +144,7 @@ const char * errorTypeTemplate(ErrorTypes type)
         /*ETYPE_COMPILE_SCRIPT_TEMPLATE_NOT_FOUND_1*/"Cannot find 'C' compile script template at: %s",
         /*ETYPE_ERROR_LOADING_COMPILED_MODULE_1*/"Error loading compiled module at: %s",
         /*ETYPE_NOT_CALLABLE*/			"The expression does not evaluate to a callable object",
+        /*ETYPE_CANNOT_FIND_RUNTIME*/   "Cannot find FIL-S runtime. Possibly, compiler install is corrupted.",
     };
 
     return templates[type];
