@@ -1,0 +1,17 @@
+/*
+ * First FIL-S test.
+ * This is a very basic test, just to assure that the compiler, test runner,
+ * and runtime are installed and working properly.
+ */
+ 
+ import "testlib"
+ 
+ actor Main
+ {
+	 t1: Timer(10)
+	 
+	 t1.tick ->(){
+		 passed();
+	 }
+ }
+ 
