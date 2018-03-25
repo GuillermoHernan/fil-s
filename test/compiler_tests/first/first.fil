@@ -8,7 +8,7 @@
  
  actor Main
  {
-	 t1: Timer(10)
+	 const t1: Timer(10)
 	 
 	 t1.tick ->(){
 		 passed();
