@@ -262,3 +262,6 @@ __pycache__/
 /src/AsyncScript-master
 /test/libfilsc_test/results
 /test/libfilsc_test/test_filter.txt
+
+#Do not ignore 'bin' folder at the project root.
+!/bin
