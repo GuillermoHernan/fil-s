@@ -22,13 +22,15 @@ typedef std::set< std::string >						    StrSet;
 typedef std::set< AstNode* >				    		NodeSet;
 typedef std::map<std::string, NodeSet>                  ModuleRefsMap;
 
+OperationResult<BuilderConfig>  checkConfig(const BuilderConfig& cfg);
+
 DependenciesResult			getDependencies(
     const std::string& modulePath, 
     ModuleMap& modules,
     StrSet& parents,
     const std::string& runtimePath);
-BuildResult					buildWithDependencies(ModuleNode* module, const std::string& builderPath);
-BuildResult					buildModule(ModuleNode* module, const std::string& builderPath);
+BuildResult					buildWithDependencies(ModuleNode* module, const BuilderConfig& cfg);
+BuildResult					buildModule(ModuleNode* module, const BuilderConfig& cfg);
 
 std::string                 findRuntime(const std::string& builderPath);
 
@@ -49,12 +51,12 @@ StrList						getSystemLibPaths();
 bool						containsEntryPoint(Ref<AstNode> ast);
 bool						isEntryPoint(Ref<AstNode> node);
 
-BuildResult					buildExecutable(ModuleNode* module, const std::string& builderPath);
+BuildResult					buildExecutable(ModuleNode* module, const BuilderConfig& cfg);
 void						writeCCodeFile(const std::string& code, ModuleNode* module);
-BuildResult					compileC(ModuleNode* module, const std::string& builderPath);
+BuildResult					compileC(ModuleNode* module, const BuilderConfig& cfg);
 
-std::string					createCompileScript(ModuleNode* module, const std::string& builderPath);
-std::string					getCompileScriptCommand(ModuleNode* module, const std::string& builderPath);
+std::string					createCompileScript(ModuleNode* module, const BuilderConfig& cfg);
+std::string					getCompileScriptCommand(ModuleNode* module, const BuilderConfig& cfg);
 std::string					getCompileScriptTemplate(const std::string& builderPath);
 std::string					replaceScriptVariables(const std::string& scriptTemplate, ModuleNode* module);
 

@@ -6,6 +6,17 @@
 #include <string>
 #include "operationResult.h"
 
+/// <summary>
+/// Stores builder configuration.
+/// </summary>
+struct BuilderConfig
+{
+    std::string      BasePath;
+    std::string      RuntimePath;
+    std::string      PlatformName;
+    std::string      PlatformPath;
+};
+
 typedef OperationResult<bool> BuildResult;
 
-BuildResult buildModule(const std::string& modulePath, const std::string& builderPath);
+BuildResult buildModule(const std::string& modulePath, const BuilderConfig& cfg);

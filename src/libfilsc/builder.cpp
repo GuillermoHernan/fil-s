@@ -17,26 +17,68 @@ using namespace std;
 /// Builds a module, from its sources on the filesystem.
 /// </summary>
 /// <param name="moduleDir"></param>
+/// <param name="cfg">Builder configuration structure.</param>
 /// <returns></returns>
-BuildResult buildModule(const std::string& modulePath, const std::string& builderPath)
+BuildResult buildModule(const std::string& modulePath, const BuilderConfig& cfg)
 {
-    //Look for runtime lib.
-    auto frtPath = findRuntime(builderPath);
-    if (frtPath.empty())
-    {
-        auto error = CompileError::create(ScriptPosition(), ETYPE_CANNOT_FIND_RUNTIME);
-        return BuildResult(error);
-    }
+    auto checkResult = checkConfig(cfg);
+
+    if (!checkResult.ok())
+        return BuildResult(checkResult.errors);
+
+    auto & cfgOk = checkResult.result;
 
     StrSet		parents;
     ModuleMap   modules;
-    auto		result = getDependencies(modulePath, modules, parents, frtPath);
+    auto		result = getDependencies(modulePath, modules, parents, cfgOk.RuntimePath);
 
     if (!result.ok())
         return BuildResult(result.errors);
 
-    return buildWithDependencies(result.result.get(), builderPath);
+    return buildWithDependencies(result.result.get(), cfgOk);
 }
+
+/// <summary>
+/// Checks and completes the supplied configuration.
+/// </summary>
+/// <param name="cfg"></param>
+/// <returns></returns>
+OperationResult<BuilderConfig> checkConfig(const BuilderConfig& cfg)
+{
+    typedef OperationResult<BuilderConfig>  ResultType;
+
+    BuilderConfig   newCfg = cfg;
+
+    if (newCfg.BasePath.empty())
+    {
+        auto error = CompileError::create(ScriptPosition(), ETYPE_BASE_DIR_NOT_CONFIGURED);
+        return ResultType(error);
+    }
+
+    if (newCfg.RuntimePath.empty())
+    {
+        //Look for runtime lib.
+        newCfg.RuntimePath = findRuntime(cfg.BasePath);
+        if (newCfg.RuntimePath.empty())
+        {
+            auto error = CompileError::create(ScriptPosition(), ETYPE_CANNOT_FIND_RUNTIME);
+            return ResultType(error);
+        }
+    }
+
+    //TODO: By the moment, this is the only available platform
+    if (newCfg.PlatformName.empty())
+        newCfg.PlatformName = "Win32Sim";
+
+    if (newCfg.PlatformPath.empty())
+    {
+        newCfg.PlatformPath = joinPaths(cfg.BasePath, "platforms/" + newCfg.PlatformName);
+        newCfg.PlatformPath = normalizePath(newCfg.PlatformPath);
+    }
+
+    return ResultType(move(newCfg));
+}
+
 
 /// <summary>
 /// Obtains the dependency tree of a module.
@@ -105,7 +147,7 @@ DependenciesResult getDependencies(
 /// </summary>
 /// <param name="module"></param>
 /// <returns></returns>
-BuildResult buildWithDependencies(ModuleNode* module, const std::string& builderPath)
+BuildResult buildWithDependencies(ModuleNode* module, const BuilderConfig& cfg)
 {
     //TODO: This does not take into account the if the dependency modules are updated to 
     //update the build of the current module.
@@ -114,9 +156,9 @@ BuildResult buildWithDependencies(ModuleNode* module, const std::string& builder
         vector<CompileError>	errors;
 
         //First, check that all dependencies are up-to-date.
-        module->walkDependencies([&errors, builderPath](ModuleNode* dependency) {
+        module->walkDependencies([&errors, &cfg](ModuleNode* dependency) {
             //TODO: Optimization oportunity: The build of each module can be done in parallel.
-            auto r = buildWithDependencies(dependency, builderPath);
+            auto r = buildWithDependencies(dependency, cfg);
 
             if (!r.ok())
                 r.appendErrorsTo(errors);
@@ -126,7 +168,7 @@ BuildResult buildWithDependencies(ModuleNode* module, const std::string& builder
             return BuildResult(errors);
 
 
-        return buildModule(module, builderPath);
+        return buildModule(module, cfg);
     }
 
     return SuccessfulResult(true);
@@ -137,7 +179,7 @@ BuildResult buildWithDependencies(ModuleNode* module, const std::string& builder
 /// </summary>
 /// <param name="module"></param>
 /// <returns></returns>
-BuildResult	buildModule(ModuleNode* module, const std::string& builderPath)
+BuildResult	buildModule(ModuleNode* module, const BuilderConfig& cfg)
 {
     AstStr2NodesMap		modules;
     AstStr2NodesMap		sources;
@@ -172,7 +214,7 @@ BuildResult	buildModule(ModuleNode* module, const std::string& builderPath)
     }
 
     if (containsEntryPoint(r.result))
-        return buildExecutable(module, builderPath);
+        return buildExecutable(module, cfg);
     else
         return SuccessfulResult(true);
 
@@ -450,7 +492,7 @@ bool isEntryPoint(Ref<AstNode> node)
 /// </summary>
 /// <param name="module"></param>
 /// <returns></returns>
-BuildResult buildExecutable(ModuleNode* module, const std::string& builderPath)
+BuildResult buildExecutable(ModuleNode* module, const BuilderConfig& cfg)
 {
     assert(!module->buildNeeded());
 
@@ -461,7 +503,7 @@ BuildResult buildExecutable(ModuleNode* module, const std::string& builderPath)
         writeCCodeFile(code, module);
         _flushall();	//To ensure all generated files are written to the disk.
 
-        return compileC(module, builderPath);
+        return compileC(module, cfg);
     }
     catch (const CompileError & error)
     {
@@ -491,10 +533,10 @@ void writeCCodeFile(const std::string& code, ModuleNode* module)
 /// </summary>
 /// <param name="module"></param>
 /// <returns></returns>
-BuildResult compileC(ModuleNode* module, const std::string& builderPath)
+BuildResult compileC(ModuleNode* module, const BuilderConfig& cfg)
 {
-    string scriptPath = createCompileScript(module, builderPath);
-    string command = getCompileScriptCommand(module, builderPath);
+    string scriptPath = createCompileScript(module, cfg);
+    string command = getCompileScriptCommand(module, cfg);
 
     _flushall();
     int result = system(command.c_str());
@@ -519,9 +561,9 @@ BuildResult compileC(ModuleNode* module, const std::string& builderPath)
 /// </remarks>
 /// <param name="module">Module for which the script is going to be generated.</param>
 /// <returns>It returns the path of the created script on the filesystem</returns>
-std::string createCompileScript(ModuleNode* module, const std::string& builderPath)
+std::string createCompileScript(ModuleNode* module, const BuilderConfig& cfg)
 {
-    string scriptTemplate = getCompileScriptTemplate(builderPath);
+    string scriptTemplate = getCompileScriptTemplate(cfg.BasePath);
     string script = replaceScriptVariables(scriptTemplate, module);
 
     auto lines = split(script, "\n");
@@ -557,9 +599,9 @@ std::string createCompileScript(ModuleNode* module, const std::string& builderPa
 /// </summary>
 /// <param name="module"></param>
 /// <returns></returns>
-std::string getCompileScriptCommand(ModuleNode* module, const std::string& builderPath)
+std::string getCompileScriptCommand(ModuleNode* module, const BuilderConfig& cfg)
 {
-    string scriptTemplate = getCompileScriptTemplate(builderPath);
+    string scriptTemplate = getCompileScriptTemplate(cfg.BasePath);
 
     auto lines = split(scriptTemplate, "\n");
     if (lines.size() < 3)

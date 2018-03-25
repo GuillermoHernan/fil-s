@@ -44,6 +44,7 @@ enum ErrorTypes
     ETYPE_ERROR_LOADING_COMPILED_MODULE_1,
     ETYPE_NOT_CALLABLE,
     ETYPE_CANNOT_FIND_RUNTIME,
+    ETYPE_BASE_DIR_NOT_CONFIGURED, 
 
     //Add new error types above this line.
     //REMEMBER to add the description to 'errorTypeTemplate' function.

@@ -139,6 +139,7 @@ const char * errorTypeTemplate(ErrorTypes type)
         /*ETYPE_ERROR_LOADING_COMPILED_MODULE_1*/"Error loading compiled module at: %s",
         /*ETYPE_NOT_CALLABLE*/			"The expression does not evaluate to a callable object",
         /*ETYPE_CANNOT_FIND_RUNTIME*/   "Cannot find FIL-S runtime. Possibly, compiler install is corrupted.",
+        /*ETYPE_BASE_DIR_NOT_CONFIGURED*/"Compiler base directory not configured. Check compiler install."
     };
 
     return templates[type];
