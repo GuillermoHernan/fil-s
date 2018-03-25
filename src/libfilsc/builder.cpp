@@ -280,7 +280,7 @@ void scanImports(Ref<AstNode> ast, StrSet* moduleNames)
     for (auto node : ast->children())
     {
         if (node.notNull() && node->getType() == AST_IMPORT)
-            moduleNames->insert(node->child(0)->getValue());
+            moduleNames->insert(node->getValue());
     }
 }
 
