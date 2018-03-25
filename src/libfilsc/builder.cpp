@@ -30,7 +30,7 @@ BuildResult buildModule(const std::string& modulePath, const BuilderConfig& cfg)
 
     StrSet		parents;
     ModuleMap   modules;
-    auto		result = getDependencies(modulePath, modules, parents, cfgOk.RuntimePath);
+    auto		result = getDependencies(modulePath, modules, parents, cfgOk);
 
     if (!result.ok())
         return BuildResult(result.errors);
@@ -76,7 +76,30 @@ OperationResult<BuilderConfig> checkConfig(const BuilderConfig& cfg)
         newCfg.PlatformPath = normalizePath(newCfg.PlatformPath);
     }
 
+    if (newCfg.LibPaths.empty())
+    {
+        newCfg.LibPaths = getSystemLibPaths();
+        newCfg.LibPaths.push_back(newCfg.BasePath);
+        newCfg.LibPaths.push_back(newCfg.PlatformPath);
+    }
+
     return ResultType(move(newCfg));
+}
+
+/// <summary>
+/// Gets the default library paths.
+/// </summary>
+/// <returns></returns>
+StrList getSystemLibPaths()
+{
+    StrList	paths;
+
+    const char* varContent = getenv("FILS_LIBPATHS");
+
+    if (varContent != nullptr)
+        paths = split(varContent, ";");
+
+    return paths;
 }
 
 
@@ -92,7 +115,7 @@ DependenciesResult getDependencies(
     const std::string& modulePath,
     ModuleMap& modules,
     StrSet& parents,
-    const std::string& runtimePath)
+    const BuilderConfig& cfg)
 {
     try
     {
@@ -110,18 +133,18 @@ DependenciesResult getDependencies(
         if (!parseRes.ok())
             return DependenciesResult(parseRes.errors);
 
-        auto depResult = getDependentModules(node.get());
+        auto depResult = getDependentModules(node.get(), cfg);
         auto errorList = depResult.errors;
         auto childModules = depResult.result;
 
-        //All modules depend on runtime, except for itself.
-        if (modulePath != runtimePath)
-            childModules.push_back(runtimePath);
-
+        //All modules depend on runtime, except for itself, and the modules on which FRT depends.
         parents.insert(modulePath);
+        if (parents.count(cfg.RuntimePath) == 0)
+            childModules.push_back(cfg.RuntimePath);
+
         for (auto& childPath : childModules)
         {
-            auto childResult = getDependencies(childPath, modules, parents, runtimePath);
+            auto childResult = getDependencies(childPath, modules, parents, cfg);
 
             if (childResult.ok())
                 node->addDependency(childResult.result);
@@ -272,7 +295,7 @@ OperationResult<bool> parseSourceFiles(ModuleNode* module)
 /// </summary>
 /// <param name="module"></param>
 /// <returns>List of module paths</returns>
-OperationResult<StrList> getDependentModules(ModuleNode* module)
+OperationResult<StrList> getDependentModules(ModuleNode* module, const BuilderConfig& cfg)
 {
     ModuleRefsMap   modReferences;
 
@@ -289,7 +312,7 @@ OperationResult<StrList> getDependentModules(ModuleNode* module)
     StrList					modulePaths;
     for (auto& modRef : modReferences)
     {
-        auto resolveRes = resolveModuleName(module->path(), modRef.first, modRef.second);
+        auto resolveRes = resolveModuleName(module->path(), modRef.first, modRef.second, cfg);
 
         if (resolveRes.ok())
             modulePaths.push_back(resolveRes.result);
@@ -364,7 +387,8 @@ void scanImports(Ref<AstNode> ast, ModuleRefsMap* moduleRefs)
 OperationResult<std::string> resolveModuleName(
     const std::string& basePath,
     const std::string& moduleName,
-    const NodeSet& refNodes)
+    const NodeSet& refNodes,
+    const BuilderConfig& cfg)
 {
     assert(!refNodes.empty());
 
@@ -381,9 +405,7 @@ OperationResult<std::string> resolveModuleName(
     if (!result.empty())
         return SuccessfulResult(result);
 
-    StrList		systemLibPaths = getSystemLibPaths();
-
-    for (auto& libPath : systemLibPaths)
+    for (auto& libPath : cfg.LibPaths)
     {
         result = findModuleInDir(moduleName, libPath);
         if (!result.empty())
@@ -442,25 +464,6 @@ bool isModuleDirectory(const fs::path& modulePath)
     };
 
     return any_of(fs::directory_iterator(modulePath), fs::directory_iterator(), isSourceFile);
-}
-
-/// <summary>
-/// Gets the default library paths.
-/// </summary>
-/// <returns></returns>
-StrList getSystemLibPaths()
-{
-    static StrList	paths;
-
-    if (paths.empty())
-    {
-        const char* varContent = getenv("FILS_LIBPATHS");
-
-        if (varContent != nullptr)
-            paths = split(varContent, ";");
-    }
-
-    return paths;
 }
 
 /// <summary>

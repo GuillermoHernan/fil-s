@@ -4,6 +4,7 @@
 
 #pragma once
 #include <string>
+#include <vector>
 #include "operationResult.h"
 
 /// <summary>
@@ -11,10 +12,12 @@
 /// </summary>
 struct BuilderConfig
 {
-    std::string      BasePath;
-    std::string      RuntimePath;
-    std::string      PlatformName;
-    std::string      PlatformPath;
+    std::string     BasePath;
+    std::string     RuntimePath;
+    std::string     PlatformName;
+    std::string     PlatformPath;
+
+    std::vector<std::string>    LibPaths;
 };
 
 typedef OperationResult<bool> BuildResult;
