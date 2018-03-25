@@ -50,6 +50,8 @@ ExprResult parseIdentifier(LexToken token);
 
 ExprResult parsePrimaryExpr(LexToken token);
 ExprResult parseFunctionDef(LexToken token);
+ExprResult parseFunctionType(LexToken token);
+ExprResult parseInputType(LexToken token);
 ExprResult parseMemberAccess(LexToken token, Ref<AstNode> objExpr);
 
 ExprResult parseActorDef(LexToken token);

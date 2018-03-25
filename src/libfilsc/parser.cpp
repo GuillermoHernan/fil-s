@@ -399,7 +399,10 @@ ExprResult parseTypeSpecifier(LexToken token)
 /// <returns></returns>
 ExprResult parseTypeDescriptor(LexToken token)
 {
-    ExprResult r = parseIdentifier(token).orElse(parseTupleDef);
+    ExprResult r = parseIdentifier(token)
+        .orElse(parseTupleDef)
+        .orElse(parseFunctionType)
+        .orElse(parseInputType);
 
     if (r.ok() && r.result->getType() == AST_IDENTIFIER)
         r.result->changeType(AST_TYPE_NAME);
@@ -871,6 +874,71 @@ ExprResult parseFunctionDef(LexToken token)
 
     return r.final();
 }
+
+
+/// <summary>
+/// Parses a function type (header) declaration
+/// </summary>
+ExprResult parseFunctionType(LexToken token)
+{
+    ScriptPosition  pos = token.getPosition();
+    string          name;
+    auto			r = ExprResult::requireReserved("function", token);
+    int             flags = 0;
+
+    //Parameters tuple.
+    r = r.then(parseTupleDef);
+    auto params = r.result;
+
+    if (r.ok())
+        addFlagsToChildren(params, ASTF_FUNCTION_PARAMETER);
+
+    //return type (optional)
+    Ref<AstNode>	returnType;
+
+    if (r.ok() && r.nextText() == ":")
+    {
+        r = r.skip().then(parseTypeDescriptor);
+        returnType = r.result;
+    }
+
+    if (r.ok())
+    {
+        r.result = astCreateFunctionType(token.getPosition(), params, returnType);
+        r.result->addFlags(flags);
+    }
+
+    return r.final();
+}
+
+/// <summary>
+/// Parses an input message type declaration.
+/// </summary>
+/// <param name="token"></param>
+/// <returns></returns>
+ExprResult parseInputType(LexToken token)
+{
+    ScriptPosition  pos = token.getPosition();
+    string          name;
+    auto			r = ExprResult::requireReserved("input", token);
+    int             flags = 0;
+
+    //Parameters tuple.
+    r = r.then(parseTupleDef);
+    auto params = r.result;
+
+    if (r.ok())
+        addFlagsToChildren(params, ASTF_FUNCTION_PARAMETER);
+
+    if (r.ok())
+    {
+        r.result = astCreateInputType(token.getPosition(), params);
+        r.result->addFlags(flags);
+    }
+
+    return r.final();
+}
+
 
 /// <summary>
 /// Parses a primary expression (identifier, constant or parenthesis)

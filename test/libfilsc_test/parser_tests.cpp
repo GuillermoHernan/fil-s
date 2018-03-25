@@ -647,6 +647,66 @@ TEST(Parser, parseFunctionDef)
     EXPECT_EQ(2, children[0]->children().size());
 }
 
+/// <summary>
+/// Tests for 'parseFunctionType' function
+/// </summary>
+TEST(Parser, parseFunctionType)
+{
+    auto parseFunctionType_ = [](const char* code)
+    {
+        return checkAllParsed(code, parseFunctionType);
+    };
+
+    EXPECT_PARSE_OK(parseFunctionType_("function (x:int):int"));
+    EXPECT_PARSE_OK(parseFunctionType_("function (x:int)"));
+    EXPECT_PARSE_ERROR(parseFunctionType_("function (x:int):int {x*2}"));
+    EXPECT_PARSE_ERROR(parseFunctionType_("function (x:int):int x*2"));
+    EXPECT_PARSE_ERROR(parseFunctionType_("function name(x:int):int"));
+
+    auto parseR = parseFunctionType_("function (a:float, b:float): float");
+    auto r = parseR.result;
+
+    EXPECT_EQ(AST_FUNCTION_TYPE, r->getType());
+    EXPECT_STREQ("", r->getName().c_str());
+
+    auto& children = r->children();
+    ASSERT_EQ(2, children.size());
+    EXPECT_EQ(AST_TUPLE_DEF, children[0]->getType());
+    EXPECT_EQ(AST_TYPE_NAME, children[1]->getType());
+
+    EXPECT_EQ(2, children[0]->children().size());
+}
+
+/// <summary>
+/// Tests for 'parseInputType' function
+/// </summary>
+TEST(Parser, parseInputType)
+{
+    auto parseInputType_ = [](const char* code)
+    {
+        return checkAllParsed(code, parseInputType);
+    };
+
+    EXPECT_PARSE_ERROR(parseInputType_("input (x:int):int"));
+    EXPECT_PARSE_OK(parseInputType_("input (x:int)"));
+    EXPECT_PARSE_OK(parseInputType_("input ()"));
+    EXPECT_PARSE_ERROR(parseInputType_("input (x:int){x*2}"));
+    EXPECT_PARSE_ERROR(parseInputType_("input name(x:int)"));
+
+    auto parseR = parseInputType_("input (a:float, b:float)");
+    ASSERT_PARSE_OK(parseR);
+    auto r = parseR.result;
+
+    EXPECT_EQ(AST_INPUT_TYPE, r->getType());
+    EXPECT_STREQ("", r->getName().c_str());
+
+    auto& children = r->children();
+    ASSERT_EQ(1, children.size());
+    EXPECT_EQ(AST_TUPLE_DEF, children[0]->getType());
+
+    EXPECT_EQ(2, children[0]->children().size());
+}
+
 
 /// <summary>
 /// Tests for 'parsePrimaryExpr' function

@@ -30,6 +30,7 @@ enum AstNodeTypes
     , AST_FOR_EACH
     , AST_RETURN
     , AST_FUNCTION
+    , AST_FUNCTION_TYPE
     , AST_ASSIGNMENT
     , AST_FNCALL
     , AST_INTEGER
@@ -48,6 +49,7 @@ enum AstNodeTypes
     , AST_DEFAULT_TYPE
     , AST_TYPE_NAME
     , AST_INPUT
+    , AST_INPUT_TYPE
     , AST_OUTPUT
     , AST_UNNAMED_INPUT
     , AST_IMPORT
@@ -110,6 +112,10 @@ Ref<AstNode> astCreateFunction(ScriptPosition pos,
     Ref<AstNode> params,
     Ref<AstNode> returnType,
     Ref<AstNode> bodyExpr);
+Ref<AstNode> astCreateFunctionType(ScriptPosition pos,
+    Ref<AstNode> params,
+    Ref<AstNode> returnType);
+
 
 Ref<AstNode> astCreateBlock(LexToken token);
 Ref<AstNode> astCreateTuple(LexToken token);
@@ -149,6 +155,7 @@ Ref<AstNode> astCreateMemberAccess(ScriptPosition pos,
 Ref<AstNode> astCreateActor(ScriptPosition pos, const std::string& name);
 
 Ref<AstNode> astCreateInputMsg(ScriptPosition pos, const std::string& name);
+Ref<AstNode> astCreateInputType(ScriptPosition pos, Ref<AstNode> params);
 Ref<AstNode> astCreateOutputMsg(ScriptPosition pos, const std::string& name);
 Ref<AstNode> astCreateLiteral(LexToken token);
 Ref<AstNode> astCreateBool(ScriptPosition pos, bool value);

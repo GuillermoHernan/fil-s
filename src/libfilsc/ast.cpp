@@ -180,6 +180,22 @@ Ref<AstNode> astCreateFunction(ScriptPosition pos,
     return result;
 }
 
+/// <summary>
+/// Creates a function type AST node.
+/// </summary>
+/// <returns></returns>
+Ref<AstNode> astCreateFunctionType(ScriptPosition pos,
+    Ref<AstNode> params,
+    Ref<AstNode> returnType)
+{
+    auto result = AstNode::create(AST_FUNCTION_TYPE, pos);
+
+    result->addChild(params);
+    result->addChild(returnType);
+
+    return result;
+}
+
 
 Ref<AstNode> astCreateBlock(LexToken token)
 {
@@ -356,6 +372,21 @@ Ref<AstNode> astCreateInputMsg(ScriptPosition pos, const std::string& name)
     return AstNode::create(AST_INPUT, pos, name);
 }
 
+
+/// <summary>
+/// Creates a input type AST node.
+/// </summary>
+/// <returns></returns>
+Ref<AstNode> astCreateInputType(ScriptPosition pos, Ref<AstNode> params)
+{
+    auto result = AstNode::create(AST_INPUT_TYPE, pos);
+
+    result->addChild(params);
+
+    return result;
+}
+
+
 Ref<AstNode> astCreateOutputMsg(ScriptPosition pos, const std::string& name)
 {
     return AstNode::create(AST_OUTPUT, pos, name);
@@ -516,6 +547,7 @@ std::string astTypeToString(AstNodeTypes type)
         types[AST_FOR_EACH] = "AST_FOR_EACH";
         types[AST_RETURN] = "AST_RETURN";
         types[AST_FUNCTION] = "AST_FUNCTION";
+        types[AST_FUNCTION_TYPE] = "AST_FUNCTION_TYPE";
         types[AST_ASSIGNMENT] = "AST_ASSIGNMENT";
         types[AST_FNCALL] = "AST_FNCALL";
         types[AST_INTEGER] = "AST_INTEGER";
@@ -534,6 +566,7 @@ std::string astTypeToString(AstNodeTypes type)
         types[AST_DEFAULT_TYPE] = "AST_DEFAULT_TYPE";
         types[AST_TYPE_NAME] = "AST_TYPE_NAME";
         types[AST_INPUT] = "AST_INPUT";
+        types[AST_INPUT_TYPE] = "AST_INPUT_TYPE";
         types[AST_OUTPUT] = "AST_OUTPUT";
         types[AST_UNNAMED_INPUT] = "AST_UNNAMED_INPUT";
         types[AST_IMPORT] = "AST_IMPORT";
@@ -576,6 +609,7 @@ AstNodeTypes astTypeFromString(const std::string& str)
         types["AST_FOR_EACH"] = AST_FOR_EACH;
         types["AST_RETURN"] = AST_RETURN;
         types["AST_FUNCTION"] = AST_FUNCTION;
+        types["AST_FUNCTION_TYPE"] = AST_FUNCTION_TYPE;
         types["AST_ASSIGNMENT"] = AST_ASSIGNMENT;
         types["AST_FNCALL"] = AST_FNCALL;
         types["AST_INTEGER"] = AST_INTEGER;
@@ -594,6 +628,7 @@ AstNodeTypes astTypeFromString(const std::string& str)
         types["AST_DEFAULT_TYPE"] = AST_DEFAULT_TYPE;
         types["AST_TYPE_NAME"] = AST_TYPE_NAME;
         types["AST_INPUT"] = AST_INPUT;
+        types["AST_INPUT_TYPE"] = AST_INPUT_TYPE;
         types["AST_OUTPUT"] = AST_OUTPUT;
         types["AST_UNNAMED_INPUT"] = AST_UNNAMED_INPUT;
         types["AST_IMPORT"] = AST_IMPORT;
@@ -683,12 +718,14 @@ std::string astTypeToString(AstNode* node)
         return astTupleTypeToString(node);
 
     case AST_FUNCTION:
+    case AST_FUNCTION_TYPE:
         return astFunctionTypeToString(node);
 
     case AST_ACTOR:
         return string("actor '") + node->getName() + "'";
 
     case AST_INPUT:
+    case AST_INPUT_TYPE:
         return "input" + astTypeToString(astGetParameters(node));
 
     case AST_OUTPUT:
