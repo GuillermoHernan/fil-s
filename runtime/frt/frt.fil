@@ -2,7 +2,43 @@ import      "sscf"
 import[C]   "pcr"
 
 //Stops the program, and gives a result code (if meaningful in the system)
-function stop (code: int)
+function quit (code: int)
 {
 	//TODO: Implement it.
+}
+
+//TODO: This function shall be moved to a GPIO library.
+function digitalOut (address: int, value: bool)
+{
+	//TODO: Implement it.
+}
+
+/**Timer actor, used to receive periodic notifications.
+ * \param periodMS: Timer period, in milliseconds
+ */
+actor Timer (var periodMS: int)
+{
+	var timerID:int = timer_start(periodMS, tickInput)
+
+	output tick()
+	
+	input stop()
+	{
+		timer_stop (timerID)
+		timerID = -1
+	}
+	
+	input start()
+	{
+		if (timerID >= 0)
+			timer_stop (timerID)
+			
+		timerID = timer_start(periodMS, tickInput)
+	}
+	
+	input tickInput()
+	{
+		tick()
+	}
+
 }

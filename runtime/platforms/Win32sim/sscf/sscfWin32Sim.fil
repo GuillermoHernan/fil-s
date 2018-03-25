@@ -5,3 +5,9 @@
 
  //Link with the native 'C' library.
 import[C]   "ssccWin32Sim"
+
+//Starts a timer.
+function[C] timer_start(periodMS:int, tickInput:input()):int
+
+//Stops a timer.
+function[C] timer_stop (timerID:int ):()

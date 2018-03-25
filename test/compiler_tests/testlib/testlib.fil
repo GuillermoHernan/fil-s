@@ -3,8 +3,8 @@
  */
 
 //Marks the test as successful and stops the program. 
-function success ()
+function passed ()
 {
 	digitalOut (15,true);
-	stop(0);
+	quit(0);
 }
