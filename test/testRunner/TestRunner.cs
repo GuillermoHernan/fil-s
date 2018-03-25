@@ -106,6 +106,7 @@ namespace testRunner
                 var pi = new ProcessStartInfo(exePath, args);
 
                 pi.RedirectStandardOutput = true;
+                pi.UseShellExecute = false;
 
                 var proc = Process.Start(pi);
 
