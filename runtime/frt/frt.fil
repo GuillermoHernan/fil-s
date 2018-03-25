@@ -1,2 +1,8 @@
 import      "sscf"
 import[C]   "pcr"
+
+//Stops the program, and gives a result code (if meaningful in the system)
+function stop (code: int)
+{
+	//TODO: Implement it.
+}
