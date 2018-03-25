@@ -40,7 +40,7 @@ namespace testRunner
 
             foreach (var path in paths)
             {
-                if (!path.StartsWith("."))
+                if (!path.StartsWith(".") && !shouldIgnore(path))
                 {
                     if (runTest(path, compilerPath))
                         ++successCount;
@@ -57,6 +57,18 @@ namespace testRunner
             string message = String.Format("\nFinished. Passed: {0} Failed: {1}", successCount, failCount);
             Console.Out.WriteLine(message);
             Console.ResetColor();
+        }
+
+        /// <summary>
+        /// Checks if a test folder should be ignored.
+        /// </summary>
+        /// <param name="path"></param>
+        /// <returns></returns>
+        private static bool shouldIgnore(string path)
+        {
+            string ignoreFilePath = Path.Combine(path, "not_a_test.txt");
+
+            return File.Exists(ignoreFilePath);
         }
 
         /// <summary>
