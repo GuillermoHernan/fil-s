@@ -8,10 +8,11 @@
 
 class ModuleNode;
 class SourceFileNode;
-typedef std::unique_ptr<ModuleNode>	DepencencyTreePtr;
+typedef std::shared_ptr<ModuleNode>	DepencencyTreePtr;
 typedef std::unique_ptr<SourceFileNode>	SourceFileNodePtr;
 
-typedef std::vector<std::string>	StrList;
+typedef std::vector<std::string>	                StrList;
+typedef std::map<std::string, DepencencyTreePtr>    ModuleMap;
 
 /// <summary>
 /// Branch node of the dependecy tree, which is a module.

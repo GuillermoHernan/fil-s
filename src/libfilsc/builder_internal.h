@@ -16,17 +16,21 @@ namespace fs = std::experimental::filesystem;
 //useful, and this an internal header, which is included from very feww source files.
 
 
-typedef OperationResult<std::unique_ptr<ModuleNode>>	DependenciesResult;
-typedef std::vector< std::string >							StrList;
-typedef std::set< std::string >								StrSet;
-typedef std::set< AstNode* >								NodeSet;
-typedef std::map<std::string, NodeSet>                      ModuleRefsMap;
+typedef OperationResult<std::shared_ptr<ModuleNode>>    DependenciesResult;
+typedef std::vector< std::string >				        StrList;
+typedef std::set< std::string >						    StrSet;
+typedef std::set< AstNode* >				    		NodeSet;
+typedef std::map<std::string, NodeSet>                  ModuleRefsMap;
 
-DependenciesResult			getDependencies(const std::string& modulePath, StrSet& parents);
+DependenciesResult			getDependencies(
+    const std::string& modulePath, 
+    ModuleMap& modules,
+    StrSet& parents,
+    const std::string& runtimePath);
 BuildResult					buildWithDependencies(ModuleNode* module, const std::string& builderPath);
 BuildResult					buildModule(ModuleNode* module, const std::string& builderPath);
 
-DepencencyTreePtr           findRuntime(const std::string& builderPath);
+std::string                 findRuntime(const std::string& builderPath);
 
 BuildResult					parseSourceFiles(ModuleNode* module);
 OperationResult<StrList>	getDependentModules(ModuleNode* module);

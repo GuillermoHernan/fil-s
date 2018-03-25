@@ -20,19 +20,20 @@ using namespace std;
 /// <returns></returns>
 BuildResult buildModule(const std::string& modulePath, const std::string& builderPath)
 {
-    StrSet		parents;
-    auto		result = getDependencies(modulePath, parents);
-
-    if (!result.ok())
-        return BuildResult(result.errors);
-
-    //Add dependency to runtime.
-    auto frt = findRuntime(builderPath);
-    if (frt == nullptr)
+    //Look for runtime lib.
+    auto frtPath = findRuntime(builderPath);
+    if (frtPath.empty())
     {
         auto error = CompileError::create(ScriptPosition(), ETYPE_CANNOT_FIND_RUNTIME);
         return BuildResult(error);
     }
+
+    StrSet		parents;
+    ModuleMap   modules;
+    auto		result = getDependencies(modulePath, modules, parents, frtPath);
+
+    if (!result.ok())
+        return BuildResult(result.errors);
 
     return buildWithDependencies(result.result.get(), builderPath);
 }
@@ -41,15 +42,27 @@ BuildResult buildModule(const std::string& modulePath, const std::string& builde
 /// Obtains the dependency tree of a module.
 /// </summary>
 /// <param name="modulePath">Path of the module in the file system</param>
-/// <param name="parents">Set of paranet modules path to prevent circular references</param>
+/// <param name="modules">Cache of already loaded modules, to load them only once.</param>
+/// <param name="parents">Set of parent modules path to prevent circular references</param>
+/// <param name="runtimePath">Runtime library path. All modules depend of this library.</param>
 /// <returns></returns>
-DependenciesResult getDependencies(const std::string& modulePath, StrSet& parents)
+DependenciesResult getDependencies(
+    const std::string& modulePath,
+    ModuleMap& modules,
+    StrSet& parents,
+    const std::string& runtimePath)
 {
     try
     {
+        auto itModule = modules.find(modulePath);
+
+        if (itModule != modules.end())
+            return DependenciesResult(itModule->second);        //Modules cache hit.
+
         preventCircularReferences(modulePath, parents);
 
         DepencencyTreePtr	node(new ModuleNode(modulePath));
+        modules[modulePath] = node;
 
         auto parseRes = parseSourceFiles(node.get());
         if (!parseRes.ok())
@@ -59,20 +72,24 @@ DependenciesResult getDependencies(const std::string& modulePath, StrSet& parent
         auto errorList = depResult.errors;
         auto childModules = depResult.result;
 
+        //All modules depend on runtime, except for itself.
+        if (modulePath != runtimePath)
+            childModules.push_back(runtimePath);
+
         parents.insert(modulePath);
         for (auto& childPath : childModules)
         {
-            auto childResult = getDependencies(childPath, parents);
+            auto childResult = getDependencies(childPath, modules, parents, runtimePath);
 
             if (childResult.ok())
-                node->addDependency(move(childResult.result));
+                node->addDependency(childResult.result);
             else
                 childResult.appendErrorsTo(errorList);
         }
         parents.erase(modulePath);
 
         if (errorList.empty())
-            return DependenciesResult(move(node));
+            return DependenciesResult(node);
         else
             return DependenciesResult(errorList);
     }
@@ -166,14 +183,9 @@ BuildResult	buildModule(ModuleNode* module, const std::string& builderPath)
 /// </summary>
 /// <param name="builderPath"></param>
 /// <returns></returns>
-DepencencyTreePtr findRuntime(const std::string& builderPath)
+std::string findRuntime(const std::string& builderPath)
 {
-    string path = findModuleInDir("frt", fs::path(builderPath));
-
-    if (path == "")
-        return nullptr;
-    else
-        return DepencencyTreePtr (new ModuleNode(path));
+    return findModuleInDir("frt", fs::path(builderPath));
 }
 
 /// <summary>
@@ -217,7 +229,7 @@ OperationResult<bool> parseSourceFiles(ModuleNode* module)
 /// Gets the list of dependent modules from of a module.
 /// </summary>
 /// <param name="module"></param>
-/// <returns></returns>
+/// <returns>List of module paths</returns>
 OperationResult<StrList> getDependentModules(ModuleNode* module)
 {
     ModuleRefsMap   modReferences;
