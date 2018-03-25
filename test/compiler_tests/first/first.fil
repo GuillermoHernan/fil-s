@@ -4,14 +4,14 @@
  * and runtime are installed and working properly.
  */
  
- import "testlib"
+import "testlib"
  
- actor Main
- {
-	 const t1 = Timer(10)
+actor Main
+{
+	const t1 = Timer(10)
 	 
-	 t1.tick ->(){
-		 passed();
-	 }
- }
+	t1.tick ->(){
+		passed();
+	}
+}
  

@@ -19,6 +19,8 @@ namespace fs = std::experimental::filesystem;
 typedef OperationResult<std::unique_ptr<ModuleNode>>	DependenciesResult;
 typedef std::vector< std::string >							StrList;
 typedef std::set< std::string >								StrSet;
+typedef std::set< AstNode* >								NodeSet;
+typedef std::map<std::string, NodeSet>                      ModuleRefsMap;
 
 DependenciesResult			getDependencies(const std::string& modulePath, StrSet& parents);
 BuildResult					buildWithDependencies(ModuleNode* module, const std::string& builderPath);
@@ -30,8 +32,11 @@ BuildResult					parseSourceFiles(ModuleNode* module);
 OperationResult<StrList>	getDependentModules(ModuleNode* module);
 void						preventCircularReferences(const std::string& modulePath, StrSet& parents);
 
-void						scanImports(Ref<AstNode> ast, StrSet* moduleNames);
-OperationResult<std::string> resolveModuleName(const std::string& basePath, const std::string& moduleName);
+void						scanImports(Ref<AstNode> ast, ModuleRefsMap* moduleRefs);
+OperationResult<std::string> resolveModuleName(
+    const std::string& basePath, 
+    const std::string& moduleName,
+    const NodeSet& refNodes);
 
 std::string					findModuleInDir(const std::string& moduleName, const fs::path& directory);
 bool						isModuleDirectory(const fs::path& modulePath);

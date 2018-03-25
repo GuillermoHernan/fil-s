@@ -220,22 +220,22 @@ OperationResult<bool> parseSourceFiles(ModuleNode* module)
 /// <returns></returns>
 OperationResult<StrList> getDependentModules(ModuleNode* module)
 {
-    StrSet		modNames;
+    ModuleRefsMap   modReferences;
 
     if (!module->buildNeeded())
-        scanImports(module->getAST(), &modNames);
+        scanImports(module->getAST(), &modReferences);
     else
     {
-        module->walkSources([&modNames](auto file) {
-            scanImports(file->getAST(), &modNames);
+        module->walkSources([&modReferences](auto file) {
+            scanImports(file->getAST(), &modReferences);
         });
     }
 
     vector<CompileError>	errors;
     StrList					modulePaths;
-    for (auto& modName : modNames)
+    for (auto& modRef : modReferences)
     {
-        auto resolveRes = resolveModuleName(module->path(), modName);
+        auto resolveRes = resolveModuleName(module->path(), modRef.first, modRef.second);
 
         if (resolveRes.ok())
             modulePaths.push_back(resolveRes.result);
@@ -273,15 +273,30 @@ void preventCircularReferences(const std::string& modulePath, StrSet& parents)
 /// Scans an AST node for 'import' statements.
 /// </summary>
 /// <param name="ast"></param>
-/// <param name="moduleNames">Set of strings in which module names are stored.</param>
-void scanImports(Ref<AstNode> ast, StrSet* moduleNames)
+/// <param name="moduleRefs">Module references map. 
+/// Maps (Module name) => (Set of 'import' nodes which reference it)</param>
+void scanImports(Ref<AstNode> ast, ModuleRefsMap* moduleRefs)
 {
-    //It is not scanned recursively because import statements are only allowed at top level.
+    //Only module nodes are scanned recursively.
     for (auto node : ast->children())
     {
-        if (node.notNull() && node->getType() == AST_IMPORT)
-            moduleNames->insert(node->getValue());
-    }
+        if (node.notNull())
+        {
+            switch (node->getType())
+            {
+            case AST_IMPORT:
+                (*moduleRefs)[node->getValue()].insert(node.getPointer());
+                break;
+
+            case AST_MODULE:
+                scanImports(node, moduleRefs);
+                break;
+
+            default:
+                break;
+            }//switch
+        }//if
+    }//for
 }
 
 /// <summary>
@@ -289,9 +304,15 @@ void scanImports(Ref<AstNode> ast, StrSet* moduleNames)
 /// </summary>
 /// <param name="basePath"></param>
 /// <param name="moduleName"></param>
+/// <param name="refNodes">Nodes from which the module is referenced. To create compile errors.</param>
 /// <returns></returns>
-OperationResult<std::string> resolveModuleName(const std::string& basePath, const std::string& moduleName)
+OperationResult<std::string> resolveModuleName(
+    const std::string& basePath,
+    const std::string& moduleName,
+    const NodeSet& refNodes)
 {
+    assert(!refNodes.empty());
+
     fs::path	base(basePath);
     string		result;
 
@@ -314,10 +335,19 @@ OperationResult<std::string> resolveModuleName(const std::string& basePath, cons
             return SuccessfulResult(result);
     }
 
-    //TODO: Module not found errors should have a location.
-    return OperationResult<std::string>(CompileError::create(
-        ScriptPosition(), ETYPE_MODULE_NOT_FOUND_1, moduleName.c_str()
-    ));
+    //Create a compile error on each node which references the module.
+    vector<CompileError>    errors;
+    for (auto node : refNodes)
+    {
+        auto error = CompileError::create(
+            node->position(), 
+            ETYPE_MODULE_NOT_FOUND_1, 
+            moduleName.c_str());
+
+        errors.push_back(error);
+    }
+
+    return OperationResult<std::string>(errors);
 }
 
 //Looks for a module in a given directory.
