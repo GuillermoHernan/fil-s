@@ -37,12 +37,16 @@ SemanticResult semanticAnalysis(Ref<AstNode> node)
 /// <summary>
 /// Semantic analysis entry point, when modules are used.
 /// </summary>
+/// <param name="moduleName">Module name</param>
 /// <param name="sources">Map of source file names to its parsed ASTs. These ASTs are
 /// parsed, but not semantically analyzed.</param>
 /// <param name="modules">Compiled modules map. These are the modules on which the current 
 /// module depends. These ASTs are already semantically analyzed.</param>
 /// <returns></returns>
-SemanticResult semanticAnalysis(const AstStr2NodesMap& sources, const AstStr2NodesMap& modules)
+SemanticResult semanticAnalysis(
+    const std::string& moduleName,
+    const AstStr2NodesMap& sources, 
+    const AstStr2NodesMap& modules)
 {
     const auto &		passes = getSemAnalysisPasses();
     SemAnalysisState	state;
@@ -69,7 +73,7 @@ SemanticResult semanticAnalysis(const AstStr2NodesMap& sources, const AstStr2Nod
             return SemanticResult(errors);
     }
 
-    return buildModuleNode(resultNodes);
+    return buildModuleNode(resultNodes, moduleName);
 }
 
 
@@ -241,13 +245,23 @@ CompileError semError(Ref<AstNode> node, ErrorTypes type, ...)
 /// </summary>
 /// <param name="nodes"></param>
 /// <returns></returns>
-SemanticResult buildModuleNode(const AstStr2NodesMap& nodes)
+SemanticResult buildModuleNode(const AstStr2NodesMap& nodes, const std::string& name)
 {
-    //TODO: set real module name
-    auto moduleNode = astCreateModule("");
+    auto moduleNode = astCreateModule(name);
 
     for (auto& nodeEntry : nodes)
-        moduleNode->addChild(nodeEntry.second);
+    {
+        auto scriptNode = nodeEntry.second;
+        moduleNode->addChild(scriptNode);
+
+        //TODO: Check if it is the appropriate time to export the symbols. At this time,
+        //is late for node source files to share its contents.
+        for (auto item : scriptNode->children())
+        {
+            if (item.notNull() && !item->getName().empty())
+                moduleNode->addChild(item);
+        }
+    }
 
     return SemanticResult(moduleNode);
 }

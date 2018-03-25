@@ -30,5 +30,5 @@ SemanticResult semPreOrderWalk(PassFunction fn, SemAnalysisState& state, Ref<Ast
 
 CompileError semError(Ref<AstNode> node, ErrorTypes type, ...);
 
-SemanticResult buildModuleNode(const AstStr2NodesMap& nodes);
+SemanticResult buildModuleNode(const AstStr2NodesMap& nodes, const std::string& name);
 

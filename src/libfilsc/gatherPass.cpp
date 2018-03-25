@@ -140,7 +140,7 @@ CompileError importSymbols(const std::string& modName, Ref<AstNode> targetNode, 
 
     for (auto item : itMod->second->children())
     {
-        if (!item->getName().empty())
+        if (!item->getName().empty() && item->getName()[0] != '_')
             scope->add(item->getName(), item);
     }
 

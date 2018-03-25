@@ -218,7 +218,7 @@ BuildResult	buildModule(ModuleNode* module, const BuilderConfig& cfg)
         sources[srcFile->path()] = srcFile->getAST();
     });
 
-    auto r = semanticAnalysis(sources, modules);
+    auto r = semanticAnalysis(module->name(), sources, modules);
 
     if (!r.ok())
         return BuildResult(r.errors);
