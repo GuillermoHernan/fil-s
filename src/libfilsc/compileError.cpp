@@ -16,17 +16,11 @@ const char * errorTypeTemplate(ErrorTypes type);
 /// <param name="type"></param>
 /// <param name="args"></param>
 /// <returns></returns>
-static string generateErrorMessage(const ScriptPosition* pPos, ErrorTypes type, va_list args)
+static string generateErrorMessage(const ScriptPosition& pos, ErrorTypes type, va_list args)
 {
     char buffer[2048];
-    string message;
+    string message = pos.toString() + ": ";
     const char * msgFormat = errorTypeTemplate(type);
-
-    if (pPos)
-    {
-        sprintf_s(buffer, "(line: %d, col: %d): ", pPos->line(), pPos->column());
-        message = buffer;
-    }
 
     vsprintf_s(buffer, msgFormat, args);
     message += buffer;
@@ -43,7 +37,7 @@ static string generateErrorMessage(const ScriptPosition* pPos, ErrorTypes type, 
 /// <returns></returns>
 CompileError CompileError::create(const ScriptPosition& pos, ErrorTypes type, va_list args)
 {
-    const string text = generateErrorMessage(&pos, type, args);
+    const string text = generateErrorMessage(pos, type, args);
 
     return CompileError(text, pos, type);
 }

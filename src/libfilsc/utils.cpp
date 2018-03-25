@@ -480,7 +480,7 @@ std::string normalizePath(const std::string& path)
  */
 std::string joinPaths(const std::string& base, const std::string& relative)
 {
-    if (base.size() > 0 && *base.rbegin() != '/')
+    if (base.size() > 0 && !isPathSeparator(*base.rbegin()))
         return base + "/" + relative;
     else
         return base + relative;
@@ -507,6 +507,21 @@ bool isPathRelative(const std::string& path)
         return path[0] != '/';
 #endif
 }
+
+/// <summary>
+/// Checks if a character is a path separator.
+/// </summary>
+/// <param name="c"></param>
+/// <returns></returns>
+bool isPathSeparator(char c)
+{
+#ifdef _WIN32
+    if (c == '\\')
+        return true;
+#endif
+    return c == '/';
+}
+
 
 /**
  * Gets the current working directory of the process

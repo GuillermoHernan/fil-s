@@ -14,19 +14,18 @@ using namespace std;
  */
 string ScriptPosition::toString()const
 {
-    string result = "[";
+    string result = "[line: ";
 
     result += to_string(line());
-    result += ",";
+    result += ", col: ";
     result += to_string(column());
-    result += "]";
 
     if (m_file != nullptr)
     {
-        result += "(";
+        result += ", file: ";
         result += m_file->toString();
-        result += ")";
     }
+    result += "]";
 
     return result;
 }

@@ -45,7 +45,7 @@ ModuleNode::ModuleNode(const std::string& modulePath)
         for (auto& srcFile : sourcePaths)
         {
             //TODO: Verify that this is a reliable way to get the file name.
-            string name = srcFile.substr(modulePath.size());
+            string name = srcFile.substr(modulePath.size()+1);
             auto fileObj = SourceFile::create(moduleObj, name);
             m_sources.emplace_back(new SourceFileNode(fileObj));
         }

@@ -57,6 +57,7 @@ std::string fileFromPath(const std::string& szPath);
 std::string normalizePath(const std::string& path);
 std::string joinPaths(const std::string& base, const std::string& relative);
 bool isPathRelative(const std::string& path);
+bool isPathSeparator(char c);
 
 std::string getCurrentDirectory();
 
