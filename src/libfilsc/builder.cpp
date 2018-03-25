@@ -476,7 +476,17 @@ bool containsEntryPoint(Ref<AstNode> ast)
 {
     const auto & nodes = ast->children();
 
-    return any_of(nodes.begin(), nodes.end(), isEntryPoint);
+    switch (ast->getType())
+    {
+    case AST_MODULE:
+        return any_of(nodes.begin(), nodes.end(), containsEntryPoint);
+
+    case AST_SCRIPT:
+        return any_of(nodes.begin(), nodes.end(), isEntryPoint);
+
+    default:
+        return false;
+    }
 }
 
 /// <summary>
