@@ -230,7 +230,10 @@ Ref<AstNode> parseAST(const char* text)
 /// <param name="node"></param>
 void serializeAST(const std::string& path, Ref<AstNode> node)
 {
-    ofstream	outFile(path);
+    ofstream	outFile;
+
+    outFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
+    outFile.open(path);
 
     outFile << node;
 }

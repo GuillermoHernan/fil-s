@@ -108,6 +108,7 @@ void ModuleNode::setAST(Ref<AstNode> ast)
 
     try
     {
+        createDirIfNotExist(parentPath(path));
         serializeAST(path, ast);
         m_compiledAst = ast;
     }
