@@ -1,0 +1,5 @@
+This file is used just to indicate the test runner that this folder is not
+a test program and should not try to run it. 
+
+The test runner does not care about the this file contents, it just checks
+if it exists or not.

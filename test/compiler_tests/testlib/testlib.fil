@@ -1,0 +1,10 @@
+/*
+ * Library to support FIL-S compiler tests
+ */
+
+//Marks the test as successful and stops the program. 
+function success ()
+{
+	digitalOut (15,true);
+	stop(0);
+}
