@@ -6,7 +6,7 @@
  
 import "testlib"
  
-actor Main
+actor _Main
 {
 	const t1 = Timer(10)
 	 
