@@ -294,7 +294,10 @@ CompileError returnTypeCheck(Ref<AstNode> node, SemAnalysisState& state)
 CompileError functionDefTypeCheck(Ref<AstNode> node, SemAnalysisState& state)
 {
     auto body = node->child(2);
-    auto bodyType = body->getDataType();
+    auto bodyType = astGetVoid();
+    
+    if (body.notNull())
+        bodyType = body->getDataType();
 
     //The data type of the function is itself
     node->setDataType(node.getPointer());
@@ -311,6 +314,10 @@ CompileError functionDefTypeCheck(Ref<AstNode> node, SemAnalysisState& state)
 
         //If void is declared explicitly, then any type is valid for the body.
         if (astIsVoidType(declaredType))
+            return CompileError::ok();
+        
+        //If the function has no body, no type check is necessary.
+        if (body.isNull())
             return CompileError::ok();
         else
             return areTypesCompatible(declaredType, bodyType, node);
