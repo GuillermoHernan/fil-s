@@ -772,6 +772,9 @@ AstNode* astGetReturnType(AstNode* node)
     case AST_FUNCTION:
         return node->child(1)->getDataType();
 
+    case AST_ACTOR:
+        return node->getDataType();
+
     default:
         return astGetVoid();
     }
@@ -798,7 +801,10 @@ bool astCanBeCalled(const AstNode* node)
 {
     auto t = node->getType();
 
-    return t == AST_FUNCTION || t == AST_INPUT || t == AST_OUTPUT;
+    return t == AST_FUNCTION 
+        || t == AST_INPUT 
+        || t == AST_OUTPUT
+        || t == AST_ACTOR;
 }
 
 /// <summary>Checks if a type is boolean</summary>
