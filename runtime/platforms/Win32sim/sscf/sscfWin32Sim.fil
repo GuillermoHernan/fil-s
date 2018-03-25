@@ -1,0 +1,7 @@
+/*
+ * System specific runtime code for Win32 simulator. 
+ * FIL-S library.
+ */
+
+ //Link with the native 'C' library.
+import[C]   "ssccWin32Sim"
