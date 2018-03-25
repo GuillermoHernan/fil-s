@@ -369,9 +369,10 @@ StrList getSystemLibPaths()
 
     if (paths.empty())
     {
-        string	varContent = getenv("FILS_LIBPATHS");
+        const char* varContent = getenv("FILS_LIBPATHS");
 
-        paths = split(varContent, ";");
+        if (varContent != nullptr)
+            paths = split(varContent, ";");
     }
 
     return paths;
