@@ -297,7 +297,8 @@ void scanImports(Ref<AstNode> ast, ModuleRefsMap* moduleRefs)
             switch (node->getType())
             {
             case AST_IMPORT:
-                (*moduleRefs)[node->getValue()].insert(node.getPointer());
+                if (!node->hasFlag(ASTF_EXTERN_C))
+                    (*moduleRefs)[node->getValue()].insert(node.getPointer());
                 break;
 
             case AST_MODULE:

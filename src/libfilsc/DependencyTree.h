@@ -52,11 +52,11 @@ private:
     static StrList getModuleSources(const std::string& modulePath);
 
 private:
-    std::string						m_path;
-    std::vector<SourceFileNodePtr>	m_sources;
-    std::vector<ModuleNodePtr>	m_dependencies;
+    std::string                     m_path;
+    std::vector<SourceFileNodePtr>  m_sources;
+    std::vector<ModuleNodePtr>      m_dependencies;
 
-    Ref<AstNode>					m_compiledAst;
+    Ref<AstNode>                    m_compiledAst;
 };
 
 /// <summary>
