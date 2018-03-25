@@ -61,7 +61,7 @@ DependenciesResult getDependencies(
 
         preventCircularReferences(modulePath, parents);
 
-        DepencencyTreePtr	node(new ModuleNode(modulePath));
+        ModuleNodePtr	node(new ModuleNode(modulePath));
         modules[modulePath] = node;
 
         auto parseRes = parseSourceFiles(node.get());

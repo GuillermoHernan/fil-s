@@ -8,11 +8,11 @@
 
 class ModuleNode;
 class SourceFileNode;
-typedef std::shared_ptr<ModuleNode>	DepencencyTreePtr;
+typedef std::shared_ptr<ModuleNode>	ModuleNodePtr;
 typedef std::unique_ptr<SourceFileNode>	SourceFileNodePtr;
 
 typedef std::vector<std::string>	                StrList;
-typedef std::map<std::string, DepencencyTreePtr>    ModuleMap;
+typedef std::map<std::string, ModuleNodePtr>    ModuleMap;
 
 /// <summary>
 /// Branch node of the dependecy tree, which is a module.
@@ -22,7 +22,7 @@ class ModuleNode
 public:
     ModuleNode(const std::string& modulePath);
 
-    void addDependency(DepencencyTreePtr node);
+    void addDependency(ModuleNodePtr node);
 
     bool buildNeeded()const
     {
@@ -54,7 +54,7 @@ private:
 private:
     std::string						m_path;
     std::vector<SourceFileNodePtr>	m_sources;
-    std::vector<DepencencyTreePtr>	m_dependencies;
+    std::vector<ModuleNodePtr>	m_dependencies;
 
     Ref<AstNode>					m_compiledAst;
 };

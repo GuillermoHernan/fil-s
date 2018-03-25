@@ -63,7 +63,7 @@ ModuleNode::ModuleNode(const std::string& modulePath)
 /// Adds a new module from which this one depends on.
 /// </summary>
 /// <param name="node"></param>
-void ModuleNode::addDependency(DepencencyTreePtr node)
+void ModuleNode::addDependency(ModuleNodePtr node)
 {
     m_dependencies.emplace_back(move(node));
 }
