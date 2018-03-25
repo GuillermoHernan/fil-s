@@ -15,6 +15,9 @@ namespace testRunner
     /// </summary>
     class TestRunner
     {
+        private static readonly ConsoleColor SuccessColor = ConsoleColor.Green;
+        private static readonly ConsoleColor FailColor = ConsoleColor.Red;
+
         static void Main(string[] args)
         {            
             string compilerPath = findCompiler();
@@ -46,8 +49,14 @@ namespace testRunner
                 }
             }
 
-            string message = String.Format("Finished. Passed: {0} Failed: {1}", successCount, failCount);
+            if (failCount == 0)
+                Console.ForegroundColor = SuccessColor;
+            else
+                Console.ForegroundColor = FailColor;
+
+            string message = String.Format("\nFinished. Passed: {0} Failed: {1}", successCount, failCount);
             Console.Out.WriteLine(message);
+            Console.ResetColor();
         }
 
         /// <summary>
@@ -72,23 +81,49 @@ namespace testRunner
         private static bool compileTest(string path, string compilerPath)
         {
             var result = launchProcess(compilerPath, "\"" + path + "\"");
+            string name = Path.GetFileName(path);
 
             if (!result.launched)
             {
+                Console.ForegroundColor = FailColor;
                 Console.Out.WriteLine("Failed to launch compiler!");
+                Console.ResetColor();
+
                 return false;
             }
             else if (result.code == 0)
             {
-                Console.Out.WriteLine("PASSED: " + path);
+                Console.ForegroundColor = SuccessColor;
+                Console.Out.Write("[PASSED]: ");
+                Console.ResetColor();
+                Console.Out.WriteLine(name);
                 return true;
             }
             else
             {
-                Console.Out.WriteLine("FAILED: " + path);
-                Console.Out.WriteLine(result.stdout);
+                Console.ForegroundColor = FailColor;
+                Console.Out.Write("[FAILED]: ");
+                Console.ResetColor();
+                Console.Out.WriteLine(name);
+                Console.Out.WriteLine(indent(result.stdout, "    "));
                 return false;
             }
+        }
+
+        /// <summary>
+        /// Indents a text by prefixing all lines with the specified indent string.
+        /// </summary>
+        /// <param name="text"></param>
+        /// <param name="indentation"></param>
+        /// <returns></returns>
+        private static string indent(string text, string indentation)
+        {
+            string[] lines = text.Split("\n".ToCharArray());
+
+            for (int i = 0; i < lines.Length; ++i)
+                lines[i] = indentation + lines[i];
+
+            return String.Join("\n", lines);
         }
 
         /// <summary>
@@ -138,7 +173,9 @@ namespace testRunner
 
             if (!result.launched)
             {
+                Console.ForegroundColor = FailColor;
                 Console.Out.WriteLine("Failed to test program!");
+                Console.ResetColor();
                 return false;
             }
             else
