@@ -19,6 +19,8 @@ SemanticResult symbolGatherPass(Ref<AstNode> node, SemAnalysisState& state)
 
     if (operations.empty())
     {
+        operations.add(AST_SCRIPT, importRuntime);
+        operations.add(AST_IMPORT, importSymbols);
         operations.add(AST_FUNCTION, gatherSymbol);
         operations.add(AST_DECLARATION, gatherSymbol);
         operations.add(AST_TYPEDEF, gatherSymbol);
@@ -106,6 +108,61 @@ CompileError gatherParameters(Ref<AstNode> node, SemAnalysisState& state)
         }
     }
 }
+
+/// <summary>
+/// Imports the symbols from another module.
+/// Effectively implements 'import' sentence.
+/// </summary>
+/// <param name="node"></param>
+/// <param name="state"></param>
+/// <returns></returns>
+CompileError importSymbols(Ref<AstNode> node, SemAnalysisState& state)
+{
+    if (!node->hasFlag(ASTF_EXTERN_C))
+        return importSymbols(node->getValue(), state.parent(), state);
+    else
+        return CompileError::ok();
+}
+
+/// <summary>
+/// Imports the symbols from another referenced module.
+/// </summary>
+/// <param name="modName"></param>
+/// <param name="targetNode"></param>
+/// <param name="state"></param>
+/// <returns></returns>
+CompileError importSymbols(const std::string& modName, Ref<AstNode> targetNode, SemAnalysisState& state)
+{
+    auto scope = state.getScope(targetNode);
+
+    auto itMod = state.modules.find(modName);
+    assert(itMod != state.modules.end());
+
+    for (auto item : itMod->second->children())
+    {
+        if (!item->getName().empty())
+            scope->add(item->getName(), item);
+    }
+
+    return CompileError::ok();
+}
+
+/// <summary>
+/// Imports basic runtime module, if it is present among the dependencies.
+/// It is executed on 'AST_SCRIPT' nodes.
+/// </summary>
+/// <param name="node"></param>
+/// <param name="state"></param>
+/// <returns></returns>
+CompileError importRuntime(Ref<AstNode> node, SemAnalysisState& state)
+{
+    if (state.modules.count("frt") > 0)
+        return importSymbols("frt", node, state);
+    else
+        return CompileError::ok();
+}
+
+
 
 /// <summary>
 /// Defaults to 'const' any declaration for has no access specifier (var/const)
