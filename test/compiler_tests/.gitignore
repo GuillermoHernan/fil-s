@@ -2,3 +2,6 @@
 
 #Intermediate results directories.
 int
+
+#generated compile scripts
+c_compile.bat
