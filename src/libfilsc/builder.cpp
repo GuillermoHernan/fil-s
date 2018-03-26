@@ -587,11 +587,15 @@ std::string createCompileScript(ModuleNode* module, const BuilderConfig& cfg)
             "It should have, at least, 3 lines");
     }
 
+    //Handle Windows end of lines, if present.
+    for (auto& line : lines)
+        line = trim(line, "\r");
+
     //First line is the script name
     //Second line, the command to execute the script.
     //The script begins at the third line.
     string fileName = trim(lines[0]);
-    string path = joinPaths(module->path(), fileName);
+    string path = joinPaths(module->getIntermediateDir(), fileName);
 
     script = join(lines, "\n", 2);
     if (!writeTextFile(path, script))
@@ -660,12 +664,18 @@ std::string getCompileScriptTemplate(const BuilderConfig& cfg)
 /// <param name="scriptTemplate"></param>
 /// <param name="module"></param>
 /// <returns></returns>
-std::string	replaceScriptVariables(const std::string& scriptTemplate, ModuleNode* module)
+std::string	replaceScriptVariables(
+    const std::string& scriptTemplate, 
+    ModuleNode* module)
 {
     map<string, string>		internalVars;
 
     internalVars["ModulePath"] = module->path();
     internalVars["ModuleName"] = module->name();
+    internalVars["CFilePath"] = module->getCFilePath();
+    internalVars["IntermediateDir"] = module->getIntermediateDir();
+    internalVars["BinDir"] = module->getBinDir();
+
 
     string	result;
     size_t	curPosition = 0;

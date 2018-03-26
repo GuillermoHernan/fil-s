@@ -136,7 +136,9 @@ std::string ModuleNode::getCompiledPath()const
         return m_path;
     else
     {
-        auto compPath = modPath / "bin" / (this->name() + ".fast");
+        fs::path    base(getBinDir());
+        auto        compPath = base / (this->name() + ".fast");
+        
         return compPath.u8string();
     }
 }
@@ -147,11 +149,37 @@ std::string ModuleNode::getCompiledPath()const
 /// <returns></returns>
 std::string ModuleNode::getCFilePath()const
 {
-    fs::path	modPath(m_path);
-    auto		result = modPath / "int" / (this->name() + ".c");
+    fs::path	base(getIntermediateDir());
+    auto		result = base / "int" / (this->name() + ".c");
 
     return result.u8string();
 }
+
+/// <summary>
+/// Gets the path where intermeadiate products of the compilation process
+/// are stored.
+/// </summary>
+/// <returns></returns>
+std::string ModuleNode::getIntermediateDir()const
+{
+    fs::path	modPath(m_path);
+    auto		result = modPath / "int";
+
+    return result.u8string();
+}
+
+/// <summary>
+/// Gets the path where results (binaries) are stored for this module.
+/// </summary>
+/// <returns></returns>
+std::string ModuleNode::getBinDir()const
+{
+    fs::path	modPath(m_path);
+    auto		result = modPath / "bin";
+
+    return result.u8string();
+}
+
 
 /// <summary>
 /// Tries to load the AST from a file.

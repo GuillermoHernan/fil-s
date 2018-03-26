@@ -1,12 +1,12 @@
 c_compile.bat
-cmd /C "${ModulePath}\c_compile.bat" >NUL
+cmd /C "${IntermediateDir}\c_compile.bat" >NUL
 
 REM script starts here
 call "H:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvars32.bat"
-cd "${ModulePath}"
+cd "${IntermediateDir}"
 
-SET DRIVE="${ModulePath}"
+SET DRIVE=${IntermediateDir}
 SET DRIVE=%DRIVE:~0,2%
 %DRIVE%
 
-cl ${ModuleName}.c -nologo /FAs /Ox >${ModuleName}.compiler.out;
+cl "${CFilePath}" -nologo /FAs /Ox >"${IntermediateDir}\${ModuleName}.compiler.out"

@@ -44,6 +44,8 @@ public:
     const std::string&	path()const { return m_path; }
     std::string			getCompiledPath()const;
     std::string			getCFilePath()const;
+    std::string			getIntermediateDir()const;
+    std::string			getBinDir()const;
 
 private:
     bool tryLoadAst(const std::string& path);
