@@ -9,9 +9,13 @@ import "testlib"
 actor _Main
 {
 	const t1 = Timer(10)
+	const testCode = 17
 	 
 	t1.tick ->(){
-		passed();
+		if (testCode == 17)
+			passed();
+		else
+			failed();
 	}
 }
  

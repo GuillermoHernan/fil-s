@@ -8,3 +8,10 @@ function passed ()
 	digitalOut (15,true);
 	quit(0);
 }
+
+//MArks the test as failed and stops the program
+function failed ()
+{
+	digitalOut (15,false);
+	quit(-1);
+}
