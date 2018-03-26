@@ -719,7 +719,7 @@ std::string	replaceScriptVariables(const std::string& scriptTemplate, ModuleNode
 /// <returns></returns>
 FindVariableResult findScriptVariable(const std::string& scriptTemplate, size_t initialPosition)
 {
-    size_t begin = scriptTemplate.find("${");
+    size_t begin = scriptTemplate.find("${", initialPosition);
 
     if (begin == string::npos)
         return FindVariableResult("", string::npos);
@@ -728,7 +728,7 @@ FindVariableResult findScriptVariable(const std::string& scriptTemplate, size_t 
     if (end == string::npos)
         return FindVariableResult("", string::npos);
     else if (scriptTemplate[end] == '{')
-        return findScriptVariable(scriptTemplate, end + 1);
+        return findScriptVariable(scriptTemplate, end - 1);
     else
         return FindVariableResult(scriptTemplate.substr(begin + 2, end - (begin + 2)), begin);
 
