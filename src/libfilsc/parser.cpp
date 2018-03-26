@@ -1126,7 +1126,7 @@ ExprResult parseUnnamedInput(LexToken token)
 
     if (r.ok())
     {
-        //Change to member names, in oder to not be type-checked.
+        //Change to member names, in oRder to not be type-checked.
         for (auto pathItem : messageRoute->children())
             pathItem->changeType(AST_MEMBER_NAME);
 
