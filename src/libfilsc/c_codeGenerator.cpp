@@ -96,7 +96,7 @@ void codegen(Ref<AstNode> node, CodeGeneratorState& state, const IVariableInfo& 
         //by not keeping this list updated ;-)
         fill_n(types, AST_TYPES_COUNT, invalidNodeCodegen);
 
-        types[AST_MODULE] = nodeListCodegen;
+        types[AST_MODULE] = moduleCodegen;
         types[AST_SCRIPT] = nodeListCodegen;
         types[AST_TYPEDEF] = voidCodegen;
         types[AST_LIST] = invalidNodeCodegen;
@@ -185,6 +185,20 @@ void nodeListCodegen(Ref<AstNode> node, CodeGeneratorState& state, const IVariab
 
     for (auto child : node->children())
         codegen(child, state, VoidVariable());
+}
+
+/// <summary>
+/// Module code generation. Calls code generation for all the children 'AST_SCRIPT' nodes.
+/// </summary>
+void moduleCodegen(Ref<AstNode> node, CodeGeneratorState& state, const IVariableInfo& resultDest)
+{
+    assert(resultDest.isVoid());
+
+    for (auto child : node->children())
+    {
+        if (child.notNull() && child->getType() == AST_SCRIPT)
+            codegen(child, state, VoidVariable());
+    }
 }
 
 /// <summary>
