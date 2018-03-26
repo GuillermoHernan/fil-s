@@ -150,7 +150,7 @@ std::string ModuleNode::getCompiledPath()const
 std::string ModuleNode::getCFilePath()const
 {
     fs::path	base(getIntermediateDir());
-    auto		result = base / "int" / (this->name() + ".c");
+    auto		result = base / (this->name() + ".c");
 
     return result.u8string();
 }
