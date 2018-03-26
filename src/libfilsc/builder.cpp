@@ -576,7 +576,7 @@ BuildResult compileC(ModuleNode* module, const BuilderConfig& cfg)
 /// <returns>It returns the path of the created script on the filesystem</returns>
 std::string createCompileScript(ModuleNode* module, const BuilderConfig& cfg)
 {
-    string scriptTemplate = getCompileScriptTemplate(cfg.BasePath);
+    string scriptTemplate = getCompileScriptTemplate(cfg);
     string script = replaceScriptVariables(scriptTemplate, module);
 
     auto lines = split(script, "\n");
@@ -614,7 +614,7 @@ std::string createCompileScript(ModuleNode* module, const BuilderConfig& cfg)
 /// <returns></returns>
 std::string getCompileScriptCommand(ModuleNode* module, const BuilderConfig& cfg)
 {
-    string scriptTemplate = getCompileScriptTemplate(cfg.BasePath);
+    string scriptTemplate = getCompileScriptTemplate(cfg);
 
     auto lines = split(scriptTemplate, "\n");
     if (lines.size() < 3)
@@ -636,11 +636,11 @@ std::string getCompileScriptCommand(ModuleNode* module, const BuilderConfig& cfg
 /// FIL-S compiler/builder. This allows to change the compiler / compiler options
 /// easily.
 /// </remarks>
-/// <param name="builderPath">Path where the builder executable is located, to find the template</param>
+/// <param name="cfg">Build system configuration</param>
 /// <returns>Template contents in a std::string</returns>
-std::string getCompileScriptTemplate(const std::string& builderPath)
+std::string getCompileScriptTemplate(const BuilderConfig& cfg)
 {
-    string path = joinPaths(builderPath, "c_compile_script.tmpl");
+    string path = joinPaths(cfg.PlatformPath, "c_compile_template.tmpl");
 
     string content = readTextFile(path);
 

@@ -58,7 +58,7 @@ BuildResult					compileC(ModuleNode* module, const BuilderConfig& cfg);
 
 std::string					createCompileScript(ModuleNode* module, const BuilderConfig& cfg);
 std::string					getCompileScriptCommand(ModuleNode* module, const BuilderConfig& cfg);
-std::string					getCompileScriptTemplate(const std::string& builderPath);
+std::string					getCompileScriptTemplate(const BuilderConfig& cfg);
 std::string					replaceScriptVariables(const std::string& scriptTemplate, ModuleNode* module);
 
 /// <summary>
