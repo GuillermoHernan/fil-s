@@ -127,6 +127,7 @@ void codegen(Ref<AstNode> node, CodeGeneratorState& state, const IVariableInfo& 
         types[AST_OUTPUT] = outputMessageCodegen;
         types[AST_DEFAULT_TYPE] = invalidNodeCodegen;
         types[AST_TYPE_NAME] = voidCodegen;
+        types[AST_IMPORT] = voidCodegen;
     }
 
     if (node.notNull())
@@ -833,14 +834,14 @@ void generateActorInput(Ref<AstNode> actor, Ref<AstNode> input, CodeGeneratorSta
     //Declare a block for temporaries.
     CodegenBlock	functionBlock(state);
 
-    //TODO: Already don in struct creation pass. Confirm and delete.
+    //TODO: Already done in struct creation pass. Confirm and delete.
     //generateParamsStruct(input, state, "input message");
 
     //Header
     state.output() << "//Code for '" << input->getName() << "' input message\n";
     state.output() << genInputMsgHeader(actor, input, state) << "{\n";
 
-    codegen(input->child(0), state, VoidVariable());
+    codegen(input->child(2), state, VoidVariable());
 
     state.output() << "}\n\n";
 }
