@@ -291,7 +291,7 @@ std::string genInputMsgHeader(
 {
     const string actorCName = state.cname(actor);
     string fnCName = nameOverride;
-    auto params = input->child(0);
+    auto params = astGetParameters(input.getPointer());
     string result;
 
     if (nameOverride == "")
@@ -302,7 +302,7 @@ std::string genInputMsgHeader(
     result += "(" + actorCName + "* _gen_actor";
 
     if (params->childCount() == 0)
-        result += ")";
+        result += ", const void* _no_params)";
     else
         result += ", " + state.cname(params) + "* _gen_params)";
 

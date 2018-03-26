@@ -751,6 +751,9 @@ AstNode* astGetParameters(AstNode* node)
     case AST_OUTPUT:
         return node->child(0)->getDataType();
 
+    case AST_UNNAMED_INPUT:
+        return node->child(1)->getDataType();
+
     case AST_TUPLE:
     case AST_TUPLE_DEF:
         return node;
