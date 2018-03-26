@@ -66,7 +66,12 @@ void writeProlog(std::ostream& output)
         "typedef struct {\n"
         "  void *actorPtr;\n"
         "  void *inputPtr;\n"
-        "}MessageSlot;\n\n"
+        "}MessageSlot;\n"
+        "\n"
+        "typedef unsigned char bool;\n"
+        "static const bool true = 1;\n"
+        "static const bool false = 0;\n"
+        "\n"
         ;
 
     output << prolog;
