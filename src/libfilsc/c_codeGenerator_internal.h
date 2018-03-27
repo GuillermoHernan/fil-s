@@ -36,6 +36,8 @@ void callCodegen(Ref<AstNode> node, CodeGeneratorState& state, const IVariableIn
 void literalCodegen(Ref<AstNode> node, CodeGeneratorState& state, const IVariableInfo& resultDest);
 void varAccessCodegen(Ref<AstNode> node, CodeGeneratorState& state, const IVariableInfo& resultDest);
 void memberAccessCodegen(Ref<AstNode> node, CodeGeneratorState& state, const IVariableInfo& resultDest);
+void tupleMemberAccessCodegen(Ref<AstNode> node, CodeGeneratorState& state, const IVariableInfo& resultDest);
+void actorMemberAccessCodegen(Ref<AstNode> node, CodeGeneratorState& state, const IVariableInfo& resultDest);
 void binaryOpCodegen(Ref<AstNode> node, CodeGeneratorState& state, const IVariableInfo& resultDest);
 void prefixOpCodegen(Ref<AstNode> node, CodeGeneratorState& state, const IVariableInfo& resultDest);
 void postfixOpCodegen(Ref<AstNode> node, CodeGeneratorState& state, const IVariableInfo& resultDest);

@@ -618,6 +618,7 @@ void varAccessCodegen(Ref<AstNode> node, CodeGeneratorState& state, const IVaria
     }
 }
 
+
 /// <summary>
 /// Generates code for an access to member expression.
 /// </summary>
@@ -629,109 +630,91 @@ void memberAccessCodegen(
     if (resultDest.isVoid())
         return;
 
-    auto lexpr = node->child(0);
-    auto rnode = node->child(1);
-    auto ltype = lexpr->getDataType();
-    string msg;
-
-    TempVariable lexprResult(ltype, state, true);
-    codegen(lexpr, state, lexprResult);
+    auto ltype = node->child(0)->getDataType();
 
     switch (ltype->getType())
     {
     case AST_TUPLE:
     case AST_TUPLE_DEF:
-    {
-        string fieldName = rnode->getName();
-        int index = astFindMemberByName(ltype, fieldName);
-        
-        if (index < 0)
-        {
-            //This should not happen
-            //TODO: Just an assert?
-            errorAt(node->position(),
-                ETYPE_MEMBER_NOT_FOUND_2,
-                fieldName.c_str(),
-                astTypeToString(ltype).c_str());
-        }
-        
-        string fieldCName = state.cname(ltype->child(index));
+        tupleMemberAccessCodegen(node, state, resultDest);
+        return;
 
-        state.output() << resultDest << " = ";
-        if (resultDest.isReference)
-            state.output() << "&";
-        state.output() << lexprResult << "->" << fieldCName << ";\n";
-        break;
-    }
     case AST_ACTOR:
-        assert(!resultDest.isReference);
-        state.output() << resultDest << ".actorPtr = " << lexprResult << ";\n";
-        state.output() << resultDest << ".inputPtr = (void*)" << state.cname(rnode) << ";\n";
-        break;
+        actorMemberAccessCodegen(node, state, resultDest);
+        return;
 
     default:
-        msg = "Invalid left expression data type on member access: ";
-        msg += astTypeToString(ltype);
-        errorAt(node->position(),
-            ETYPE_CODE_GENERATION_ERROR_1,
-            msg.c_str());
-        break;
+        break;      //Will throw an error.
     }//switch
 
+    string msg = "Invalid left expression data type on member access: ";
+    msg += astTypeToString(ltype);
+    errorAt(node->position(),
+        ETYPE_CODE_GENERATION_ERROR_1,
+        msg.c_str());
 }
-//void memberAccessCodegen(
-//    Ref<AstNode> node,
-//    CodeGeneratorState& state,
-//    const IVariableInfo& variable)
-//{
-//    vector <string>	nameStack;
-//    auto curNode = node;
-//    AstNodeTypes	type;
-//
-//    do {
-//        type = curNode->getType();
-//
-//        if (type == AST_IDENTIFIER)
-//            nameStack.push_back(varAccessExpression(curNode, state));
-//        else if (type == AST_MEMBER_ACCESS)
-//        {
-//            auto tuple = curNode->child(0);
-//            auto tType = tuple->getDataType();
-//            string fieldName = curNode->child(1)->getName();
-//            int index = astFindMemberByName(tType, fieldName);
-//
-//            if (index < 0)
-//            {
-//                errorAt(node->position(),
-//                    ETYPE_MEMBER_NOT_FOUND_2,
-//                    fieldName.c_str(),
-//                    astTypeToString(tType).c_str());
-//            }
-//
-//            nameStack.push_back(state.cname(tType->child(index)));
-//            curNode = tuple;
-//        }
-//        else
-//        {
-//            TempVariable	temp(curNode, state, false);
-//
-//            codegen(curNode, state, temp);
-//            nameStack.push_back(temp.cname());
-//        }
-//    } while (type == AST_MEMBER_ACCESS);
-//
-//    assert(nameStack.size() >= 2);
-//
-//    if (!variable.isVoid())
-//    {
-//        std::reverse(nameStack.begin(), nameStack.end());
-//
-//        state.output() << variable << " = ";
-//        if (variable.isReference)
-//            state.output() << "&";
-//        state.output() << join(nameStack, ".") << ";\n";
-//    }
-//}
+
+/// <summary>
+/// Member access code generation for tuples.
+/// </summary>
+void tupleMemberAccessCodegen(
+    Ref<AstNode> node,
+    CodeGeneratorState& state,
+    const IVariableInfo& resultDest)
+{
+    auto lexpr = node->child(0);
+    auto rnode = node->child(1);
+    auto ltype = lexpr->getDataType();
+
+    bool refVariable = (lexpr->getType() == AST_MEMBER_ACCESS || lexpr->getType() == AST_IDENTIFIER);
+
+    TempVariable lexprResult(ltype, state, refVariable);
+    codegen(lexpr, state, lexprResult);
+
+    string  fieldName = rnode->getName();
+    int     index = astFindMemberByName(ltype, fieldName);
+
+    if (index < 0)
+    {
+        //This should not happen
+        //TODO: Just an assert?
+        errorAt(node->position(),
+            ETYPE_MEMBER_NOT_FOUND_2,
+            fieldName.c_str(),
+            astTypeToString(ltype).c_str());
+    }
+
+    string fieldCName = state.cname(ltype->child(index));
+
+    state.output() << resultDest << " = ";
+    if (resultDest.isReference)
+        state.output() << "&";
+    
+    const char* accessOp = refVariable ? "->" : ".";
+    state.output() << lexprResult << accessOp << fieldCName << ";\n";
+}
+
+/// <summary>
+/// Member access code generation for actors.
+/// It is used to access message endpoints. In the future, to access sockets.
+/// </summary>
+void actorMemberAccessCodegen(
+    Ref<AstNode> node,
+    CodeGeneratorState& state,
+    const IVariableInfo& resultDest)
+{
+    assert(!resultDest.isReference);
+    
+    auto lexpr = node->child(0);
+    auto rnode = node->child(1);
+    auto ltype = lexpr->getDataType();
+
+    TempVariable lexprResult(ltype, state, true);
+    codegen(lexpr, state, lexprResult);
+
+    state.output() << resultDest << ".actorPtr = " << lexprResult << ";\n";
+    state.output() << resultDest << ".inputPtr = (void*)" << state.cname(rnode) << ";\n";
+}
 
 /// <summary>
 /// Generates code for a binary operation
