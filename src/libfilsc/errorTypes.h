@@ -45,6 +45,7 @@ enum ErrorTypes
     ETYPE_NOT_CALLABLE,
     ETYPE_CANNOT_FIND_RUNTIME,
     ETYPE_BASE_DIR_NOT_CONFIGURED, 
+    ETYPE_CODE_GENERATION_ERROR_1,
 
     //Add new error types above this line.
     //REMEMBER to add the description to 'errorTypeTemplate' function.

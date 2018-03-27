@@ -602,11 +602,20 @@ void varAccessCodegen(Ref<AstNode> node, CodeGeneratorState& state, const IVaria
     if (resultDest.isVoid())
         return;
 
-    string accessExpression = varAccessExpression(node, state);
-    if (resultDest.isReference)
-        state.output() << resultDest.cname() << " = &" << accessExpression << ";\n";
+    if (node->getReference()->getType() == AST_INPUT)
+    {
+        assert(!resultDest.isReference);
+        state.output() << resultDest.cname() << ".actorPtr = _gen_actor;\n";
+        state.output() << resultDest.cname() << ".inputPtr = " << state.cname(node->getReference()) << ";\n";
+    }
     else
-        state.output() << resultDest.cname() << " = " << accessExpression << ";\n";
+    {
+        string accessExpression = varAccessExpression(node, state);
+        if (resultDest.isReference)
+            state.output() << resultDest.cname() << " = &" << accessExpression << ";\n";
+        else
+            state.output() << resultDest.cname() << " = " << accessExpression << ";\n";
+    }
 }
 
 /// <summary>
@@ -615,56 +624,98 @@ void varAccessCodegen(Ref<AstNode> node, CodeGeneratorState& state, const IVaria
 void memberAccessCodegen(
     Ref<AstNode> node,
     CodeGeneratorState& state,
-    const IVariableInfo& variable)
+    const IVariableInfo& resultDest)
 {
-    vector <string>	nameStack;
-    auto curNode = node;
-    AstNodeTypes	type;
+    if (resultDest.isVoid())
+        return;
 
-    do {
-        type = curNode->getType();
+    auto lexpr = node->child(0);
+    auto rnode = node->child(1);
+    auto ltype = lexpr->getDataType();
+    string msg;
 
-        if (type == AST_IDENTIFIER)
-            nameStack.push_back(varAccessExpression(curNode, state));
-        else if (type == AST_MEMBER_ACCESS)
-        {
-            auto tuple = curNode->child(0);
-            auto tType = tuple->getDataType();
-            string fieldName = curNode->child(1)->getName();
-            int index = astFindMemberByName(tType, fieldName);
+    TempVariable lexprResult(ltype, state, true);
+    codegen(lexpr, state, lexprResult);
 
-            if (index < 0)
-            {
-                errorAt(node->position(),
-                    ETYPE_MEMBER_NOT_FOUND_2,
-                    fieldName.c_str(),
-                    astTypeToString(tType).c_str());
-            }
-
-            nameStack.push_back(state.cname(tType->child(index)));
-            curNode = tuple;
-        }
-        else
-        {
-            TempVariable	temp(curNode, state, false);
-
-            codegen(curNode, state, temp);
-            nameStack.push_back(temp.cname());
-        }
-    } while (type == AST_MEMBER_ACCESS);
-
-    assert(nameStack.size() >= 2);
-
-    if (!variable.isVoid())
+    switch (ltype->getType())
     {
-        std::reverse(nameStack.begin(), nameStack.end());
-
-        state.output() << variable << " = ";
-        if (variable.isReference)
+    case AST_TUPLE:
+    case AST_TUPLE_DEF:
+        state.output() << resultDest << " = ";
+        if (resultDest.isReference)
             state.output() << "&";
-        state.output() << join(nameStack, ".") << ";\n";
-    }
+        state.output() << lexprResult << "->" << state.cname(rnode) << ";\n";
+        break;
+
+    case AST_ACTOR:
+        assert(!resultDest.isReference);
+        state.output() << resultDest << ".actorPtr = " << lexprResult << ";\n";
+        state.output() << resultDest << ".inputPtr = (void*)" << state.cname(rnode) << ";\n";
+        break;
+
+    default:
+        msg = "Invalid left expression data type on member access: ";
+        msg += astTypeToString(ltype);
+        errorAt(node->position(),
+            ETYPE_CODE_GENERATION_ERROR_1,
+            msg.c_str());
+        break;
+    }//switch
+
 }
+//void memberAccessCodegen(
+//    Ref<AstNode> node,
+//    CodeGeneratorState& state,
+//    const IVariableInfo& variable)
+//{
+//    vector <string>	nameStack;
+//    auto curNode = node;
+//    AstNodeTypes	type;
+//
+//    do {
+//        type = curNode->getType();
+//
+//        if (type == AST_IDENTIFIER)
+//            nameStack.push_back(varAccessExpression(curNode, state));
+//        else if (type == AST_MEMBER_ACCESS)
+//        {
+//            auto tuple = curNode->child(0);
+//            auto tType = tuple->getDataType();
+//            string fieldName = curNode->child(1)->getName();
+//            int index = astFindMemberByName(tType, fieldName);
+//
+//            if (index < 0)
+//            {
+//                errorAt(node->position(),
+//                    ETYPE_MEMBER_NOT_FOUND_2,
+//                    fieldName.c_str(),
+//                    astTypeToString(tType).c_str());
+//            }
+//
+//            nameStack.push_back(state.cname(tType->child(index)));
+//            curNode = tuple;
+//        }
+//        else
+//        {
+//            TempVariable	temp(curNode, state, false);
+//
+//            codegen(curNode, state, temp);
+//            nameStack.push_back(temp.cname());
+//        }
+//    } while (type == AST_MEMBER_ACCESS);
+//
+//    assert(nameStack.size() >= 2);
+//
+//    if (!variable.isVoid())
+//    {
+//        std::reverse(nameStack.begin(), nameStack.end());
+//
+//        state.output() << variable << " = ";
+//        if (variable.isReference)
+//            state.output() << "&";
+//        state.output() << join(nameStack, ".") << ";\n";
+//    }
+//}
 
 /// <summary>
 /// Generates code for a binary operation
