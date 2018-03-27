@@ -641,12 +641,28 @@ void memberAccessCodegen(
     {
     case AST_TUPLE:
     case AST_TUPLE_DEF:
+    {
+        string fieldName = rnode->getName();
+        int index = astFindMemberByName(ltype, fieldName);
+        
+        if (index < 0)
+        {
+            //This should not happen
+            //TODO: Just an assert?
+            errorAt(node->position(),
+                ETYPE_MEMBER_NOT_FOUND_2,
+                fieldName.c_str(),
+                astTypeToString(ltype).c_str());
+        }
+        
+        string fieldCName = state.cname(ltype->child(index));
+
         state.output() << resultDest << " = ";
         if (resultDest.isReference)
             state.output() << "&";
-        state.output() << lexprResult << "->" << state.cname(rnode) << ";\n";
+        state.output() << lexprResult << "->" << fieldCName << ";\n";
         break;
-
+    }
     case AST_ACTOR:
         assert(!resultDest.isReference);
         state.output() << resultDest << ".actorPtr = " << lexprResult << ";\n";
