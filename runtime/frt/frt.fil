@@ -18,10 +18,15 @@ function digitalOut (address: int, value: bool)
  */
 actor Timer (var periodMS: int)
 {
+	output tick()
+
+	input tickInput()
+	{
+		tick()
+	}
+
 	var timerID:int = timer_start(periodMS, tickInput)
 
-	output tick()
-	
 	input stop()
 	{
 		timer_stop (timerID)
@@ -35,10 +40,4 @@ actor Timer (var periodMS: int)
 			
 		timerID = timer_start(periodMS, tickInput)
 	}
-	
-	input tickInput()
-	{
-		tick()
-	}
-
 }
