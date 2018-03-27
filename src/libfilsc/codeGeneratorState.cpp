@@ -9,19 +9,25 @@ using namespace std;
 /// </summary>
 /// <param name="node"></param>
 /// <returns></returns>
-std::string CodeGeneratorState::cname(Ref<AstNode> node)
+std::string CodeGeneratorState::cname(AstNode* node)
 {
+    if (node->hasFlag(ASTF_EXTERN_C))
+        return node->getName();
+
     //This 'switch' handles special cases.
     switch (node->getType())
     {
     case AST_TYPEDEF:
-        return cname(node->child(0));
+        return cname(node->child(0).getPointer());
 
-    case AST_TUPLE_DEF:
     case AST_DEFAULT_TYPE:
+        return node->getName();
+
     case AST_TYPE_NAME:
-    case AST_ACTOR:
         return cname(node->getDataType());
+
+    case AST_INPUT_TYPE:
+        return "MessageSlot";
 
     default:
         break;
@@ -40,53 +46,10 @@ std::string CodeGeneratorState::cname(Ref<AstNode> node)
     }
 }
 
-/// <summary>
-/// Gets the name in 'C' source for the given data type.
-/// </summary>
-/// <param name="type"></param>
-/// <returns></returns>
-std::string CodeGeneratorState::cname(AstNode* type)
+std::string CodeGeneratorState::cname(Ref<AstNode> node)
 {
-    auto it = m_objNames.find(type);
-
-    if (it != m_objNames.end())
-        return it->second;
-    else
-    {
-        string name;
-
-        if (type->getType() == AST_DEFAULT_TYPE)
-            name = type->getName();
-        else
-            name = allocCName(type->getName());
-
-        m_objNames[type] = name;
-        return name;
-    }
+    return cname(node.getPointer());
 }
-
-//TODO: PRobably, this function is no longer necessary.
-///// <summary>
-///// Gets the name in 'C' source for the given member of a tuple type.
-///// </summary>
-///// <param name="tuple">Tuple type</param>
-///// <param name="index">Member index in the tuple</param>
-///// <returns></returns>
-//std::string CodeGeneratorState::tupleMemberCName(AstNode* tuple, int index)
-//{
-//	auto key = make_tuple(tuple, index);
-//	auto it = m_tupleMemberNames.find(key);
-//
-//	if (it != m_tupleMemberNames.end())
-//		return it->second;
-//	else
-//	{
-//		string name = allocCName(tuple->getMemberName(index));
-//
-//		m_tupleMemberNames[key] = name;
-//		return name;
-//	}
-//}
 
 /// <summary>
 /// Checks if the type already has an assigned 'C' name. 

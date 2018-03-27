@@ -29,6 +29,7 @@ SemanticResult typeCheckPass(Ref<AstNode> node, SemAnalysisState& state)
         functions.add(AST_IF, ifTypeCheck);
         functions.add(AST_RETURN, returnTypeAssign);
         functions.add(AST_FUNCTION, functionDefTypeCheck);
+        functions.add(AST_FUNCTION_TYPE, assignItselftAsType);
         functions.add(AST_ASSIGNMENT, assignmentTypeCheck);
         functions.add(AST_FNCALL, callTypeCheck);
         functions.add(AST_INTEGER, literalTypeAssign);
@@ -42,8 +43,9 @@ SemanticResult typeCheckPass(Ref<AstNode> node, SemAnalysisState& state)
         functions.add(AST_POSTFIXOP, postfixOpTypeCheck);
         functions.add(AST_DEFAULT_TYPE, defaultTypeAssign);
         functions.add(AST_ACTOR, actorTypeCheck);
-        functions.add(AST_INPUT, messageTypeCheck);
-        functions.add(AST_OUTPUT, messageTypeCheck);
+        functions.add(AST_INPUT, inputMessageTypeCheck);
+        functions.add(AST_INPUT_TYPE, assignItselftAsType);
+        functions.add(AST_OUTPUT, assignItselftAsType);
         functions.add(AST_UNNAMED_INPUT, unnamedInputTypeCheck);
 
         functions.add(AST_ASSIGNMENT, addTupleAdapter);
@@ -139,9 +141,7 @@ CompileError typeExistsCheck(Ref<AstNode> node, SemAnalysisState& state)
 CompileError tupleDefTypeCheck(Ref<AstNode> node, SemAnalysisState& state)
 {
     //The data type of a tuple definition is itself.
-    node->setDataType(node.getPointer());
-
-    return CompileError::ok();
+    return assignItselftAsType(node, state);
 }
 
 /// <summary>
@@ -174,9 +174,7 @@ CompileError typedefTypeCheck(Ref<AstNode> node, SemAnalysisState& state)
 CompileError tupleTypeCheck(Ref<AstNode> node, SemAnalysisState& state)
 {
     //The type of a tuple node is itself.
-    node->setDataType(node.getPointer());
-
-    return CompileError::ok();
+    return assignItselftAsType(node, state);
 }
 
 /// <summary>
@@ -300,6 +298,7 @@ CompileError functionDefTypeCheck(Ref<AstNode> node, SemAnalysisState& state)
         bodyType = body->getDataType();
 
     //The data type of the function is itself
+    //TODO: An 'AST_FUNCTION_TYPE' node should be created instead.
     node->setDataType(node.getPointer());
 
     //Infer return type if necessary.
@@ -323,6 +322,7 @@ CompileError functionDefTypeCheck(Ref<AstNode> node, SemAnalysisState& state)
             return areTypesCompatible(declaredType, bodyType, node);
     }
 }
+
 
 /// <summary>Type checking for assignment operations.</summary>
 CompileError assignmentTypeCheck(Ref<AstNode> node, SemAnalysisState& state)
@@ -569,21 +569,30 @@ CompileError defaultTypeAssign(Ref<AstNode> node, SemAnalysisState& state)
 CompileError actorTypeCheck(Ref<AstNode> node, SemAnalysisState& state)
 {
     //The data type of an actor is itself
+    return assignItselftAsType(node, state);
+}
+
+/// <summary>
+/// For nodes which are themselves a type.
+/// </summary>
+CompileError assignItselftAsType(Ref<AstNode> node, SemAnalysisState& state)
+{
     node->setDataType(node.getPointer());
 
     return CompileError::ok();
 }
 
-/// <summary>
-/// Performs type checking on actor messages (input & output).
+/// /// <summary>
+/// Performs type checking for input actor messages.
 /// </summary>
-/// <param name="node"></param>
-/// <param name="state"></param>
-/// <returns></returns>
-CompileError messageTypeCheck(Ref<AstNode> node, SemAnalysisState& state)
+CompileError inputMessageTypeCheck(Ref<AstNode> node, SemAnalysisState& state)
 {
-    //The data type of a message is itself
-    node->setDataType(node.getPointer());
+    //Create a type from the input message definition.
+    auto inType = astCreateInputType(node->position(), astGetParameters(node.getPointer()));
+
+    //It is added as a child, to link is lifetime to the message.
+    node->addChild(inType);
+    node->setDataType(inType.getPointer());
 
     return CompileError::ok();
 }
@@ -800,12 +809,12 @@ bool areTypesCompatible(AstNode* typeA, AstNode* typeB)
     auto a = typeA->getType();
     auto b = typeB->getType();
 
-    if (astIsTupleType(typeA) || astIsTupleType(typeB))
+    if (a == AST_FUNCTION_TYPE || a == AST_INPUT_TYPE)
+        return areFunctionTypesCompatible(typeA, typeB);
+    else if (astIsTupleType(typeA) || astIsTupleType(typeB))
         return areTuplesCompatible(typeA, typeB);
     else if (a != b)
         return false;
-    else if (a == AST_FUNCTION)
-        return false;		//Function are not assignable, by the moment.
     else
         return typeA->getName() == typeB->getName();
 }
@@ -847,6 +856,41 @@ bool areTuplesCompatible(AstNode* typeA, AstNode* typeB)
         }//else
     }//else
 }
+
+/// <summary>
+/// Checks if two function types are compatible.
+/// </summary>
+/// <param name="typeA"></param>
+/// <param name="typeB"></param>
+/// <returns></returns>
+bool areFunctionTypesCompatible(AstNode* typeA, AstNode* typeB)
+{
+    auto tA = typeA->getType();
+    auto tB = typeB->getType();
+
+    if (tA == AST_FUNCTION_TYPE)
+    {
+        if (tB != AST_FUNCTION_TYPE && tB != AST_FUNCTION)
+            return false;
+        else
+        {
+            if (!areTypesCompatible(astGetReturnType(typeA), astGetReturnType(typeB)))
+                return false;
+            else
+                return areTuplesCompatible(astGetParameters(typeA), astGetParameters(typeB));
+        }
+    }
+    else if (tA == AST_INPUT_TYPE)
+    {
+        if (tB != AST_INPUT_TYPE && tB != AST_INPUT)
+            return false;
+        else
+            return areTuplesCompatible(astGetParameters(typeA), astGetParameters(typeB));
+    }
+    else
+        return false;
+}
+
 
 /// <summary>Gets the common type for two types.</summary>
 /// <returns>Common type or 'null' if no common type can be found.</returns>

@@ -20,6 +20,7 @@ void voidCodegen(Ref<AstNode> node, CodeGeneratorState& state, const IVariableIn
 void invalidNodeCodegen(Ref<AstNode> node, CodeGeneratorState& state, const IVariableInfo& resultDest);
 void nodeListCodegen(Ref<AstNode> node, CodeGeneratorState& state, const IVariableInfo& resultDest);
 void moduleCodegen(Ref<AstNode> node, CodeGeneratorState& state, const IVariableInfo& resultDest);
+void declareFunction(AstNode* node, CodeGeneratorState& state);
 void functionCodegen(Ref<AstNode> node, CodeGeneratorState& state, const IVariableInfo& resultDest);
 //void typedefCodegen (Ref<AstNode> node, CodeGeneratorState& state, const IVariableInfo& resultDest);
 void blockCodegen(Ref<AstNode> node, CodeGeneratorState& state, const IVariableInfo& resultDest);

@@ -22,7 +22,7 @@ public:
     CodeGeneratorState& operator=(const CodeGeneratorState&) = delete;
 
     std::string cname(Ref<AstNode> node);
-    std::string cname(AstNode* type);
+    std::string cname(AstNode* node);
     //std::string tupleMemberCName(AstNode* tuple, int index);
     bool hasName(AstNode* type)const;
 

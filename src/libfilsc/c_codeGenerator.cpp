@@ -50,8 +50,26 @@ string generateCode(Ref<AstNode> node, std::function<bool(Ref<AstNode>)> entryPo
     for (auto& type : types)
         dataTypeCodegen(type, state);
 
+    //Get functions
+    auto functions = astGatherFunctions(node.getPointer());
+
+    //Declare functions.
+    for (auto& fn : functions)
+        declareFunction(fn, state);
+
+    state.output() << "\n\n";
+
+    //Generate functions code.
+    for (auto& fn : functions)
+        codegen(fn, state, VoidVariable());
+
+    //Actors code generation.
+    auto actors = astGatherActors(node.getPointer());
+    for (auto& actor : actors)
+        codegen(actor, state, VoidVariable());
+
     //Generate code for AST, starting at the root node.
-    codegen(node, state, VoidVariable());
+    //codegen(node, state, VoidVariable());
 
     return output.str();
 }
@@ -206,6 +224,16 @@ void moduleCodegen(Ref<AstNode> node, CodeGeneratorState& state, const IVariable
     }
 }
 
+
+/// <summary>
+/// Declares a function, so it can be used by the code below.
+/// </summary>
+void declareFunction(AstNode* node, CodeGeneratorState& state)
+{
+    state.output() << genFunctionHeader(node, state);
+    state.output() << ";\n";
+}
+
 /// <summary>
 /// Generates code for a function definition node.
 /// </summary>
@@ -215,25 +243,8 @@ void functionCodegen(Ref<AstNode> node, CodeGeneratorState& state, const IVariab
     CodegenBlock	functionBlock(state);
 
     //Generate code for the parameters tuple.
-    auto params = node->child(0);
-    auto retTuple = node->child(1);
-    auto fnCode = node->child(2);
+    auto fnCode = astGetFunctionBody(node.getPointer());
     auto returnType = astGetReturnType(node->getDataType());
-
-    //TODO: this is already done in struct creation pass. Delete when the change is consolidated.
-    //if (params->childCount() > 0)
-    //{
-    //	state.output() << "//Parameters for '" << node->getName() << "' function\n";
-    //	codegen(params, state, VoidVariable());
-    //}
-
-    //if (returnType->type() == DT_TUPLE)
-    //{
-    //	state.output() << "//Return value for '" << node->getName() << "' function\n";
-
-    //	//TODO: This may not work for inferred return types.
-    //	codegen(retTuple, state, VoidVariable());
-    //}
 
     state.output() << "//Code for '" << node->getName() << "' function\n";
     state.output() << genFunctionHeader(node, state);
@@ -570,6 +581,7 @@ void literalCodegen(Ref<AstNode> node, CodeGeneratorState& state, const IVariabl
     {
     case AST_INTEGER:
     case AST_FLOAT:
+    case AST_BOOL:
         state.output() << resultDest.cname() << " = " << node->getValue() << ";\n";
         break;
 
@@ -790,19 +802,18 @@ void generateActorConstructor(Ref<AstNode> node, CodeGeneratorState& state)
     //Necessary because initialization expression may require temporaries.
     CodegenBlock	functionBlock(state);
 
-    generateParamsStruct(node, state, "actor");
+    //generateParamsStruct(node, state, "actor");
 
     //Header
     state.output() << "//Code for '" << node->getName() << "' actor constructor\n";
     state.output() << genInputMsgHeader(node, node, state, fnCName) << "{\n";
 
     //Copy parameters
-    auto params = node->child(0);
-    for (auto param : params->children())
-    {
-        string paramName = state.cname(param);
-        state.output() << "_gen_actor->" << paramName << " = _gen_params->" << paramName << ";\n";
-    }
+    auto params = astGetParameters(node.getPointer());
+
+    if (params->childCount() > 0)
+        state.output() << "_gen_actor->params = *_gen_params;\n";
+
     state.output() << "\n";
 
     //Initialice members
@@ -860,7 +871,7 @@ void generateActorInput(Ref<AstNode> actor, Ref<AstNode> input, CodeGeneratorSta
     state.output() << "//Code for '" << input->getName() << "' input message\n";
     state.output() << genInputMsgHeader(actor, input, state) << "{\n";
 
-    codegen(input->child(2), state, VoidVariable());
+    codegen(astGetFunctionBody(input.getPointer()), state, VoidVariable());
 
     state.output() << "}\n\n";
 }

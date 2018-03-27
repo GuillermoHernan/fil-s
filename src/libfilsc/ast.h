@@ -86,12 +86,14 @@ AstNode*		astGetInt();
 std::string		astTypeToString(AstNode* typeNode);
 AstNode*		astGetParameters(AstNode* node);
 AstNode*		astGetReturnType(AstNode* node);
+AstNode*		astGetFunctionBody(AstNode* node);
 
 bool			astIsTupleType(const AstNode* node);
 bool			astCanBeCalled(const AstNode* node);
 bool			astIsBoolType(const AstNode* type);
 bool			astIsIntType(const AstNode* type);
 bool			astIsVoidType(const AstNode* type);
+bool            astIsDataType(const AstNode* node);
 
 int				astFindMemberByName(AstNode* node, const std::string& name);
 
@@ -168,6 +170,9 @@ Ref<AstNode> astCreateImport(ScriptPosition pos, const std::string& value, int f
 
 
 std::vector<AstNode*> astGatherTypes(Ref<AstNode> root);
+std::vector<AstNode*> astGatherFunctions(AstNode* root);
+std::vector<AstNode*> astGatherActors(AstNode* root);
+std::vector<AstNode*> astGatherAll(AstNode* root);
 
 class AstSerializeContext;
 

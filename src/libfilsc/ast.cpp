@@ -479,15 +479,38 @@ Ref<AstNode> astCreateImport(ScriptPosition pos, const std::string& value, int f
 }
 
 
-static void astGatherTypes(Ref<AstNode> root, set<AstNode*>& types)
+/// <summary>
+/// Gathers all nodes referenced from the AST tree.
+/// </summary>
+/// <param name="root"></param>
+/// <param name="nodes"></param>
+static void astGatherAll(AstNode* root, set<AstNode*>& nodes)
 {
-    types.insert(root->getDataType());
-    for (auto child : root->children())
+    if (nodes.count(root) == 0)
     {
-        if (child.notNull())
-            astGatherTypes(child, types);
+        nodes.insert(root);
+
+        //Visit its data type.
+        astGatherAll(root->getDataType(), nodes);
+
+        //Visit children
+        for (auto child : root->children())
+        {
+            if (child.notNull())
+                astGatherAll(child.getPointer(), nodes);
+        }
     }
 }
+
+//static void astGatherTypes(AstNode* root, set<AstNode*>& types)
+//{
+//    types.insert(root->getDataType());
+//    for (auto child : root->children())
+//    {
+//        if (child.notNull())
+//            astGatherTypes(child.getPointer(), types);
+//    }
+//}
 
 /// <summary>
 /// Gathers all types referenced from an AST tree.
@@ -497,11 +520,17 @@ static void astGatherTypes(Ref<AstNode> root, set<AstNode*>& types)
 /// <returns></returns>
 std::vector<AstNode*> astGatherTypes(Ref<AstNode> root)
 {
-    set<AstNode*>	types;
+    set<AstNode*>	all;
 
-    astGatherTypes(root, types);
+    astGatherAll(root.getPointer(), all);
 
-    vector<AstNode*> typesV(types.begin(), types.end());
+    vector<AstNode*> typesV;
+
+    for (auto node : all)
+    {
+        if (astIsDataType(node))
+            typesV.push_back(node);
+    }
 
     return dependencySort<AstNode*>(typesV, [](AstNode* node) {
         set<AstNode*>	types;
@@ -520,6 +549,75 @@ std::vector<AstNode*> astGatherTypes(Ref<AstNode> root)
     });
 }
 
+/// <summary>
+/// Gets all function nodes referenced from the AST
+/// It cannot returned in reference order, because functions are allowed to
+/// have circular references.
+/// </summary>
+/// <param name="root"></param>
+/// <returns></returns>
+std::vector<AstNode*> astGatherFunctions(AstNode* root)
+{
+    auto                all = astGatherAll(root);
+    vector<AstNode*>    result;
+
+    for (auto node : all)
+    {
+        if (node->getType() == AST_FUNCTION)
+            result.push_back(node);
+    }
+
+    return result;
+}
+
+/// <summary>
+/// Gathers all actors referenced from the tree.
+/// Returns them in dependency order.
+/// </summary>
+std::vector<AstNode*> astGatherActors(AstNode* root)
+{
+    set<AstNode*>	all;
+
+    astGatherAll(root, all);
+
+    vector<AstNode*> actors;
+
+    for (auto node : all)
+    {
+        if ( node->getType() == AST_ACTOR )
+            actors.push_back(node);
+    }
+
+    return dependencySort<AstNode*>(actors, [](AstNode* actor) {
+        set<AstNode*>	types;
+
+        for (auto child : actor->children())
+        {
+            if (child.notNull() && child->getType() == AST_DECLARATION)
+            {
+                auto type = child->getDataType();
+                if (type->getType() == AST_ACTOR)
+                    types.insert(type);
+            }
+        }
+
+        return types;
+    });
+}
+
+
+/// <summary>
+/// Gathers all nodes referenced from the AST tree.
+/// </summary>
+/// <param name="root"></param>
+/// <returns></returns>
+std::vector<AstNode*> astGatherAll(AstNode* root)
+{
+    set<AstNode*>   nodes;
+
+    astGatherAll(root, nodes);
+    return vector<AstNode*>(nodes.begin(), nodes.end());
+}
 
 /// <summary>
 /// Gets the string representation of an AST type
@@ -784,6 +882,28 @@ AstNode* astGetReturnType(AstNode* node)
 }
 
 /// <summary>
+/// Gets the function body node for several kinds of nodes.
+/// </summary>
+/// <param name="node"></param>
+/// <returns></returns>
+AstNode* astGetFunctionBody(AstNode* node)
+{
+    switch (node->getType())
+    {
+    case AST_FUNCTION:
+    case AST_UNNAMED_INPUT:
+        return node->child(2).getPointer();
+
+    case AST_INPUT:
+        return node->child(1).getPointer();
+
+    default:
+        assert(!"Not a function definition node.");
+        return astGetVoid();
+    }
+}
+
+/// <summary>
 /// Checks if the node represents a tuple data type.
 /// </summary>
 /// <param name="node"></param>
@@ -827,6 +947,24 @@ bool astIsVoidType(const AstNode* type)
 {
     return astIsTupleType(type) && type->childCount() == 0;
 }
+
+/// <summary>Checks if a node is a datatype</summary>
+bool astIsDataType(const AstNode* node)
+{
+    switch (node->getType())
+    {
+    case AST_TUPLE_DEF:
+    case AST_TUPLE:
+    case AST_ACTOR:
+    case AST_FUNCTION:
+    case AST_FUNCTION_TYPE:
+    case AST_INPUT_TYPE:
+        return true;
+    default:
+        return false;
+    }
+}
+
 
 /// <summary>
 /// Finds a child node by its name

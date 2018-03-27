@@ -44,7 +44,8 @@ CompileError literalTypeAssign(Ref<AstNode> node, SemAnalysisState& state);
 CompileError defaultTypeAssign(Ref<AstNode> node, SemAnalysisState& state);
 
 CompileError actorTypeCheck(Ref<AstNode> node, SemAnalysisState& state);
-CompileError messageTypeCheck(Ref<AstNode> node, SemAnalysisState& state);
+CompileError assignItselftAsType(Ref<AstNode> node, SemAnalysisState& state);
+CompileError inputMessageTypeCheck(Ref<AstNode> node, SemAnalysisState& state);
 CompileError unnamedInputTypeCheck(Ref<AstNode> node, SemAnalysisState& state);
 CompileError actorInstanceTypeCheck(Ref<AstNode> node, SemAnalysisState& state);
 AstNode* getConnectOutputType(Ref<AstNode> pathNode, SemAnalysisState& state);
@@ -60,6 +61,7 @@ CompileError setVoidType(Ref<AstNode> node, SemAnalysisState& state);
 CompileError	areTypesCompatible(AstNode* typeA, AstNode* typeB, Ref<AstNode> opNode);
 bool			areTypesCompatible(AstNode* typeA, AstNode* typeB);
 bool			areTuplesCompatible(AstNode* typeA, AstNode* typeB);
+bool            areFunctionTypesCompatible(AstNode* typeA, AstNode* typeB);
 AstNode*		getCommonType(AstNode* typeA, AstNode* typeB, SemAnalysisState& state);
 //Ref<AstNode> buildTupleDefFromTupleType(Ref<TupleType> tuple, const ScriptPosition& pos);
 
