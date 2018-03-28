@@ -88,6 +88,8 @@ void writeProlog(std::ostream& output)
         "  void *inputPtr;\n"
         "}MessageSlot;\n"
         "\n"
+        "void postMessage (const MessageSlot* address, const void* params, size_t paramsSize);\n"
+        "\n"
         "typedef unsigned char bool;\n"
         "static const bool true = 1;\n"
         "static const bool false = 0;\n"
