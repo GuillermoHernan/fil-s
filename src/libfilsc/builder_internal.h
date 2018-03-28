@@ -13,7 +13,7 @@
 //Change as appropiate of put an '#ifdef' to handle different compilers / standard library versions.
 namespace fs = std::experimental::filesystem;
 //I know that putting 'using namespace' in headers is not good practice, but in this case was quite
-//useful, and this an internal header, which is included from very feww source files.
+//useful, and this an internal header, which is included from few source files.
 
 
 typedef OperationResult<std::shared_ptr<ModuleNode>>    DependenciesResult;
