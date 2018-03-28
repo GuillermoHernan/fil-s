@@ -43,9 +43,9 @@ SemanticResult typeCheckPass(Ref<AstNode> node, SemAnalysisState& state)
         functions.add(AST_POSTFIXOP, postfixOpTypeCheck);
         functions.add(AST_DEFAULT_TYPE, defaultTypeAssign);
         functions.add(AST_ACTOR, actorTypeCheck);
-        functions.add(AST_INPUT, inputMessageTypeCheck);
-        functions.add(AST_INPUT_TYPE, assignItselftAsType);
-        functions.add(AST_OUTPUT, assignItselftAsType);
+        functions.add(AST_INPUT, messageTypeCheck);
+        functions.add(AST_MESSAGE_TYPE, assignItselftAsType);
+        functions.add(AST_OUTPUT, messageTypeCheck);
         functions.add(AST_UNNAMED_INPUT, unnamedInputTypeCheck);
 
         functions.add(AST_ASSIGNMENT, addTupleAdapter);
@@ -583,16 +583,16 @@ CompileError assignItselftAsType(Ref<AstNode> node, SemAnalysisState& state)
 }
 
 /// /// <summary>
-/// Performs type checking for input actor messages.
+/// Performs type checking for actor messages.
 /// </summary>
-CompileError inputMessageTypeCheck(Ref<AstNode> node, SemAnalysisState& state)
+CompileError messageTypeCheck(Ref<AstNode> node, SemAnalysisState& state)
 {
     //Create a type from the input message definition.
-    auto inType = astCreateInputType(node->position(), astGetParameters(node.getPointer()));
+    auto msgType = astCreateMessageType(node->position(), astGetParameters(node.getPointer()));
 
     //It is added as a child, to link is lifetime to the message.
-    node->addChild(inType);
-    node->setDataType(inType.getPointer());
+    node->addChild(msgType);
+    node->setDataType(msgType.getPointer());
 
     return CompileError::ok();
 }
@@ -677,7 +677,7 @@ AstNode* getConnectOutputType(Ref<AstNode> pathNode, SemAnalysisState& state)
         if (index < 0)
             return nullptr;
 
-        result = actor = actor->child(index)->getDataType();
+        result = actor = actor->child(index).getPointer();
     }
 
     if (i < pathNode->childCount() || result->getType() != AST_OUTPUT)
@@ -809,7 +809,7 @@ bool areTypesCompatible(AstNode* typeA, AstNode* typeB)
     auto a = typeA->getType();
     auto b = typeB->getType();
 
-    if (a == AST_FUNCTION_TYPE || a == AST_INPUT_TYPE)
+    if (a == AST_FUNCTION_TYPE || a == AST_MESSAGE_TYPE)
         return areFunctionTypesCompatible(typeA, typeB);
     else if (astIsTupleType(typeA) || astIsTupleType(typeB))
         return areTuplesCompatible(typeA, typeB);
@@ -880,9 +880,9 @@ bool areFunctionTypesCompatible(AstNode* typeA, AstNode* typeB)
                 return areTuplesCompatible(astGetParameters(typeA), astGetParameters(typeB));
         }
     }
-    else if (tA == AST_INPUT_TYPE)
+    else if (tA == AST_MESSAGE_TYPE)
     {
-        if (tB != AST_INPUT_TYPE && tB != AST_INPUT)
+        if (tB != AST_MESSAGE_TYPE && tB != AST_INPUT)
             return false;
         else
             return areTuplesCompatible(astGetParameters(typeA), astGetParameters(typeB));

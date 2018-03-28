@@ -374,12 +374,12 @@ Ref<AstNode> astCreateInputMsg(ScriptPosition pos, const std::string& name)
 
 
 /// <summary>
-/// Creates a input type AST node.
+/// Creates a message type AST node.
 /// </summary>
 /// <returns></returns>
-Ref<AstNode> astCreateInputType(ScriptPosition pos, Ref<AstNode> params)
+Ref<AstNode> astCreateMessageType(ScriptPosition pos, Ref<AstNode> params)
 {
-    auto result = AstNode::create(AST_INPUT_TYPE, pos);
+    auto result = AstNode::create(AST_MESSAGE_TYPE, pos);
 
     result->addChild(params);
 
@@ -664,7 +664,7 @@ std::string astTypeToString(AstNodeTypes type)
         types[AST_DEFAULT_TYPE] = "AST_DEFAULT_TYPE";
         types[AST_TYPE_NAME] = "AST_TYPE_NAME";
         types[AST_INPUT] = "AST_INPUT";
-        types[AST_INPUT_TYPE] = "AST_INPUT_TYPE";
+        types[AST_MESSAGE_TYPE] = "AST_MESSAGE_TYPE";
         types[AST_OUTPUT] = "AST_OUTPUT";
         types[AST_UNNAMED_INPUT] = "AST_UNNAMED_INPUT";
         types[AST_IMPORT] = "AST_IMPORT";
@@ -726,7 +726,7 @@ AstNodeTypes astTypeFromString(const std::string& str)
         types["AST_DEFAULT_TYPE"] = AST_DEFAULT_TYPE;
         types["AST_TYPE_NAME"] = AST_TYPE_NAME;
         types["AST_INPUT"] = AST_INPUT;
-        types["AST_INPUT_TYPE"] = AST_INPUT_TYPE;
+        types["AST_MESSAGE_TYPE"] = AST_MESSAGE_TYPE;
         types["AST_OUTPUT"] = AST_OUTPUT;
         types["AST_UNNAMED_INPUT"] = AST_UNNAMED_INPUT;
         types["AST_IMPORT"] = AST_IMPORT;
@@ -823,8 +823,9 @@ std::string astTypeToString(AstNode* node)
         return string("actor '") + node->getName() + "'";
 
     case AST_INPUT:
-    case AST_INPUT_TYPE:
         return "input" + astTypeToString(astGetParameters(node));
+    case AST_MESSAGE_TYPE:
+        return "message" + astTypeToString(astGetParameters(node));
 
     case AST_OUTPUT:
         return "output" + astTypeToString(astGetParameters(node));
@@ -927,6 +928,7 @@ bool astCanBeCalled(const AstNode* node)
     return t == AST_FUNCTION 
         || t == AST_INPUT 
         || t == AST_OUTPUT
+        || t == AST_MESSAGE_TYPE
         || t == AST_ACTOR;
 }
 
@@ -958,7 +960,7 @@ bool astIsDataType(const AstNode* node)
     case AST_ACTOR:
     case AST_FUNCTION:
     case AST_FUNCTION_TYPE:
-    case AST_INPUT_TYPE:
+    case AST_MESSAGE_TYPE:
         return true;
     default:
         return false;

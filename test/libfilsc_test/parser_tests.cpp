@@ -697,7 +697,7 @@ TEST(Parser, parseInputType)
     ASSERT_PARSE_OK(parseR);
     auto r = parseR.result;
 
-    EXPECT_EQ(AST_INPUT_TYPE, r->getType());
+    EXPECT_EQ(AST_MESSAGE_TYPE, r->getType());
     EXPECT_STREQ("", r->getName().c_str());
 
     auto& children = r->children();

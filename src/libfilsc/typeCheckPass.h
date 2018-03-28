@@ -45,7 +45,7 @@ CompileError defaultTypeAssign(Ref<AstNode> node, SemAnalysisState& state);
 
 CompileError actorTypeCheck(Ref<AstNode> node, SemAnalysisState& state);
 CompileError assignItselftAsType(Ref<AstNode> node, SemAnalysisState& state);
-CompileError inputMessageTypeCheck(Ref<AstNode> node, SemAnalysisState& state);
+CompileError messageTypeCheck(Ref<AstNode> node, SemAnalysisState& state);
 CompileError unnamedInputTypeCheck(Ref<AstNode> node, SemAnalysisState& state);
 CompileError actorInstanceTypeCheck(Ref<AstNode> node, SemAnalysisState& state);
 AstNode* getConnectOutputType(Ref<AstNode> pathNode, SemAnalysisState& state);

@@ -26,7 +26,7 @@ std::string CodeGeneratorState::cname(AstNode* node)
     case AST_TYPE_NAME:
         return cname(node->getDataType());
 
-    case AST_INPUT_TYPE:
+    case AST_MESSAGE_TYPE:
         return "MessageSlot";
 
     default:
@@ -89,21 +89,10 @@ void CodeGeneratorState::setCname(Ref<AstNode> node, const std::string& name)
 }
 
 /// <summary>
-/// Generates code for a type.
-/// It invokes the supplied type generation function
-/// </summary>
-/// <param name="type"></param>
-/// <param name="state"></param>
-void CodeGeneratorState::typeCodegen(AstNode* type, CodeGeneratorState& state)
-{
-    m_typeGenFN(type, state);
-}
-
-/// <summary>
 /// Constructor of CodeGeneratorState
 /// </summary>
-CodeGeneratorState::CodeGeneratorState(std::ostream* pOutput, TypeCodegenFN typeGenFN)
-    : m_output(pOutput), m_typeGenFN(typeGenFN)
+CodeGeneratorState::CodeGeneratorState(std::ostream* pOutput)
+    : m_output(pOutput)
 {
     assert(pOutput != NULL);
     //Create root block
@@ -251,10 +240,6 @@ std::ostream& operator << (std::ostream& output, const IVariableInfo& var)
 TempVariable::TempVariable(AstNode* type, CodeGeneratorState& state, bool ref)
     : IVariableInfo(ref), m_state(state), m_dataType(type)
 {
-    //If the datatype has not been declared in 'C' source, declare it.
-    if (!state.hasName(type))
-        state.typeCodegen(type, state);
-
     string	cTypeName = state.cname(type);
 
     if (state.allocTemp(cTypeName, m_cName, ref))

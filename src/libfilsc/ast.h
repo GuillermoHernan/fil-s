@@ -49,7 +49,7 @@ enum AstNodeTypes
     , AST_DEFAULT_TYPE
     , AST_TYPE_NAME
     , AST_INPUT
-    , AST_INPUT_TYPE
+    , AST_MESSAGE_TYPE
     , AST_OUTPUT
     , AST_UNNAMED_INPUT
     , AST_IMPORT
@@ -157,7 +157,7 @@ Ref<AstNode> astCreateMemberAccess(ScriptPosition pos,
 Ref<AstNode> astCreateActor(ScriptPosition pos, const std::string& name);
 
 Ref<AstNode> astCreateInputMsg(ScriptPosition pos, const std::string& name);
-Ref<AstNode> astCreateInputType(ScriptPosition pos, Ref<AstNode> params);
+Ref<AstNode> astCreateMessageType(ScriptPosition pos, Ref<AstNode> params);
 Ref<AstNode> astCreateOutputMsg(ScriptPosition pos, const std::string& name);
 Ref<AstNode> astCreateLiteral(LexToken token);
 Ref<AstNode> astCreateBool(ScriptPosition pos, bool value);

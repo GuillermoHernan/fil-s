@@ -932,7 +932,7 @@ ExprResult parseInputType(LexToken token)
 
     if (r.ok())
     {
-        r.result = astCreateInputType(token.getPosition(), params);
+        r.result = astCreateMessageType(token.getPosition(), params);
         r.result->addFlags(flags);
     }
 

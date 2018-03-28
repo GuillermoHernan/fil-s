@@ -12,10 +12,7 @@
 class CodeGeneratorState
 {
 public:
-    //typedef void(*TypeCodegenFN)(AstNode* type, CodeGeneratorState& state);
-    typedef std::function<void(AstNode*, CodeGeneratorState&)> TypeCodegenFN;
-
-    CodeGeneratorState(std::ostream* pOutput, TypeCodegenFN typeGenFN);
+    CodeGeneratorState(std::ostream* pOutput);
     ~CodeGeneratorState();
 
     CodeGeneratorState(const CodeGeneratorState&) = delete;
@@ -32,8 +29,6 @@ public:
     {
         return *m_output;
     }
-
-    void typeCodegen(AstNode* type, CodeGeneratorState& state);
 
 protected:
     void enterBlock();
@@ -65,9 +60,6 @@ private:
     typedef std::tuple< AstNode*, int>	TupleMemberKey;
 
     std::ostream*								m_output;
-    //TODO: Remove this callback. Is a horrible hack that is already causing problems.
-    //Replace it by a pass which declares all necessary structures.
-    TypeCodegenFN								m_typeGenFN;
     std::vector<BlockInfo>						m_blockStack;
     std::map< Ref<RefCountObj>, std::string>	m_objNames;
     std::map< TupleMemberKey, std::string>		m_tupleMemberNames;

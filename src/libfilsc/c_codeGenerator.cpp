@@ -35,7 +35,7 @@ string generateCode(Ref<AstNode> node)
 string generateCode(Ref<AstNode> node, std::function<bool(Ref<AstNode>)> entryPointFn)
 {
     ostringstream		output;
-    CodeGeneratorState	state(&output, [](auto t, auto& s) {tupleDefCodegen(t, s); });
+    CodeGeneratorState	state(&output);
 
     auto &topLevelItems = node->children();
     auto it = find_if(topLevelItems.begin(), topLevelItems.end(), entryPointFn);
@@ -81,6 +81,8 @@ string generateCode(Ref<AstNode> node, std::function<bool(Ref<AstNode>)> entryPo
 void writeProlog(std::ostream& output)
 {
     static const char* prolog =
+        "#include <stdlib.h>\n"
+        "\n"
         "typedef struct {\n"
         "  void *actorPtr;\n"
         "  void *inputPtr;\n"
@@ -545,27 +547,55 @@ void callCodegen(Ref<AstNode> node, CodeGeneratorState& state, const IVariableIn
     //By the moment, only direct function invocation is supported
     assert(fnExpr->getType() == AST_IDENTIFIER);
 
+    //TODO: Debug comment, remove.
+    //state.output() << "//Type: " << astTypeToString(fnExpr->getDataType()) << "\n";
+
     auto	fnNode = fnExpr->getReference();
+    auto    fnType = fnNode->getDataType();
     string	fnCName = state.cname(fnNode);
 
-    if (paramsExpr->childCount() == 0)
+    //TODO: Split in several functions.
+    if (fnType->getType() == AST_MESSAGE_TYPE)
     {
         assert(resultDest.isVoid());
+        TempVariable    addressTemp(fnType, state, false);
 
-        state.output() << fnCName << "();\n";
+        codegen(fnExpr, state, addressTemp);
+        if (paramsExpr->childCount() == 0)
+        {
+            state.output() << "postMessage (&" << addressTemp << ", NULL, 0);\n";
+        }
+        else
+        {
+            auto			paramsType = astGetParameters(fnType);
+            TempVariable	tmpParams(paramsType, state, false);
+
+            codegen(paramsExpr, state, tmpParams);
+            state.output() << "postMessage (&" << addressTemp << ", &" << tmpParams;
+            state.output() << ", sizeof(" << tmpParams << ")); \n";
+        }
     }
     else
     {
-        auto			fnType = fnNode->getDataType();
-        auto			paramsType = astGetParameters(fnType);
-        TempVariable	tmpParams(paramsType, state, false);
+        if (paramsExpr->childCount() == 0)
+        {
+            assert(resultDest.isVoid());
 
-        codegen(paramsExpr, state, tmpParams);
+            state.output() << fnCName << "();\n";
+        }
+        else
+        {
+            auto			paramsType = astGetParameters(fnType);
+            TempVariable	tmpParams(paramsType, state, false);
 
-        if (!resultDest.isVoid())
-            state.output() << resultDest.cname() << " = ";
+            codegen(paramsExpr, state, tmpParams);
 
-        state.output() << fnCName << "(&" << tmpParams.cname() << ");\n";
+            if (!resultDest.isVoid())
+                state.output() << resultDest.cname() << " = ";
+
+            state.output() << fnCName << "(&" << tmpParams.cname() << ");\n";
+        }
+
     }
 }
 
