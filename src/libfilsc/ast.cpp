@@ -848,6 +848,7 @@ AstNode* astGetParameters(AstNode* node)
     case AST_ACTOR:
     case AST_INPUT:
     case AST_OUTPUT:
+    case AST_MESSAGE_TYPE:
         return node->child(0)->getDataType();
 
     case AST_UNNAMED_INPUT:
