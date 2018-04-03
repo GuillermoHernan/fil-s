@@ -26,7 +26,9 @@ public:
 
     bool buildNeeded()const
     {
-        return m_compiledAst.isNull();
+        //TODO: While the build process is 'work in progress', modules are always rebuilt.
+        return true;
+        //return m_compiledAst.isNull();
     }
 
     void walkSources(std::function<void(SourceFileNode*)> fn)const;

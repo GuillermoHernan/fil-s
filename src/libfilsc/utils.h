@@ -24,7 +24,8 @@ bool isOctal(const std::string& str);
 bool isAlpha(char ch);
 bool isAlphaNum(const std::string &str);
 bool isIDString(const char *s);
-void replace(std::string &str, char textFrom, const char *textTo);
+void replaceIn(std::string &str, char textFrom, const char *textTo);
+std::string replace(const std::string& str, const std::string& textFrom, const std::string& textTo);
 
 bool startsWith(const std::string& str, const std::string& prefix);
 StringVector split(const std::string& str, const std::string& separator);

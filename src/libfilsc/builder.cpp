@@ -507,7 +507,8 @@ bool isEntryPoint(Ref<AstNode> node)
 /// <returns></returns>
 BuildResult buildExecutable(ModuleNode* module, const BuilderConfig& cfg)
 {
-    assert(!module->buildNeeded());
+    //TODO: re-enable this assert.
+    //assert(!module->buildNeeded());
 
     try
     {
@@ -516,7 +517,12 @@ BuildResult buildExecutable(ModuleNode* module, const BuilderConfig& cfg)
         writeCCodeFile(code, module);
         _flushall();	//To ensure all generated files are written to the disk.
 
-        return compileC(module, cfg);
+        auto deps = getCLibrariesDependencies(module, cfg);
+
+        if (!deps.ok())
+            return BuildResult(deps.errors);
+        else
+            return compileC(module, deps.result, cfg);
     }
     catch (const CompileError & error)
     {
@@ -544,11 +550,14 @@ void writeCCodeFile(const std::string& code, ModuleNode* module)
 /// <summary>
 /// Compiles 'C' code, invoking an external compiler.
 /// </summary>
-/// <param name="module"></param>
+/// <param name="module">Root module to build.</param>
+/// <param name="cLibraries">'C' libraries dependencies. In binary format (.lib, .a)
+/// It is map which maps each library name to its path.</param>
+/// <param name="cfg">Builder configuration</param>
 /// <returns></returns>
-BuildResult compileC(ModuleNode* module, const BuilderConfig& cfg)
+BuildResult compileC(ModuleNode* module, const StrMap& cLibraries, const BuilderConfig& cfg)
 {
-    string scriptPath = createCompileScript(module, cfg);
+    string scriptPath = createCompileScript(module, cLibraries, cfg);
     string command = getCompileScriptCommand(module, cfg);
 
     _flushall();
@@ -561,8 +570,142 @@ BuildResult compileC(ModuleNode* module, const BuilderConfig& cfg)
     }
     else
         return BuildResult(true);
-
 }
+
+/// <summary>
+/// Gets all 'C' libraries dependencies of a module.
+/// </summary>
+/// <param name="module"></param>
+/// <param name="cfg"></param>
+/// <returns></returns>
+OperationResult<StrMap> getCLibrariesDependencies(ModuleNode* module, const BuilderConfig& cfg)
+{
+    StrMap                  libraries;
+    vector<CompileError>    errors;
+
+    //TODO: Handle the case of a library with same name, but different location. Error?
+    //TODO: Múltiple errors if module appears several times in the dependency graph. That is
+    //legal. Circular references are illegal.
+
+    //Check child modules.
+    module->walkDependencies([&libraries, &errors, &cfg](auto childModule) {
+        auto r = getCLibrariesDependencies(childModule, cfg);
+
+        if (r.ok())
+            libraries.insert(r.result.begin(), r.result.end());
+        else
+            r.appendErrorsTo(errors);
+    });
+
+    auto importNodes = getCImports(module);
+
+    for (auto node : importNodes)
+    {
+        string name = node->getValue();
+
+        if (libraries.count(name) == 0)
+        {
+            string path = findCLibrary(name, module, cfg);
+
+            if (path.empty())
+            {
+                auto error = CompileError::create(node->position(),
+                    ETYPE_C_LIBRARY_NOT_FOUND_1, 
+                    externCLibraryFilename(name).c_str());
+                errors.push_back(error);
+            }
+            else
+                libraries[name] = path;
+        }
+    }
+
+    if (errors.empty())
+        return OperationResult<StrMap>(libraries);
+    else
+        return OperationResult<StrMap>(errors);
+}
+
+/// <summary>
+/// Finds 'import[C]' statements in a module.
+/// </summary>
+/// <param name="module"></param>
+/// <returns></returns>
+AstNodeList getCImports(ModuleNode* module)
+{
+    auto            ast = module->getAST();
+    AstNodeList     result;
+
+    assert(ast.notNull());
+
+    for (auto script : ast->children())
+    {
+        if (script->getType() == AST_SCRIPT)
+        {
+            for (auto node : script->children())
+            {
+                if (node->getType() == AST_IMPORT && node->hasFlag(ASTF_EXTERN_C))
+                    result.push_back(node);
+            }
+        }
+    }//for
+
+    return result;
+}
+
+/// <summary>
+/// Looks for a 'C' library imported by a module.
+/// </summary>
+/// <param name="name"></param>
+/// <param name="module"></param>
+/// <param name="cfg"></param>
+/// <returns></returns>
+std::string findCLibrary(const std::string& name, ModuleNode* module, const BuilderConfig& cfg)
+{
+    //TODO: The logic which defines the order in which directories are examined is copied
+    //from function 'resolveModuleName'. Look for a way to share this logic.
+
+    fs::path	base(module->path());
+    string      fileName = externCLibraryFilename(name);
+    string		result;
+    error_code	ec;
+
+    //Current module directory.
+    fs::path    libPath = base / fileName;
+    if (fs::is_regular_file(fs::status(libPath, ec)))
+        return libPath.u8string();
+
+    //Current module parent directory
+    libPath = base.parent_path() / fileName;
+    if (fs::is_regular_file(fs::status(libPath, ec)))
+        return libPath.u8string();
+
+    //Configured library paths.
+    for (auto& p : cfg.LibPaths)
+    {
+        libPath = fs::path(p) / fileName;
+        if (fs::is_regular_file(fs::status(libPath, ec)))
+            return libPath.u8string();
+    }
+
+    return "";
+}
+
+/// <summary>
+/// Gets the file name of an external 'C' library, given its name.
+/// </summary>
+/// <param name="name"></param>
+/// <returns></returns>
+std::string externCLibraryFilename(const std::string& name)
+{
+    //TODO: May be, this should be controlled by a configurable parameter, instead of
+    //a define, dependent of the compiler host architecture.
+#ifdef _WIN32
+    return name + ".lib";
+#else
+    return "lib" + name + ".a";
+#endif
+}
+
 
 /// <summary>
 /// Creates the script which is used to invoke the external 'C' compiler.
@@ -574,10 +717,13 @@ BuildResult compileC(ModuleNode* module, const BuilderConfig& cfg)
 /// </remarks>
 /// <param name="module">Module for which the script is going to be generated.</param>
 /// <returns>It returns the path of the created script on the filesystem</returns>
-std::string createCompileScript(ModuleNode* module, const BuilderConfig& cfg)
+std::string createCompileScript(
+    ModuleNode* module, 
+    const StrMap& cLibraries, 
+    const BuilderConfig& cfg)
 {
     string scriptTemplate = getCompileScriptTemplate(cfg);
-    string script = replaceScriptVariables(scriptTemplate, module);
+    string script = replaceScriptVariables(scriptTemplate, cLibraries, module);
 
     auto lines = split(script, "\n");
     if (lines.size() < 3)
@@ -629,7 +775,7 @@ std::string getCompileScriptCommand(ModuleNode* module, const BuilderConfig& cfg
     }
 
     //The script invokation command is at the second line of the script template.
-    return replaceScriptVariables(lines[1], module);
+    return replaceScriptVariables(lines[1], StrMap(), module);
 }
 
 /// <summary>
@@ -662,20 +808,33 @@ std::string getCompileScriptTemplate(const BuilderConfig& cfg)
 /// Replaces variables in the script template, in order to generate the 'C' compile script.
 /// </summary>
 /// <param name="scriptTemplate"></param>
+/// <param name="cLibraries"></param>
 /// <param name="module"></param>
 /// <returns></returns>
 std::string	replaceScriptVariables(
     const std::string& scriptTemplate, 
+    const StrMap& cLibraries,
     ModuleNode* module)
 {
     map<string, string>		internalVars;
+    set<string>             libPathsSet;
+    vector<string>          libraries;
+
+    for (auto& libEntry : cLibraries)
+    {
+        string path = replace (libEntry.second, "\\", "/");
+        libPathsSet.insert("\"" + path + "\"");
+        libraries.push_back("\"" + libEntry.first + "\"");
+    }
+    vector<string> libPaths (libPathsSet.begin(), libPathsSet.end());
 
     internalVars["ModulePath"] = module->path();
     internalVars["ModuleName"] = module->name();
     internalVars["CFilePath"] = module->getCFilePath();
     internalVars["IntermediateDir"] = module->getIntermediateDir();
     internalVars["BinDir"] = module->getBinDir();
-
+    internalVars["LibPaths"] = join(libPaths, ",");
+    internalVars["LibNames"] = join(libraries, ",");
 
     string	result;
     size_t	curPosition = 0;

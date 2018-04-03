@@ -44,7 +44,7 @@ public:
 
     /// <summary>
     /// Combine two results.
-    /// If both operations are sucessful, it yields the second one (the parameter)
+    /// If both operations are successful, it yields the second one (the parameter)
     /// </summary>
     /// <returns>The return type is the result type of the parameter.</returns>
     template <class O>

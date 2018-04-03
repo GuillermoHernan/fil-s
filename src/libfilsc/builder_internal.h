@@ -19,6 +19,7 @@ namespace fs = std::experimental::filesystem;
 typedef OperationResult<std::shared_ptr<ModuleNode>>    DependenciesResult;
 typedef std::vector< std::string >				        StrList;
 typedef std::set< std::string >						    StrSet;
+typedef std::map<std::string, std::string>              StrMap;
 typedef std::set< AstNode* >				    		NodeSet;
 typedef std::map<std::string, NodeSet>                  ModuleRefsMap;
 
@@ -54,12 +55,23 @@ bool						isEntryPoint(Ref<AstNode> node);
 
 BuildResult					buildExecutable(ModuleNode* module, const BuilderConfig& cfg);
 void						writeCCodeFile(const std::string& code, ModuleNode* module);
-BuildResult					compileC(ModuleNode* module, const BuilderConfig& cfg);
+BuildResult					compileC(ModuleNode* module, const StrMap& cLibraries, const BuilderConfig& cfg);
 
-std::string					createCompileScript(ModuleNode* module, const BuilderConfig& cfg);
+OperationResult<StrMap>     getCLibrariesDependencies(ModuleNode* module, const BuilderConfig& cfg);
+AstNodeList                 getCImports(ModuleNode* module);
+std::string                 findCLibrary(
+    const std::string& name, 
+    ModuleNode* module, 
+    const BuilderConfig& cfg);
+std::string                 externCLibraryFilename(const std::string& name);
+
+std::string					createCompileScript(ModuleNode* module, const StrMap& cLibraries, const BuilderConfig& cfg);
 std::string					getCompileScriptCommand(ModuleNode* module, const BuilderConfig& cfg);
 std::string					getCompileScriptTemplate(const BuilderConfig& cfg);
-std::string					replaceScriptVariables(const std::string& scriptTemplate, ModuleNode* module);
+std::string					replaceScriptVariables(
+    const std::string& scriptTemplate, 
+    const StrMap& cLibraries, 
+    ModuleNode* module);
 
 /// <summary>
 /// Result for a 'findScriptVariable' operation.

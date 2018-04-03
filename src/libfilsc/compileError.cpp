@@ -141,6 +141,7 @@ const char * errorTypeTemplate(ErrorTypes type)
         /*ETYPE_CANNOT_FIND_RUNTIME*/   "Cannot find FIL-S runtime. Possibly, compiler install is corrupted.",
         /*ETYPE_BASE_DIR_NOT_CONFIGURED*/"Compiler base directory not configured. Check compiler install.",
         /*ETYPE_CODE_GENERATION_ERROR_1*/"Internal code generation error: %s",
+        /*ETYPE_C_LIBRARY_NOT_FOUND_1*/ "'C' library not found: %s",
     };
 
     return templates[type];

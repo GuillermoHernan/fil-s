@@ -69,7 +69,7 @@ bool isIDString(const char *s)
     return true;
 }
 
-void replace(string &str, char textFrom, const char *textTo)
+void replaceIn(string &str, char textFrom, const char *textTo)
 {
     int sLen = strlen(textTo);
     size_t p = str.find(textFrom);
@@ -79,6 +79,27 @@ void replace(string &str, char textFrom, const char *textTo)
         p = str.find(textFrom, p + sLen);
     }
 }
+
+std::string replace(const std::string& str, const std::string& textFrom, const std::string& textTo)
+{
+    string result;
+
+    size_t  p = str.find(textFrom);
+    size_t  processed = 0;
+
+    while (p != string::npos)
+    {
+        result += str.substr(processed, p - processed);
+        result += textTo;
+        processed = p;
+        p = str.find(textFrom, processed + textFrom.size());
+    }
+
+    result += str.substr(processed);
+
+    return result;
+}
+
 
 /**
  * Checks if 'str' starts with the given prefix.
@@ -444,7 +465,7 @@ std::string normalizePath(const std::string& path)
     string temp = path;
 
 #ifdef _WIN32
-    replace(temp, '\\', "/");
+    replaceIn(temp, '\\', "/");
 #endif
 
     StringVector components = split(temp, "/");
