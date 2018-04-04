@@ -822,9 +822,13 @@ std::string	replaceScriptVariables(
 
     for (auto& libEntry : cLibraries)
     {
-        string path = replace (libEntry.second, "\\", "/");
-        libPathsSet.insert("\"" + path + "\"");
-        libraries.push_back("\"" + libEntry.first + "\"");
+        fs::path    libPath(libEntry.second);
+        libPath = libPath.parent_path();
+
+        libPathsSet.insert("\"" + libPath.u8string() + "\"");
+
+        string name = externCLibraryFilename(libEntry.first);
+        libraries.push_back("\"" + name + "\"");
     }
     vector<string> libPaths (libPathsSet.begin(), libPathsSet.end());
 
