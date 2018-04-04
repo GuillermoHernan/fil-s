@@ -80,6 +80,7 @@ static void systemError(const char* message);
 /// </summary>
 void initPcr()
 {
+    system_init();
     g_msgQueue.readIdx = -1;
     g_msgQueue.writeIdx = -1;
 }
