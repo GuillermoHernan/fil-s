@@ -12,7 +12,7 @@ libList = Array(${LibNames})
 libStr = Join (libList, " ")
 
 inputFile = "${CFilePath}"
-compcommand = "cl """ & inputFile & """ " & libStr & " /nologo /FAs /Ox"
+compcommand = "cl """ & inputFile & """ " & libStr & " /nologo /FAs /Ox /MD"
 destFile = "${IntermediateDir}\${ModuleName}.compiler.out"
 
 result = Run (compcommand, destFile)
