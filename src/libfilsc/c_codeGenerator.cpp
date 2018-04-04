@@ -80,6 +80,7 @@ string generateCode(Ref<AstNode> node, std::function<bool(Ref<AstNode>)> entryPo
 /// <param name="output"></param>
 void writeProlog(std::ostream& output)
 {
+    //TODO: Configurable prolog / epilog. May be platform dependent.
     static const char* prolog =
         "#include <stdlib.h>\n"
         "\n"
@@ -93,6 +94,10 @@ void writeProlog(std::ostream& output)
         "typedef unsigned char bool;\n"
         "static const bool true = 1;\n"
         "static const bool false = 0;\n"
+        "\n"
+        "void main(){\n"
+        "  initPcr();\n"
+        "}\n"
         "\n"
         ;
 
