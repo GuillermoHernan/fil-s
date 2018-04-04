@@ -1,12 +1,66 @@
-c_compile.bat
-cmd /C "${IntermediateDir}\c_compile.bat" >NUL
+c_compile.vbs
+cscript "${IntermediateDir}\c_compile.vbs" >NUL
 
-REM script starts here
-call "H:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvars32.bat"
-cd "${IntermediateDir}"
+'Script starts here
+set shell = createobject( "wscript.shell" )
 
-SET DRIVE=${IntermediateDir}
-SET DRIVE=%DRIVE:~0,2%
-%DRIVE%
+InitEnvironment()
 
-cl "${CFilePath}" -nologo /FAs /Ox >"${IntermediateDir}\${ModuleName}.compiler.out"
+shell.currentdirectory = "${IntermediateDir}"
+
+libList = Array(${LibNames})
+libStr = Join (libList, " ")
+
+inputFile = "${CFilePath}"
+compcommand = "cl """ & inputFile & """ " & libStr & " /nologo /FAs /Ox"
+destFile = "${IntermediateDir}\${ModuleName}.compiler.out"
+
+result = Run (compcommand, destFile)
+
+WScript.Quit(result)
+
+'Runs a program redirecting its output to a file.
+Function Run (ByVal cmd, byval outFile)
+	set sh = CreateObject("WScript.Shell")
+	Set objFSO=CreateObject("Scripting.FileSystemObject")
+	Set objFile = objFSO.CreateTextFile(outFile,True)
+	
+	set process = Sh.Exec(cmd)
+   
+	If process.ProcessID = 0 And process.Status = 1 Then
+		objFile.close()
+		Err.Raise vbObjectError,,"WshShell.Exec failed."
+	End If
+	
+	do
+		Dim Status: Status = process.Status
+		objFile.Write process.StdOut.ReadAll()
+		WScript.StdErr.Write process.StdErr.ReadAll()
+		WScript.Sleep 1
+	Loop until process.Status <> 0
+	
+	objFile.close()
+	Run =  process.ExitCode
+End Function
+
+'Sets the environment variables.
+Sub InitEnvironment()
+	set shell = createobject( "wscript.shell" )
+	set env = shell.environment("process")
+	
+	libPaths = Array(${LibPaths})
+	stdLibPaths = "H:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Tools\MSVC\14.12.25827\ATLMFC\lib\x86;H:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Tools\MSVC\14.12.25827\lib\x86;C:\Program Files (x86)\Windows Kits\NETFXSDK\4.6.1\lib\um\x86;C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\ucrt\x86;C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\um\x86;"
+	
+	libs = Join(libPaths, ";") & ";" & stdLibPaths
+
+	vsPath = "H:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Tools\MSVC\14.12.25827\bin\HostX86\x86"
+	REM wscript.echo vspath & ";%path%"
+	newpath = shell.expandEnvironmentStrings (vspath & ";%path%")
+	'wscript.echo newPath
+	env("PATH") = newpath
+	
+	env("INCLUDE")="H:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Tools\MSVC\14.12.25827\ATLMFC\include;H:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Tools\MSVC\14.12.25827\include;C:\Program Files (x86)\Windows Kits\NETFXSDK\4.6.1\include\um;C:\Program Files (x86)\Windows Kits\10\include\10.0.16299.0\ucrt;C:\Program Files (x86)\Windows Kits\10\include\10.0.16299.0\shared;C:\Program Files (x86)\Windows Kits\10\include\10.0.16299.0\um;C:\Program Files (x86)\Windows Kits\10\include\10.0.16299.0\winrt;"
+	env("LIB")=libs
+	'env("LIBPATH")="H:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Tools\MSVC\14.12.25827\ATLMFC\lib\x86;H:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Tools\MSVC\14.12.25827\lib\x86;H:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Tools\MSVC\14.12.25827\lib\x86\store\references;C:\Program Files (x86)\Windows Kits\10\UnionMetadata\10.0.16299.0;C:\Program Files (x86)\Windows Kits\10\References\10.0.16299.0;C:\Windows\Microsoft.NET\Framework\v4.0.30319;"
+	
+end sub
