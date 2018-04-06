@@ -21,7 +21,10 @@ std::string CodeGeneratorState::cname(AstNode* node)
         return cname(node->child(0).getPointer());
 
     case AST_DEFAULT_TYPE:
-        return node->getName();
+        if (node->getName() == "Cpointer")
+            return "void *";
+        else
+            return node->getName();
 
     case AST_TYPE_NAME:
         return cname(node->getDataType());

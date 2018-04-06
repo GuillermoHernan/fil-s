@@ -44,6 +44,7 @@ void addDefaultTypes(SemAnalysisState& state)
 {
     state.rootScope->add("int", astGetInt());
     state.rootScope->add("bool", astGetBool());
+    state.rootScope->add("Cpointer", astGetCPointer());
 }
 
 /// <summary>

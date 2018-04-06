@@ -82,6 +82,7 @@ AstNodeTypes astTypeFromString(const std::string& str);
 AstNode*		astGetVoid();
 AstNode*		astGetBool();
 AstNode*		astGetInt();
+AstNode*		astGetCPointer();
 
 std::string		astTypeToString(AstNode* typeNode);
 AstNode*		astGetParameters(AstNode* node);

@@ -767,6 +767,13 @@ AstNode* astGetInt()
     return node.getPointer();
 }
 
+//Gets 'C' pointer default type.
+AstNode* astGetCPointer()
+{
+    static auto node = AstNode::create(AST_DEFAULT_TYPE, ScriptPosition(), "Cpointer");
+    return node.getPointer();
+}
+
 //String representation of a tuple type, for debug purposes
 static string astTupleTypeToString(AstNode* node)
 {
