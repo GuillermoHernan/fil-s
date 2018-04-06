@@ -120,7 +120,7 @@ void AstDeserializeContext::registerNode(AstNode* node, const std::string& id, c
 }
 
 /// <summary>
-/// Resolves a data type reference with the ids gathered wuring parsing.
+/// Resolves a data type reference with the ids gathered during parsing.
 /// </summary>
 /// <param name="node"></param>
 /// <returns></returns>
