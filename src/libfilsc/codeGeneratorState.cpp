@@ -288,6 +288,8 @@ AstNode* VoidVariable::dataType()const
 NamedVariable::NamedVariable(Ref<AstNode> node, CodeGeneratorState& state)
     :IVariableInfo(false), m_node(node), m_cName(state.cname(node))
 {
+    if (m_node->hasFlag(ASTF_ACTOR_MEMBER))
+        m_cName = "_gen_actor->" + m_cName;
 }
 
 const std::string& NamedVariable::cname()const

@@ -605,6 +605,22 @@ void callCodegen(Ref<AstNode> node, CodeGeneratorState& state, const IVariableIn
             state.output() << ", sizeof(" << tmpParams << ")); \n";
         }
     }
+    else if (fnType->getType() == AST_ACTOR)
+    {
+        if (paramsExpr->childCount() == 0)
+        {
+            state.output() << state.cname(fnType) + "_constructor (&" << resultDest << ", NULL);\n";
+        }
+        else
+        {
+            auto			paramsType = astGetParameters(fnType);
+            TempVariable	tmpParams(paramsType, state, false);
+
+            codegen(paramsExpr, state, tmpParams);
+            state.output() << state.cname(fnType) + "_constructor (&" << resultDest 
+                << ", &" << tmpParams << ");\n";
+        }
+    }
     else
     {
         if (paramsExpr->childCount() == 0)
@@ -937,7 +953,7 @@ void generateActorConstructor(Ref<AstNode> node, CodeGeneratorState& state)
         {
             NamedVariable memberVar(child, state);
 
-            codegen(child->child(2), state, memberVar);
+            codegen(child->child(1), state, memberVar);
         }
         else if (childType == AST_UNNAMED_INPUT)
         {
