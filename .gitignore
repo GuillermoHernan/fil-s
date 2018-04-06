@@ -265,3 +265,6 @@ __pycache__/
 
 #Do not ignore 'bin' folder at the project root.
 !/bin
+
+#Open Office lock files.
+.~lock.*
