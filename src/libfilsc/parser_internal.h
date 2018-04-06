@@ -15,6 +15,7 @@ ExprResult parseList(LexToken token, ExprResult::ParseFunction parseFn,
 
 ExprResult parseTopLevelItem(LexToken token);
 ExprResult parseTypedef(LexToken token);
+ExprResult parseStruct(LexToken token);
 ExprResult parseBlock(LexToken token);
 ExprResult  parseDeclaration(LexToken token);
 ExprResult  parseAnyDeclaration(LexToken token);

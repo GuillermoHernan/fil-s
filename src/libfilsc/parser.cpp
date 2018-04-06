@@ -237,6 +237,7 @@ ExprResult parseTopLevelItem(LexToken token)
         .orElse(parseActorDef)
         .orElse(parseFunctionDef)
         .orElse(parseTypedef)
+        .orElse(parseStruct)
         .orElse(parseImport);
 }
 
@@ -262,6 +263,34 @@ ExprResult parseTypedef(LexToken token)
     return r.final();
 }
 
+/// <summary>
+/// Parses a 'C' structure declaration.
+/// </summary>
+/// <param name="token"></param>
+/// <returns></returns>
+ExprResult parseStruct(LexToken token)
+{
+    string		name;
+
+    ExprResult r = ExprResult::requireReserved("struct", token).then(parseCMark);
+
+    r = r.then(parseIdentifier);
+
+    if (r.ok())
+        name = r.result->getName();
+
+    r = r.then(parseTupleDef);
+
+    if (r.ok())
+    {
+        r.result->setName(name);
+        r.result->addFlag(ASTF_EXTERN_C);
+    }
+
+    return r.final();
+}
+
+
 
 /**
  * Parses a code block
@@ -286,7 +315,8 @@ ExprResult parseBlock(LexToken token)
         r = r.then(parseReturn)
             .orElse(parseVar)
             .orElse(parseConst)
-            .orElse(parseTypedef);
+            .orElse(parseTypedef)
+            .orElse(parseStruct);
 
         if (r.ok())
         {

@@ -747,6 +747,22 @@ TEST(Parser, parseTypedef)
 }
 
 /// <summary>
+/// Tests for 'parseStruct' function
+/// </summary>
+TEST(Parser, parseStruct)
+{
+    auto parseStruct_ = [](const char* code)
+    {
+        return checkAllParsed(code, parseStruct);
+    };
+
+    EXPECT_PARSE_OK(parseStruct_("struct[C] test(a:int, b:int)"));
+
+    EXPECT_PARSE_ERROR(parseStruct_("struct test(a:int, b:int)"));
+    EXPECT_PARSE_ERROR(parseStruct_("type test is (a:int, b:int)"));
+}
+
+/// <summary>
 /// Tests for 'parseStatementSeparator' function.
 /// </summary>
 /// <param name=""></param>
