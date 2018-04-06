@@ -8,3 +8,5 @@ void system_disableInterrupts();
 void system_enableInterrupts();
 void system_stop();
 void system_init();
+
+void system_yield_CPU();

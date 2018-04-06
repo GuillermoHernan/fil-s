@@ -36,3 +36,9 @@ void system_init()
 {
     g_intMutex = CreateMutex(NULL, FALSE, NULL);
 }
+
+void system_yield_CPU()
+{
+    //TODO: By the moment, is just fine to do nothing on the simulator.
+    //but it would be nice a mechanism to really yiend the CPU.
+}

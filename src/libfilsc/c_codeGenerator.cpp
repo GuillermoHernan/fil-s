@@ -68,8 +68,7 @@ string generateCode(Ref<AstNode> node, std::function<bool(Ref<AstNode>)> entryPo
     for (auto& actor : actors)
         codegen(actor, state, VoidVariable());
 
-    //Generate code for AST, starting at the root node.
-    //codegen(node, state, VoidVariable());
+    writeEpilog(state.output());
 
     return output.str();
 }
@@ -90,6 +89,8 @@ void writeProlog(std::ostream& output)
         "}MessageSlot;\n"
         "\n"
         "void postMessage (const MessageSlot* address, const void* params, size_t paramsSize);\n"
+        "void initPcr ();\n"
+        "void runScheduler ();\n"
         "\n"
         "typedef unsigned char bool;\n"
         "static const bool true = 1;\n"
@@ -97,11 +98,33 @@ void writeProlog(std::ostream& output)
         "\n"
         "void main(){\n"
         "  initPcr();\n"
+        "  runScheduler();\n"
         "}\n"
         "\n"
         ;
 
     output << prolog;
+}
+
+/// <summary>
+/// Writes epilog code. Code which is placed after all generated code.
+/// </summary>
+/// <param name="output"></param>
+void writeEpilog(std::ostream& output)
+{
+    //TODO: Configurable prolog / epilog. May be platform dependent.
+    static const char* epilog =
+        "\n"
+        "void initActors()\n"
+        "{\n"
+        "  static _Main	mainActor;\n"
+        "\n"
+        "  _Main_constructor(&mainActor, NULL);\n"
+        "}\n"
+        "\n"
+        ;
+
+    output << epilog;
 }
 
 

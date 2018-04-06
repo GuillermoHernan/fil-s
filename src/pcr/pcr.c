@@ -34,6 +34,8 @@ typedef struct {
     byte                params[0];
 }MessageHeader;
 
+typedef void (*MessageHandlerFunction)(void *actor, void* params);
+
 
 /// <summary>
 /// Defines internal state flags for actor messages.
@@ -75,6 +77,19 @@ static void unlockSystemQueue();
 
 static void systemError(const char* message);
 
+static int checkTimers();
+static int dispatchActorMessages();
+
+static MessageHeader* getHeadMessage();
+static void popHeadMessage();
+
+
+/**********************************
+* Functions which should be defined
+* in generated code.
+***********************************/
+void initActors();
+
 /// <summary>
 /// Initialices PCR globals.
 /// </summary>
@@ -83,7 +98,61 @@ void initPcr()
     system_init();
     g_msgQueue.readIdx = -1;
     g_msgQueue.writeIdx = -1;
+
+    initActors();
 }
+
+/// <summary>
+/// Starts the scheduler. 
+/// This function never returns.
+/// </summary>
+void runScheduler()
+{
+    while (1)
+    {
+        //const MessageHeader* msg = getHeadMessage();
+        int active = 0;
+
+        active = checkTimers();
+        active |= dispatchActorMessages();
+        if (!active)
+            system_yield_CPU();
+    }
+}
+
+/// <summary>
+/// Checks system queue and sends messages to the actors if needed.
+/// </summary>
+/// <returns></returns>
+static int dispatchActorMessages()
+{
+    MessageHeader*  msg = getHeadMessage();
+    int             count = 0;
+
+    while (msg)
+    {
+        assert(msg->address.inputPtr != NULL);
+        MessageHandlerFunction  input = (MessageHandlerFunction)msg->address.inputPtr;
+
+        input(msg->address.actorPtr, msg->params);
+        ++count;
+        popHeadMessage();
+    }
+
+    return count;
+}
+
+/// <summary>
+/// Checks if some timers have reached its scheduled time.
+/// </summary>
+/// <returns></returns>
+static int checkTimers()
+{
+    //TODO: Real implementation.
+    return 0;
+}
+
+
 
 /// <summary>
 /// Posts a new message into the system queue.
@@ -122,13 +191,13 @@ void postMessage(const EndPointAddress* address, const void* params, size_t para
 /// Returns NULL if empty.
 /// </summary>
 /// <returns></returns>
-const MessageHeader* getHeadMessage()
+static MessageHeader* getHeadMessage()
 {
     //Check if empty
     if (g_msgQueue.readIdx < 0)
         return NULL;
     else
-        return (const MessageHeader*)(g_msgQueue.data + g_msgQueue.readIdx);
+        return (MessageHeader*)(g_msgQueue.data + g_msgQueue.readIdx);
 }
 
 
@@ -136,7 +205,7 @@ const MessageHeader* getHeadMessage()
 /// Removes the head message, and any invalid messages up to the
 /// next valid message.
 /// </summary>
-void popHeadMessage()
+static void popHeadMessage()
 {
     const MessageHeader*  msg = getHeadMessage();
 
