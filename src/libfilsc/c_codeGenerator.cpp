@@ -271,6 +271,9 @@ void declareFunction(AstNode* node, CodeGeneratorState& state)
 /// </summary>
 void functionCodegen(Ref<AstNode> node, CodeGeneratorState& state, const IVariableInfo& resultDest)
 {
+    if (node->hasFlag(ASTF_EXTERN_C))
+        return;
+
     //Necessary because functions usually define their own temporaries.
     CodegenBlock	functionBlock(state);
 
@@ -307,7 +310,8 @@ string genFunctionHeader(Ref<AstNode> node, CodeGeneratorState& state)
 
     result.reserve(128);
 
-    result = "static ";
+    if (!node->hasFlag(ASTF_EXTERN_C))
+        result = "static ";
 
     //Return type.
     if (astIsVoidType(retType))

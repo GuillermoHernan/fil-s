@@ -10,3 +10,5 @@ void system_stop();
 void system_init();
 
 void system_yield_CPU();
+
+void gpio_write(int address, int value);

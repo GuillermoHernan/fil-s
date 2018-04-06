@@ -152,7 +152,16 @@ static int checkTimers()
     return 0;
 }
 
+int timer_start(void* params)
+{
+    //TODO: Real implementation.
+    return 0;
+}
 
+void timer_stop(void* params)
+{
+    //TODO: Real implementation.
+}
 
 /// <summary>
 /// Posts a new message into the system queue.
@@ -294,4 +303,15 @@ static void systemError(const char* message)
 {
     //TODO: log the message.
     system_stop();
+}
+
+void digitalOut(void* params)
+{
+    typedef struct {
+        int address;
+        unsigned char value;
+    }ParamsT;
+
+    ParamsT*    pParams = (ParamsT*)params;
+    gpio_write(pParams->address, pParams->value);
 }

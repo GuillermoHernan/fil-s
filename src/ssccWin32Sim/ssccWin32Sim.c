@@ -40,5 +40,10 @@ void system_init()
 void system_yield_CPU()
 {
     //TODO: By the moment, is just fine to do nothing on the simulator.
-    //but it would be nice a mechanism to really yiend the CPU.
+    //but it would be nice a mechanism to really yield the CPU.
+}
+
+void gpio_write(int address, int value)
+{
+    //TODO: Real implementation.
 }

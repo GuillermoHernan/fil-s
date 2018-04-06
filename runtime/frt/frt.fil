@@ -8,10 +8,7 @@ function quit (code: int)
 }
 
 //TODO: This function shall be moved to a GPIO library.
-function digitalOut (address: int, value: bool)
-{
-	//TODO: Implement it.
-}
+function[C] digitalOut (address: int, value: bool):()
 
 /**Timer actor, used to receive periodic notifications.
  * \param periodMS: Timer period, in milliseconds
