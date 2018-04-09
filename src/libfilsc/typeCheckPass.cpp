@@ -789,7 +789,7 @@ CompileError areTypesCompatible(AstNode* typeA, AstNode* typeB, Ref<AstNode> opN
     else
     {
         if (typeA->getType() == AST_FUNCTION)
-            return semError(opNode, ETYPE_NOT_IMPLEMENTED_1, "Function variables assigning");
+            return semError(opNode, ETYPE_NOT_IMPLEMENTED_1, "Function variables assign");
         else
         {
             return semError(opNode,
@@ -826,7 +826,12 @@ bool areTypesCompatible(AstNode* typeA, AstNode* typeB)
 bool areTuplesCompatible(AstNode* typeA, AstNode* typeB)
 {
     assert(astIsTupleType(typeA) || astIsTupleType(typeB));
-    if (!astIsTupleType(typeA))
+
+    //'Cpointer' check.
+    //TODO: Find a better mechanism to pass structure addresses to 'C' functions.
+    if (astIsCpointer(typeA))
+        return true;
+    else if (!astIsTupleType(typeA))
         return areTuplesCompatible(typeB, typeA);		//Reverse check will work, at this moment.
     else
     {

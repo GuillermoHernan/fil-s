@@ -952,6 +952,13 @@ bool astIsIntType(const AstNode* type)
     return type->getType() == AST_DEFAULT_TYPE && type->getName() == "int";
 }
 
+/// <summary>Checks if a type is a 'C' pointer</summary>
+bool astIsCpointer(const AstNode* type)
+{
+    return type->getType() == AST_DEFAULT_TYPE && type->getName() == "Cpointer";
+}
+
+
 /// <summary>Checks if a type is boolean</summary>
 bool astIsVoidType(const AstNode* type)
 {

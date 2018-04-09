@@ -93,6 +93,7 @@ bool			astIsTupleType(const AstNode* node);
 bool			astCanBeCalled(const AstNode* node);
 bool			astIsBoolType(const AstNode* type);
 bool			astIsIntType(const AstNode* type);
+bool			astIsCpointer(const AstNode* type);
 bool			astIsVoidType(const AstNode* type);
 bool            astIsDataType(const AstNode* node);
 
