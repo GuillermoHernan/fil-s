@@ -2,10 +2,7 @@ import      "sscf"
 import[C]   "pcr"
 
 //Stops the program, and gives a result code (if meaningful in the system)
-function quit (code: int)
-{
-	//TODO: Implement it.
-}
+function[C] quit (code: int):()
 
 //TODO: This function shall be moved to a GPIO library.
 function[C] digitalOut (address: int, value: bool):()
@@ -22,19 +19,20 @@ actor Timer (var periodMS: int)
 		tick()
 	}
 
-	var info: TimerInfo = timer_start(periodMS, tickInput)
+	var info: TimerInfo
+	var timerID:int = timer_start(periodMS, tickInput, info)
 
 	input stop()
 	{
-		timer_stop (info.id)
-		info.id = -1
+		timer_stop (timerID)
+		timerID = -1
 	}
 	
 	input start()
 	{
-		if (info.id >= 0)
-			timer_stop (info.id)
+		if (timerID >= 0)
+			timer_stop (timerID)
 			
-		info = timer_start(periodMS, tickInput)
+		timerID = timer_start(periodMS, tickInput, info)
 	}
 }

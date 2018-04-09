@@ -21,7 +21,7 @@ struct[C] TimerInfo(
 
 
 //Starts a timer.
-function[C] timer_start(periodMS:int, tickInput:input()):TimerInfo
+function[C] timer_start(periodMS:int, tickInput:input(), infoPtr: Cpointer):int
 
 //Stops a timer.
 function[C] timer_stop (timerID:int ):()

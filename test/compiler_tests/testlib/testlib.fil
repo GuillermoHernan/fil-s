@@ -13,5 +13,5 @@ function passed ()
 function failed ()
 {
 	digitalOut (15,false);
-	quit(-1);
+	quit(1);
 }

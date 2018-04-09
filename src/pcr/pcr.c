@@ -8,20 +8,13 @@
 /// </remarks>
 
 #include <stdlib.h>
+#include <stdio.h>
 #include <memory.h>
 #include <assert.h>
 
 #include "system_interface.h"
 
 typedef unsigned char byte;
-
-/// <summary>
-/// Message age endpoint address structure
-/// </summary>
-typedef struct {
-  void *actorPtr;
-  void *inputPtr;
-}EndPointAddress;
 
 /// <summary>
 /// Header of an actor message
@@ -71,6 +64,8 @@ SystemMsgQueue  g_msgQueue;
 * Internal functions declarations.
 ***********************************/
 
+void postMessage(const EndPointAddress* address, const void* params, size_t paramsSize);
+
 static int queueAlloc(SystemMsgQueue* queue, size_t size);
 static void lockSystemQueue();
 static void unlockSystemQueue();
@@ -114,6 +109,7 @@ void runScheduler()
         int active = 0;
 
         active = checkTimers();
+        //puts("Dispatch start...");
         active |= dispatchActorMessages();
         if (!active)
             system_yield_CPU();
@@ -134,9 +130,16 @@ static int dispatchActorMessages()
         assert(msg->address.inputPtr != NULL);
         MessageHandlerFunction  input = (MessageHandlerFunction)msg->address.inputPtr;
 
+        printf("Dispatching message. Actor: %p Input: %p Message length: %d\n",
+            msg->address.actorPtr, 
+            msg->address.inputPtr, 
+            (int)msg->msgLength);
+
         input(msg->address.actorPtr, msg->params);
         ++count;
+
         popHeadMessage();
+        msg = getHeadMessage();
     }
 
     return count;
@@ -148,19 +151,20 @@ static int dispatchActorMessages()
 /// <returns></returns>
 static int checkTimers()
 {
-    //TODO: Real implementation.
-    return 0;
-}
+    unsigned    now = current_time();
+    int         count = 0;
+    TimerInfo*  timer = timer_getFirst();
 
-int timer_start(void* params)
-{
-    //TODO: Real implementation.
-    return 0;
-}
+    while (timer != NULL && now - timer->base >= timer->periodMS)
+    {
+        printf("Executing timer. ID: %d Period: %d\n", timer->id, timer->periodMS);
+        postMessage(&timer->destInput, NULL, 0);
+        timer_schedule(timer);
+        timer = timer_getFirst();
+        ++count;
+    }
 
-void timer_stop(void* params)
-{
-    //TODO: Real implementation.
+    return count;
 }
 
 /// <summary>
@@ -175,12 +179,17 @@ void postMessage(const EndPointAddress* address, const void* params, size_t para
 
     assert(address != NULL);
 
+    printf("Posting message. Actor: %p Input: %p Params size: %d\n",
+        address->actorPtr, address->inputPtr, (int)paramsSize);
+
     MessageHeader   header;
     const size_t    headerSize = sizeof(header);
     const size_t    msgLength = paramsSize + headerSize;
 
     header.address = *address;
     header.msgLength = (unsigned short)msgLength;
+    header.flags = 0;
+    header.reserved = 0;
 
     int     idx = queueAlloc(&g_msgQueue, msgLength);
     byte*   writePtr = g_msgQueue.data + idx;
@@ -226,8 +235,8 @@ static void popHeadMessage()
     SystemMsgQueue*     q = &g_msgQueue;
 
     q->readIdx = (q->readIdx + msg->msgLength) % SYSTEM_QUEUE_SIZE;
-    if (q->readIdx == q->readIdx)
-        q->readIdx = q->readIdx = -1;
+    if (q->readIdx == q->writeIdx)
+        q->readIdx = q->writeIdx = -1;
     else
     {
         if (SYSTEM_QUEUE_SIZE - q->readIdx < sizeof(MessageHeader))
@@ -240,6 +249,8 @@ static void popHeadMessage()
             popHeadMessage();
     }
 
+    printf("POP head message. ReadIdx: %d WriteIdx: %d\n", q->readIdx, q->writeIdx);
+
     unlockSystemQueue();
 }
 
@@ -251,11 +262,11 @@ static void popHeadMessage()
 /// <returns>The index in the queue of the new message.</returns>
 static int queueAlloc(SystemMsgQueue* q, size_t size)
 {
-    int result = q->writeIdx;
 
     if (q->writeIdx > q->readIdx)
     {
         const size_t available = SYSTEM_QUEUE_SIZE - q->writeIdx;
+        const int result = q->writeIdx;
 
         if (size < available)
             q->writeIdx += size;
@@ -275,18 +286,27 @@ static int queueAlloc(SystemMsgQueue* q, size_t size)
             //Recursive call, once the chunk at the end has been skipped.
             return queueAlloc(q, size);
         }
+
+        return result;
     }
     else
     {
-        const size_t available = q->readIdx < 0 ? SYSTEM_QUEUE_SIZE : q->readIdx - q->writeIdx;
+        size_t available = q->readIdx - q->writeIdx;
+
+        if (q->readIdx < 0)
+        {
+            available = SYSTEM_QUEUE_SIZE;
+            q->readIdx = q->writeIdx = 0;
+        }
+        const int result = q->writeIdx;
 
         if (size > available)
             systemError("System queue overflow!");
         else
             q->writeIdx += size;
-    }
 
-    return result;
+        return result;
+    }
 }
 
 static void lockSystemQueue()
@@ -301,8 +321,20 @@ static void unlockSystemQueue()
 
 static void systemError(const char* message)
 {
-    //TODO: log the message.
-    system_stop();
+    //TODO: Better logging
+    fprintf(stderr, "System error: %s\n", message);
+
+    system_stop(-1);
+}
+
+void quit(void* params)
+{
+    typedef struct {
+        int code;
+    }ParamsT;
+
+    ParamsT*    pParams = (ParamsT*)params;
+    system_stop(pParams->code);
 }
 
 void digitalOut(void* params)
