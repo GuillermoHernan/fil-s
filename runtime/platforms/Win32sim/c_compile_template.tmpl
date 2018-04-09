@@ -12,7 +12,8 @@ libList = Array(${LibNames})
 libStr = Join (libList, " ")
 
 inputFile = "${CFilePath}"
-compcommand = "cl """ & inputFile & """ " & libStr & " /nologo /FAs /Ox /MD"
+exeFile = "${BinDir}\${ModuleName}.exe"
+compcommand = "cl """ & inputFile & """ " & libStr & " /nologo /FAs /Ox /MD /Fe""" & exeFile & """"
 destFile = "${IntermediateDir}\${ModuleName}.compiler.out"
 
 result = Run (compcommand, destFile)
