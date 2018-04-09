@@ -283,8 +283,9 @@ ExprResult parseStruct(LexToken token)
 
     if (r.ok())
     {
-        r.result->setName(name);
+        //r.result->setName(name);
         r.result->addFlag(ASTF_EXTERN_C);
+        r.result = astCreateTypedef(token.getPosition(), name, r.result);
     }
 
     return r.final();
