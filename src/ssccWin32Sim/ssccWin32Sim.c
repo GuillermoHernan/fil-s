@@ -57,7 +57,7 @@ void system_yield_CPU()
 
 void gpio_write(int address, int value)
 {
-    //TODO: Real implementation.
+    printf("o%d=%d\n", address, value);
 }
 
 
