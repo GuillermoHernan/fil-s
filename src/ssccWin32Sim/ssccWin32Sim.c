@@ -132,7 +132,7 @@ void timer_schedule(TimerInfo* timer)
     if (timer == NULL)
         return;
 
-    printf("Start scheduling...\nTimer next: %p\n", timer->next);
+    //printf("Start scheduling...\nTimer next: %p\n", timer->next);
 
     if (timer == g_headTimer)
         g_headTimer = g_headTimer->next;
@@ -140,7 +140,7 @@ void timer_schedule(TimerInfo* timer)
     timer->base = current_time();
 
     g_headTimer = schedule_timer_int(g_headTimer, timer);
-    printf("Done scheduling!\n");
+    //printf("Done scheduling!\n");
 }
 
 
@@ -157,7 +157,7 @@ static TimerInfo* schedule_timer_int(TimerInfo* head, TimerInfo* timer)
     }
     else
     {
-        printf("Scheduling timer. Head: %p\n", head);
+        //printf("Scheduling timer. Head: %p\n", head);
         head->next = schedule_timer_int(head->next, timer);
         return head;
     }

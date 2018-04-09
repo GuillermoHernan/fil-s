@@ -130,10 +130,10 @@ static int dispatchActorMessages()
         assert(msg->address.inputPtr != NULL);
         MessageHandlerFunction  input = (MessageHandlerFunction)msg->address.inputPtr;
 
-        printf("Dispatching message. Actor: %p Input: %p Message length: %d\n",
-            msg->address.actorPtr, 
-            msg->address.inputPtr, 
-            (int)msg->msgLength);
+        //printf("Dispatching message. Actor: %p Input: %p Message length: %d\n",
+        //    msg->address.actorPtr, 
+        //    msg->address.inputPtr, 
+        //    (int)msg->msgLength);
 
         input(msg->address.actorPtr, msg->params);
         ++count;
@@ -157,7 +157,7 @@ static int checkTimers()
 
     while (timer != NULL && now - timer->base >= timer->periodMS)
     {
-        printf("Executing timer. ID: %d Period: %d\n", timer->id, timer->periodMS);
+        //printf("Executing timer. ID: %d Period: %d\n", timer->id, timer->periodMS);
         postMessage(&timer->destInput, NULL, 0);
         timer_schedule(timer);
         timer = timer_getFirst();
@@ -179,8 +179,8 @@ void postMessage(const EndPointAddress* address, const void* params, size_t para
 
     assert(address != NULL);
 
-    printf("Posting message. Actor: %p Input: %p Params size: %d\n",
-        address->actorPtr, address->inputPtr, (int)paramsSize);
+    //printf("Posting message. Actor: %p Input: %p Params size: %d\n",
+    //    address->actorPtr, address->inputPtr, (int)paramsSize);
 
     MessageHeader   header;
     const size_t    headerSize = sizeof(header);
@@ -249,7 +249,7 @@ static void popHeadMessage()
             popHeadMessage();
     }
 
-    printf("POP head message. ReadIdx: %d WriteIdx: %d\n", q->readIdx, q->writeIdx);
+    //printf("POP head message. ReadIdx: %d WriteIdx: %d\n", q->readIdx, q->writeIdx);
 
     unlockSystemQueue();
 }
