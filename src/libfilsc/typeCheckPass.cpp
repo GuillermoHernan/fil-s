@@ -304,7 +304,7 @@ CompileError functionDefTypeCheck(Ref<AstNode> node, SemAnalysisState& state)
     //Infer return type if necessary.
     if (!node->childExists(1))
     {
-        node->setChild(1, body);
+        node->setChild(1, ref(body->getDataType()));
         return CompileError::ok();
     }
     else
