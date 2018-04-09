@@ -909,29 +909,6 @@ AstNode* getCommonType(AstNode* typeA, AstNode* typeB, SemAnalysisState& state)
         return typeA;
 }
 
-///// <summary>
-///// Builds an AST Tuple definition node from a tuple data type.
-///// It is used for type inference.
-///// </summary>
-///// <param name="tuple"></param>
-///// <returns></returns>
-//Ref<AstNode> buildTupleDefFromTupleType(Ref<TupleType> tuple, const ScriptPosition& pos)
-//{
-//	auto result = astCreateTupleDef(pos, "");
-//
-//	int count = tuple->memberCount();
-//	for (int i = 0; i < count; ++i)
-//	{
-//		auto declNode = astCreateDeclaration(pos, "", Ref<AstNode>(), Ref<AstNode>());
-//		declNode->addFlag(ASTF_CONST);
-//		result->addChild(declNode);
-//	}
-//
-//	result->setDataType(tuple);
-//
-//	return result;
-//}
-
 /// <summary>
 /// Checks whether an AST node represents a type or not.
 /// </summary>
