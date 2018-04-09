@@ -10,6 +10,18 @@ function quit (code: int)
 //TODO: This function shall be moved to a GPIO library.
 function[C] digitalOut (address: int, value: bool):()
 
+//Message endpoint adrees structure.
+struct[C] _EndPointAddress (actorPtr: Cpointer, inputPtr: Cpointer)
+//type EndPointAddress is (actorPtr: Cpointer, inputPtr: Cpointer)
+
+//Internal Time information structure
+struct[C] _TimerInfo(
+	destInput : _EndPointAddress,
+	next : Cpointer,
+	scheduledTime : int,
+	periodMS : int
+)
+
 /**Timer actor, used to receive periodic notifications.
  * \param periodMS: Timer period, in milliseconds
  */
@@ -23,6 +35,7 @@ actor Timer (var periodMS: int)
 	}
 
 	var timerID:int = timer_start(periodMS, tickInput)
+	var info: _TimerInfo
 
 	input stop()
 	{
@@ -35,6 +48,6 @@ actor Timer (var periodMS: int)
 		if (timerID >= 0)
 			timer_stop (timerID)
 			
-		timerID = timer_start(periodMS, tickInput)
+		timerID = timer_start(periodMS, tickInput, info)
 	}
 }
