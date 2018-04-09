@@ -31,7 +31,6 @@ DependenciesResult			getDependencies(
     ModuleMap& modules,
     StrSet& parents,
     const BuilderConfig& cfg);
-BuildResult					buildWithDependencies(ModuleNode* module, const BuilderConfig& cfg);
 BuildResult					buildModule(ModuleNode* module, const BuilderConfig& cfg);
 
 std::string                 findRuntime(const std::string& builderPath);

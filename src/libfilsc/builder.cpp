@@ -10,6 +10,7 @@
 //#include "ast.h"
 #include "parser.h"
 #include "utils.h"
+#include "dependencySolver.h"
 
 using namespace std;
 
@@ -30,12 +31,38 @@ BuildResult buildModule(const std::string& modulePath, const BuilderConfig& cfg)
 
     StrSet		parents;
     ModuleMap   modules;
-    auto		result = getDependencies(modulePath, modules, parents, cfgOk);
+    auto		depResult = getDependencies(modulePath, modules, parents, cfgOk);
 
-    if (!result.ok())
-        return BuildResult(result.errors);
+    if (!depResult.ok())
+        return BuildResult(depResult.errors);
 
-    return buildWithDependencies(result.result.get(), cfgOk);
+    //Dependency sort.
+    auto                rootModule = depResult.result;
+    vector<ModuleNode*> modList;
+    modList.push_back(rootModule.get());
+
+    modList = dependencySort<ModuleNode*>(modList, [](auto mod) {
+        set<ModuleNode*>  moduleSet;
+        mod->walkDependencies([&moduleSet](auto childModule) {
+            moduleSet.insert(childModule);
+        });
+        return moduleSet;
+    });
+
+    //build modules in dependency order
+    for (auto module : modList)
+    {
+        //TODO: Optimization oportunity: The build of each module can be done in parallel,
+        //as long as its dependencies are built.
+        auto r = buildModule(module, cfgOk);
+
+        //It stops at he first module which fails, because it is potentially needed
+        //by the next modules in the list.
+        if (!r.ok())
+            return r;
+    }
+
+    return BuildResult(rootModule.get());
 }
 
 /// <summary>
@@ -163,38 +190,6 @@ DependenciesResult getDependencies(
         parents.erase(modulePath);			//Just in case
         return DependenciesResult(error);
     }
-}
-
-/// <summary>
-/// Builds a module, checking first its dependencies.
-/// </summary>
-/// <param name="module"></param>
-/// <returns></returns>
-BuildResult buildWithDependencies(ModuleNode* module, const BuilderConfig& cfg)
-{
-    //TODO: This does not take into account the if the dependency modules are updated to 
-    //update the build of the current module.
-    if (module->buildNeeded())
-    {
-        vector<CompileError>	errors;
-
-        //First, check that all dependencies are up-to-date.
-        module->walkDependencies([&errors, &cfg](ModuleNode* dependency) {
-            //TODO: Optimization oportunity: The build of each module can be done in parallel.
-            auto r = buildWithDependencies(dependency, cfg);
-
-            if (!r.ok())
-                r.appendErrorsTo(errors);
-        });
-
-        if (!errors.empty())
-            return BuildResult(errors);
-
-
-        return buildModule(module, cfg);
-    }
-
-    return SuccessfulResult(true);
 }
 
 /// <summary>
