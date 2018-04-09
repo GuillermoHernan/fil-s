@@ -202,9 +202,9 @@ Ref<AstNode> astCreateBlock(LexToken token)
     return AstNode::create(AST_BLOCK, token.getPosition(), "", "");
 }
 
-Ref<AstNode> astCreateTuple(LexToken token)
+Ref<AstNode> astCreateTuple(ScriptPosition pos)
 {
-    return AstNode::create(AST_TUPLE, token.getPosition(), "", "");
+    return AstNode::create(AST_TUPLE, pos, "", "");
 }
 
 Ref<AstNode> astCreateTupleDef(ScriptPosition pos, const std::string& name)
@@ -478,6 +478,19 @@ Ref<AstNode> astCreateImport(ScriptPosition pos, const std::string& value, int f
     return AstNode::create(AST_IMPORT, pos, "", value, flags);
 }
 
+/// <summary>
+/// creates a node which obtains a pointer (the momeory address) of the child expression.
+/// </summary>
+/// <param name="pos"></param>
+/// <param name="rExpr"></param>
+/// <returns></returns>
+Ref<AstNode> astCreateGetAddress(ScriptPosition pos, Ref<AstNode> rExpr)
+{
+    auto result = AstNode::create(AST_GET_ADDRESS, pos);
+    result->addChild(rExpr);
+
+    return result;
+}
 
 /// <summary>
 /// Gathers all nodes referenced from the AST tree.
@@ -668,6 +681,7 @@ std::string astTypeToString(AstNodeTypes type)
         types[AST_OUTPUT] = "AST_OUTPUT";
         types[AST_UNNAMED_INPUT] = "AST_UNNAMED_INPUT";
         types[AST_IMPORT] = "AST_IMPORT";
+        types[AST_GET_ADDRESS] = "AST_GET_ADDRESS";
         //types[AST_TYPES_COUNT] = "AST_TYPES_COUNT";
 
         assert(types.size() == AST_TYPES_COUNT);
@@ -730,6 +744,7 @@ AstNodeTypes astTypeFromString(const std::string& str)
         types["AST_OUTPUT"] = AST_OUTPUT;
         types["AST_UNNAMED_INPUT"] = AST_UNNAMED_INPUT;
         types["AST_IMPORT"] = AST_IMPORT;
+        types["AST_GET_ADDRESS"] = AST_GET_ADDRESS;
         //types[AST_TYPES_COUNT"] = AST_TYPES_COUNT";
 
         assert(types.size() == AST_TYPES_COUNT);

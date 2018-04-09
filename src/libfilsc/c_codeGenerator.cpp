@@ -183,6 +183,7 @@ void codegen(Ref<AstNode> node, CodeGeneratorState& state, const IVariableInfo& 
         types[AST_DEFAULT_TYPE] = invalidNodeCodegen;
         types[AST_TYPE_NAME] = voidCodegen;
         types[AST_IMPORT] = voidCodegen;
+        types[AST_GET_ADDRESS] = getAddressCodegen;
     }
 
     if (node.notNull())
@@ -858,6 +859,20 @@ void postfixOpCodegen(Ref<AstNode> node, CodeGeneratorState& state, const IVaria
         state.output() << resultDest << " = ";
     state.output() << "(*" << temp << ")" << operation << ";\n";
 }
+
+/// <summary>
+/// Generates code for the operation to get the address of a variable.
+/// </summary>
+void getAddressCodegen(Ref<AstNode> node, CodeGeneratorState& state, const IVariableInfo& resultDest)
+{
+    auto            child = node->child(0);
+    TempVariable	temp(child, state, true);
+
+    codegen(child, state, temp);
+
+    state.output() << resultDest << " = " << temp << ";\n";
+}
+
 
 /// <summary>
 /// Generates the code associated to an actor definition.

@@ -195,7 +195,7 @@ CompileError declarationTypeCheck(Ref<AstNode> node, SemAnalysisState& state)
         if (!node->childExists(1))
             return CompileError::ok();	//No initialization
         else
-            return areTypesCompatible(declaredType, node->child(1)->getDataType(), node);
+            return assignCheck(declaredType, node, 1);
     }
     else
     {
@@ -274,8 +274,19 @@ CompileError returnTypeCheck(Ref<AstNode> node, SemAnalysisState& state)
         return semError(node, ETYPE_RETURN_OUTSIDE_FUNCTION);
 
     auto returnType = astGetReturnType(functionNode.getPointer());
+    bool ok = false;
 
-    if (!areTypesCompatible(returnType, node->getDataType()))
+    if (!node->childExists(0))
+    {
+        //Empty return 
+        ok = astIsVoidType(returnType);
+    }
+    else
+    {
+        ok = assignCheck(returnType, node, 0).isOk();
+    }
+
+    if(!ok)
     {
         return semError(node, ETYPE_INCOMPATIBLE_RETURN_TYPE_2,
             astTypeToString(node.getPointer()).c_str(),
@@ -319,7 +330,7 @@ CompileError functionDefTypeCheck(Ref<AstNode> node, SemAnalysisState& state)
         if (body.isNull())
             return CompileError::ok();
         else
-            return areTypesCompatible(declaredType, bodyType, node);
+            return assignCheck(declaredType, node, 2);
     }
 }
 
@@ -328,23 +339,21 @@ CompileError functionDefTypeCheck(Ref<AstNode> node, SemAnalysisState& state)
 CompileError assignmentTypeCheck(Ref<AstNode> node, SemAnalysisState& state)
 {
     auto leftType = node->child(0)->getDataType();
-    auto rightType = node->child(1)->getDataType();
 
     node->setDataType(leftType);
-    return areTypesCompatible(leftType, rightType, node);
+    return assignCheck (leftType, node, 1);
 }
 
 /// <summary>Performs type checking for function calls.</summary>
 CompileError callTypeCheck(Ref<AstNode> node, SemAnalysisState& state)
 {
     auto type = node->child(0)->getDataType();
-    auto paramsType = node->child(1)->getDataType();
 
     if (!astCanBeCalled(type))
         return semError(node, ETYPE_NOT_CALLABLE);
 
     node->setDataType(astGetReturnType(type));
-    return areTypesCompatible(astGetParameters(type), paramsType, node);
+    return assignCheck(astGetParameters(type), node, 1);
 }
 
 /// <summary>Type check for variable / symbol reading</summary>
@@ -611,15 +620,14 @@ CompileError unnamedInputTypeCheck(Ref<AstNode> node, SemAnalysisState& state)
     if (output == nullptr)
         return semError(node, ETYPE_INVALID_CONNECT_OUTPUT);
 
-    auto paramsNode = node->child(1);
-
-    return areTypesCompatible(astGetParameters(output), paramsNode->getDataType(), paramsNode);
+    return assignCheck (astGetParameters(output), node, 1);
 }
 
 
 /// <summary>Type checking of an actor instance.</summary>
 CompileError actorInstanceTypeCheck(Ref<AstNode> node, SemAnalysisState& state)
 {
+    //TODO: Ensure this function is tested.
     assert(node->getType() == AST_DECLARATION);
     assert(node->childExists(0));
 
@@ -637,14 +645,23 @@ CompileError actorInstanceTypeCheck(Ref<AstNode> node, SemAnalysisState& state)
     if (!node->hasFlag(ASTF_CONST))
         return semError(node, ETYPE_NON_CONST_ACTOR_INSTANCE);
 
-    auto	paramsType = astGetVoid();
-
-    if (node->childExists(1))
-        paramsType = node->child(1)->getDataType();
-
     node->setDataType(actorType);
 
-    return areTypesCompatible(astGetParameters(actorType), paramsType, node);
+    if (node->childExists(1))
+    {
+        //Call with parameters
+        return assignCheck(actorType, node, 1);
+    }
+    else
+    {
+        //TODO: Support default parameters.
+        //TODO: More explicit error message.
+        auto params = astGetParameters(actorType);
+        if (astIsVoidType(params))
+            return CompileError::ok();
+        else
+            return incompatibleTypesError(params, astGetVoid()).errors[0];
+    }
 }
 
 /// <summary>
@@ -775,126 +792,220 @@ CompileError setVoidType(Ref<AstNode> node, SemAnalysisState& state)
     return CompileError::ok();
 }
 
-/// <summary>Checks if an object of 'typeB' can be assigned to a object of 'typeA'</summary>
-/// <param name="typeA">Type of the object which is going to the receive the value.</param>
-/// <param name="typeB">Type of the source object.</param>
-/// <param name="opNode">Used to create the compile error (to give a location to it)</param>
-/// <returns>A compile error or 'ok'</returns>
-CompileError areTypesCompatible(AstNode* typeA, AstNode* typeB, Ref<AstNode> opNode)
+/// <summary>
+/// Checks and assignment operation.
+/// This is not just used for assignment operations. It is used at any point in which 
+/// data is copied or transferred (function / message calls, tuple creation, 
+/// return statements, etc)
+/// </summary>
+/// <param name="lType">Left side (destination) data type.</param>
+/// <param name="rExpr">Right side expression</param>
+/// <returns>An operation result which may contain a compile error or the node
+/// which should replace the right hand expression (it may be the same node)</returns>
+SemanticResult assignCheck(AstNode* lType, Ref<AstNode> rExpr)
 {
-    bool result = areTypesCompatible(typeA, typeB);
-
-    if (result)
-        return CompileError::ok();
-    else
+    switch (lType->getType())
     {
-        if (typeA->getType() == AST_FUNCTION)
-            return semError(opNode, ETYPE_NOT_IMPLEMENTED_1, "Function variables assign");
-        else
-        {
-            return semError(opNode,
-                ETYPE_INCOMPATIBLE_TYPES_2,
-                astTypeToString(typeB).c_str(),
-                astTypeToString(typeA).c_str());
-        }
+    case AST_FUNCTION_TYPE:
+        return assignFunctionCheck(lType, rExpr);
+
+    case AST_MESSAGE_TYPE:
+        return assignMessageCheck(lType, rExpr);
+
+    case AST_TUPLE_DEF:
+    case AST_TUPLE:
+        return assignTupleCheck(lType, rExpr);
+
+    default:
+        return assignScalarCheck(lType, rExpr);
     }
-}
-
-/// <summary>Checks if an object of 'typeB' can be assigned to a object of 'typeA'</summary>
-/// <param name="typeA">Type of the object which is going to the receive the value.</param>
-/// <param name="typeB">Type of the source object.</param>
-/// <returns>true if types are compatible'</returns>
-bool areTypesCompatible(AstNode* typeA, AstNode* typeB)
-{
-    auto a = typeA->getType();
-    auto b = typeB->getType();
-
-    if (a == AST_FUNCTION_TYPE || a == AST_MESSAGE_TYPE)
-        return areFunctionTypesCompatible(typeA, typeB);
-    else if (astIsTupleType(typeA) || astIsTupleType(typeB))
-        return areTuplesCompatible(typeA, typeB);
-    else if (a != b)
-        return false;
-    else
-        return typeA->getName() == typeB->getName();
-}
-
-/// <summary>Performs type compatibility check when, at least, one of the types is a tuple</summary>
-/// <param name="typeA">Type of the object which is going to the receive the value.</param>
-/// <param name="typeB">Type of the source object.</param>
-/// <returns>true if types are compatible'</returns>
-bool areTuplesCompatible(AstNode* typeA, AstNode* typeB)
-{
-    assert(astIsTupleType(typeA) || astIsTupleType(typeB));
-
-    //'Cpointer' check.
-    //TODO: Find a better mechanism to pass structure addresses to 'C' functions.
-    if (astIsCpointer(typeA))
-        return true;
-    else if (!astIsTupleType(typeA))
-        return areTuplesCompatible(typeB, typeA);		//Reverse check will work, at this moment.
-    else
-    {
-        if (!astIsTupleType(typeB))
-        {
-            if (typeA->childCount() != 1)
-                return false;
-            else
-                return areTypesCompatible(typeA->child(0)->getDataType(), typeB);
-        }
-        else
-        {
-            if (typeA->childCount() != typeB->childCount())
-                return false;
-            else
-            {
-                const int count = typeA->childCount();
-
-                for (int i = 0; i < count; ++i)
-                {
-                    if (!areTypesCompatible(typeA->child(i)->getDataType(), typeB->child(i)->getDataType()))
-                        return false;
-                }
-
-                return true;
-            }//else
-        }//else
-    }//else
 }
 
 /// <summary>
-/// Checks if two function types are compatible.
+/// Checks an assignment operation.
+/// This version modifies the node which contains the assignment operation if a 
+/// transform is required.
 /// </summary>
-/// <param name="typeA"></param>
-/// <param name="typeB"></param>
+/// <param name="lType">Left side (destination) data type.</param>
+/// <param name="parent">Operation (parent) node</param>
+/// <param name="rightIndex">Index of the right-hand expression inside 'parent' node.</param>
 /// <returns></returns>
-bool areFunctionTypesCompatible(AstNode* typeA, AstNode* typeB)
+CompileError assignCheck(AstNode* lType, Ref<AstNode> parent, int rightIndex)
 {
-    auto tA = typeA->getType();
-    auto tB = typeB->getType();
+    auto r = assignCheck(lType, parent->child(rightIndex));
 
-    if (tA == AST_FUNCTION_TYPE)
+    if (r.ok())
     {
-        if (tB != AST_FUNCTION_TYPE && tB != AST_FUNCTION)
-            return false;
-        else
-        {
-            if (!areTypesCompatible(astGetReturnType(typeA), astGetReturnType(typeB)))
-                return false;
-            else
-                return areTuplesCompatible(astGetParameters(typeA), astGetParameters(typeB));
-        }
-    }
-    else if (tA == AST_MESSAGE_TYPE)
-    {
-        if (tB != AST_MESSAGE_TYPE && tB != AST_INPUT)
-            return false;
-        else
-            return areTuplesCompatible(astGetParameters(typeA), astGetParameters(typeB));
+        assert(r.result.notNull());
+        parent->setChild(rightIndex, r.result);
+        return CompileError::ok();
     }
     else
-        return false;
+        return r.errors[0];
 }
+
+/// <summary>
+/// Checks and assignment to a 'C' pointer
+/// </summary>
+SemanticResult assignCpointerCheck(AstNode* lType, Ref<AstNode> rExpr)
+{
+    auto rType = rExpr->getDataType();
+
+    if (astIsCpointer(rType))
+        return SemanticResult(rExpr);
+    else if (astIsTupleType(rType))
+    {
+        auto adapter = astCreateGetAddress(rExpr->position(), rExpr);
+        adapter->setDataType(astGetCPointer());
+        return SemanticResult(adapter);
+    }
+    else
+        return incompatibleTypesError(lType, rExpr);
+}
+
+
+/// <summary>
+/// Checks and assignment to a function variable.
+/// </summary>
+SemanticResult assignFunctionCheck(AstNode* lType, Ref<AstNode> rExpr)
+{
+    auto rType = rExpr->getDataType();
+    auto tA = lType->getType();
+    auto tB = rType->getType();
+
+    if (tB == AST_FUNCTION_TYPE || tB == AST_FUNCTION)
+    {
+        if (areTypesCompatible(astGetReturnType(lType), astGetReturnType(rType)))
+        {
+            if (areTuplesCompatible(astGetParameters(lType), astGetParameters(rType)))
+                return SemanticResult(rExpr);
+        }
+    }
+
+    return incompatibleTypesError(lType, rExpr);
+}
+
+/// <summary>
+/// Checks and assignment to a message reference variable.
+/// </summary>
+SemanticResult assignMessageCheck(AstNode* lType, Ref<AstNode> rExpr)
+{
+    auto rType = rExpr->getDataType();
+    auto tA = lType->getType();
+    auto tB = rType->getType();
+
+    if (tB == AST_MESSAGE_TYPE || tB == AST_INPUT)
+        if (areTuplesCompatible(astGetParameters(lType), astGetParameters(rType)))
+            return SemanticResult(rExpr);
+
+    return incompatibleTypesError(lType, rExpr);
+}
+
+/// <summary>
+/// Checks an assignment to an scalar value.
+/// </summary>
+SemanticResult assignScalarCheck(AstNode* lType, Ref<AstNode> rExpr)
+{
+    //TODO: implement conversion between numeric types... Oh, wait... We have only a
+    //numeric type at this moment :-P
+    auto rType = rExpr->getDataType();
+
+    if (astIsCpointer(lType))
+        return assignCpointerCheck(lType, rExpr);
+    else if (lType->getType() == rType->getType())
+    {
+        if (lType->getName() == rType->getName())
+            return SemanticResult(rExpr);
+    }
+
+    return incompatibleTypesError(lType, rExpr);
+}
+
+/// <summary>
+/// Checks the assignment of an scalar to an one element tuple.
+/// </summary>
+SemanticResult assignScalarToTupleCheck(AstNode* lType, Ref<AstNode> rExpr)
+{
+    auto rType = rExpr->getDataType();
+
+    if (lType->childCount() == 1)
+    {
+        //Try to assign an scalar to a tuple.
+        auto r = assignCheck(lType->child(0)->getDataType(), rExpr);
+
+        if (r.ok())
+        {
+            auto adapter = astCreateTuple(rExpr->position());
+            adapter->addChild(rExpr);
+            adapter->setDataType(adapter.getPointer());
+            return SemanticResult(adapter);
+        }
+    }
+    return incompatibleTypesError(lType, rExpr);
+}
+
+
+/// <summary>
+/// Checks an assignment to a tuple.
+/// </summary>
+SemanticResult assignTupleCheck(AstNode* lType, Ref<AstNode> rExpr)
+{
+    //TODO: This function can produce more than a single error, but only the first one is reported.
+    auto rType = rExpr->getDataType();
+
+    if (!astIsTupleType(rType))
+        return assignScalarToTupleCheck(lType, rExpr);
+    else if (rExpr->getType() == AST_TUPLE)
+    {
+        if (lType->childCount() >= rType->childCount())
+        {
+            auto                    newTuple = astCreateTuple(rExpr->position());
+            vector<CompileError>    errors;
+            size_t                  i;
+
+            for (i = 0; i < rType->childCount(); ++i)
+            {
+                auto r = assignCheck(lType->child(i)->getDataType(), rExpr->child(i));
+
+                if (r.ok())
+                    newTuple->addChild(r.result);
+                else
+                    r.appendErrorsTo(errors);
+            }
+
+            //TODO: Implement tuple default values.
+            if (i < lType->childCount())
+                return incompatibleTypesError(lType, rExpr);
+
+            if (!errors.empty())
+                return SemanticResult(errors);
+            else
+                return SemanticResult(newTuple);
+        }
+    }
+    else
+    {
+        if (areTuplesCompatible(lType, rType))
+            return SemanticResult(rExpr);
+    }
+
+    return incompatibleTypesError(lType, rExpr);
+}
+
+/// <summary>
+/// Generates an 'Incompatible types' error.
+/// </summary>
+/// <param name="lType">Left side type.</param>
+/// <param name="rExpr">Right side expression.</param>
+/// <returns></returns>
+SemanticResult incompatibleTypesError(AstNode* lType, Ref<AstNode> rExpr)
+{
+    return semError(rExpr,
+        ETYPE_INCOMPATIBLE_TYPES_2,
+        astTypeToString(rExpr->getDataType()).c_str(),
+        astTypeToString(lType).c_str());
+}
+
 
 
 /// <summary>Gets the common type for two types.</summary>
@@ -902,11 +1013,66 @@ bool areFunctionTypesCompatible(AstNode* typeA, AstNode* typeB)
 AstNode* getCommonType(AstNode* typeA, AstNode* typeB, SemAnalysisState& state)
 {
     //TODO: This is a very basic implementation. Improve it.
+    bool r = false;
 
-    if (!areTypesCompatible(typeA, typeB))
-        return nullptr;
+    if (astIsTupleType(typeA))
+        r = areTuplesCompatible(typeA, typeB);
     else
-        return typeA;
+        r = areTypesCompatible(typeA, typeB);
+
+    return r ? typeA : nullptr;
+}
+
+/// <summary>
+/// Checks if two types are assignable without performing transformations. 
+/// </summary>
+/// <param name="typeA"></param>
+/// <param name="typeB"></param>
+/// <returns></returns>
+bool areTypesCompatible(AstNode* typeA, AstNode* typeB)
+{
+    auto r = assignCheck(typeA, typeB);
+
+    //TODO: Check if this simplistic implementation works.
+    if (!r.ok())
+        return false;
+    else
+        return  typeB == r.result.getPointer();
+}
+
+/// <summary>
+/// Checks if two tuples are assignable without performing transforms.
+/// </summary>
+/// <param name="typeA"></param>
+/// <param name="typeB"></param>
+/// <returns></returns>
+bool areTuplesCompatible(AstNode* typeA, AstNode* typeB)
+{
+    assert(astIsTupleType(typeA) && astIsTupleType(typeB));
+
+    if (typeA->childCount() != typeB->childCount())
+        return false;
+    else
+    {
+        const int count = typeA->childCount();
+
+        for (int i = 0; i < count; ++i)
+        {
+            auto childAType = typeA->child(i)->getDataType();
+            auto childBType = typeB->child(i)->getDataType();
+            bool r;
+
+            if (astIsTupleType(childAType))
+                r = areTuplesCompatible(childAType, childBType);
+            else
+                r = areTypesCompatible(childAType, childBType);
+
+            if (!r)
+                return false;
+        }
+
+        return true;
+    }//else
 }
 
 /// <summary>

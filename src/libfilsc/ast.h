@@ -53,6 +53,7 @@ enum AstNodeTypes
     , AST_OUTPUT
     , AST_UNNAMED_INPUT
     , AST_IMPORT
+    , AST_GET_ADDRESS
 
     //Remember to add new entries to 'astTypeToString' and 'astTypeFromString' functions!
 
@@ -122,7 +123,7 @@ Ref<AstNode> astCreateFunctionType(ScriptPosition pos,
 
 
 Ref<AstNode> astCreateBlock(LexToken token);
-Ref<AstNode> astCreateTuple(LexToken token);
+Ref<AstNode> astCreateTuple(ScriptPosition pos);
 Ref<AstNode> astCreateTupleDef(ScriptPosition pos, const std::string& name);
 Ref<AstNode> astCreateTupleAdapter(Ref<AstNode> tupleNode);
 Ref<AstNode> astCreateIf(ScriptPosition pos,
@@ -169,6 +170,8 @@ Ref<AstNode> astCreateUnnamedInput(ScriptPosition pos,
     Ref<AstNode> params,
     Ref<AstNode> code);
 Ref<AstNode> astCreateImport(ScriptPosition pos, const std::string& value, int flags);
+
+Ref<AstNode> astCreateGetAddress(ScriptPosition pos, Ref<AstNode> rExpr);
 
 
 std::vector<AstNode*> astGatherTypes(Ref<AstNode> root);

@@ -793,7 +793,7 @@ ExprResult parseParenthesisExpr(LexToken token)
 /// <returns></returns>
 ExprResult parseTuple(LexToken token)
 {
-    Ref<AstNode>	result = astCreateTuple(token);
+    Ref<AstNode>	result = astCreateTuple(token.getPosition());
     auto			r = ExprResult::require("(", token);
 
     if (r.nextText() != ")")

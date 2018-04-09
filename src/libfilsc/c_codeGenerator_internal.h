@@ -42,6 +42,7 @@ void actorMemberAccessCodegen(Ref<AstNode> node, CodeGeneratorState& state, cons
 void binaryOpCodegen(Ref<AstNode> node, CodeGeneratorState& state, const IVariableInfo& resultDest);
 void prefixOpCodegen(Ref<AstNode> node, CodeGeneratorState& state, const IVariableInfo& resultDest);
 void postfixOpCodegen(Ref<AstNode> node, CodeGeneratorState& state, const IVariableInfo& resultDest);
+void getAddressCodegen(Ref<AstNode> node, CodeGeneratorState& state, const IVariableInfo& resultDest);
 
 void actorCodegen(Ref<AstNode> node, CodeGeneratorState& state, const IVariableInfo& resultDest);
 void outputMessageCodegen(Ref<AstNode> node, CodeGeneratorState& state, const IVariableInfo& resultDest);

@@ -58,10 +58,19 @@ Ref<AstNode> addReturnTupleAdapter(Ref<AstNode> node, SemAnalysisState& state);
 
 CompileError setVoidType(Ref<AstNode> node, SemAnalysisState& state);
 
-CompileError	areTypesCompatible(AstNode* typeA, AstNode* typeB, Ref<AstNode> opNode);
+SemanticResult  assignCheck(AstNode* lType, Ref<AstNode> rExpr);
+CompileError    assignCheck(AstNode* lType, Ref<AstNode> parent, int rightIndex);
+SemanticResult  assignCpointerCheck(AstNode* lType, Ref<AstNode> rExpr);
+SemanticResult  assignFunctionCheck(AstNode* lType, Ref<AstNode> rExpr);
+SemanticResult  assignMessageCheck(AstNode* lType, Ref<AstNode> rExpr);
+SemanticResult  assignScalarCheck(AstNode* lType, Ref<AstNode> rExpr);
+SemanticResult  assignScalarToTupleCheck(AstNode* lType, Ref<AstNode> rExpr);
+SemanticResult  assignTupleCheck(AstNode* lType, Ref<AstNode> rExpr);
+SemanticResult  incompatibleTypesError(AstNode* lType, Ref<AstNode> rExpr);
+//CompileError	areTypesCompatible(AstNode* typeA, AstNode* typeB, Ref<AstNode> opNode);
 bool			areTypesCompatible(AstNode* typeA, AstNode* typeB);
 bool			areTuplesCompatible(AstNode* typeA, AstNode* typeB);
-bool            areFunctionTypesCompatible(AstNode* typeA, AstNode* typeB);
+//bool            areFunctionTypesCompatible(AstNode* typeA, AstNode* typeB);
 AstNode*		getCommonType(AstNode* typeA, AstNode* typeB, SemAnalysisState& state);
 //Ref<AstNode> buildTupleDefFromTupleType(Ref<TupleType> tuple, const ScriptPosition& pos);
 
