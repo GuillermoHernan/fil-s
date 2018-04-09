@@ -11,7 +11,7 @@
 //#include <time.h>
 
 using namespace std;
-
+#if 0
 /// <summary>
 /// Fixture for code generation tests.
 /// </summary>
@@ -489,3 +489,4 @@ TEST_F(C_CodegenTests, actors)
         "}\n"
     );
 }
+#endif
