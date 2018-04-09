@@ -6,8 +6,22 @@
  //Link with the native 'C' library.
 import[C]   "ssccWin32Sim"
 
+//Message endpoint adress structure.
+struct[C] _EndPointAddress (actorPtr: Cpointer, inputPtr: Cpointer)
+
+
+//Internal Time information structure
+struct[C] TimerInfo(
+	destInput : _EndPointAddress,
+	next : Cpointer,
+	scheduledTime : int,
+	periodMS : int,
+	id: int
+)
+
+
 //Starts a timer.
-function[C] timer_start(periodMS:int, tickInput:input()):int
+function[C] timer_start(periodMS:int, tickInput:input()):TimerInfo
 
 //Stops a timer.
 function[C] timer_stop (timerID:int ):()
