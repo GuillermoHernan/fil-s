@@ -76,5 +76,6 @@ Ref<SymbolScope> SemAnalysisState::getScope(Ref<AstNode> node)const
 /// <param name=""></param>
 void SemAnalysisState::setScope(Ref<AstNode> node, Ref<SymbolScope> scope)
 {
+    assert(m_scopesMap.count(node.getPointer()) == 0);
     m_scopesMap[node.getPointer()] = scope;
 }
