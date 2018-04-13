@@ -988,7 +988,6 @@ bool astIsDataType(const AstNode* node)
     case AST_TUPLE_DEF:
     case AST_TUPLE:
     case AST_ACTOR:
-    case AST_FUNCTION:
     case AST_FUNCTION_TYPE:
     case AST_MESSAGE_TYPE:
         return true;
