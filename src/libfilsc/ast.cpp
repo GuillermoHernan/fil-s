@@ -867,6 +867,7 @@ AstNode* astGetParameters(AstNode* node)
     switch (node->getType())
     {
     case AST_FUNCTION:
+    case AST_FUNCTION_TYPE:
     case AST_ACTOR:
     case AST_INPUT:
     case AST_OUTPUT:
@@ -877,6 +878,8 @@ AstNode* astGetParameters(AstNode* node)
         return node->child(1)->getDataType();
 
     case AST_TUPLE:
+        return node->getDataType();
+
     case AST_TUPLE_DEF:
         return node;
 
@@ -936,7 +939,7 @@ bool astIsTupleType(const AstNode* node)
 {
     auto t = node->getType();
 
-    return t == AST_TUPLE || t == AST_TUPLE_DEF;
+    return t == AST_TUPLE_DEF; // || t == AST_TUPLE;
 }
 
 /// <summary>
@@ -986,7 +989,7 @@ bool astIsDataType(const AstNode* node)
     switch (node->getType())
     {
     case AST_TUPLE_DEF:
-    case AST_TUPLE:
+    //case AST_TUPLE:
     case AST_ACTOR:
     case AST_FUNCTION_TYPE:
     case AST_MESSAGE_TYPE:

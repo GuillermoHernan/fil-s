@@ -476,8 +476,11 @@ TEST_F(C_CodegenTests, postfixOpCodegen)
 /// <summary>
 /// Test actor code generation
 /// </summary>
-TEST_F(C_CodegenTests, actors)
+TEST_F(C_CodegenTests, DISABLED_actors)
 {
+    //TODO: This test is disabled because code generation tests lack the infrastructure
+    //to run actors. Decide to create suck infrastructure, or test actor code generation
+    //with external tests.
     EXPECT_RUN_OK("actors1",
         "actor Test {\n"
         "  output o1(int)\n"

@@ -32,3 +32,6 @@ CompileError semError(Ref<AstNode> node, ErrorTypes type, ...);
 
 SemanticResult buildModuleNode(const AstStr2NodesMap& nodes, const std::string& name);
 
+Ref<AstNode> createUnnamedTypesNode(const SemAnalysisState& state);
+
+

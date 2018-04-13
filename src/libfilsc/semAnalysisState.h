@@ -30,7 +30,17 @@ public:
 
     void				setScope(Ref<AstNode> node, Ref<SymbolScope> scope);
 
+    Ref<AstNode>        registerUnnamedType(Ref<AstNode> tupleType);
+
+    AstNodeList         getUnnamedTypes()const;
+
 private:
+    //To compare tuples in unnamed type registry.
+    struct CompareTupleTypes {
+        bool operator()(Ref<AstNode> typeA, Ref<AstNode> typeB);
+    };
+
     std::vector<Ref<AstNode>> m_parents;
     std::map < const AstNode*, Ref<SymbolScope>> m_scopesMap;
+    std::set < Ref<AstNode>, CompareTupleTypes> m_unnamedTypes;
 };

@@ -49,6 +49,7 @@ TEST(SemanticAnalysis, semInOrderWalk)
         AST_IF,
         AST_BLOCK,
         AST_FUNCTION,
+        AST_LIST,
         AST_SCRIPT
     };
 
@@ -91,6 +92,7 @@ TEST(SemanticAnalysis, semPreOrderWalk)
         AST_IDENTIFIER,
         AST_IDENTIFIER,
         AST_IDENTIFIER,
+        AST_LIST,
     };
 
     auto result = semAnalysisCheck(testCode);

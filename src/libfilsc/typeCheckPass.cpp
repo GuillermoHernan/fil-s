@@ -173,8 +173,24 @@ CompileError typedefTypeCheck(Ref<AstNode> node, SemAnalysisState& state)
 /// </summary>
 CompileError tupleTypeCheck(Ref<AstNode> node, SemAnalysisState& state)
 {
-    //The type of a tuple node is itself.
-    return assignItselftAsType(node, state);
+    auto tupleType = astCreateTupleDef(node->position(), "");
+
+    for (auto child : node->children())
+    {
+        assert(child.notNull());
+
+        auto decl = astCreateDeclaration(child->position(), "", child->getDataType(), child);
+        decl->addFlag(ASTF_CONST);
+        decl->setDataType(child->getDataType());
+
+        tupleType->addChild(decl);
+    }
+
+    tupleType = state.registerUnnamedType(tupleType);
+
+    node->setDataType(tupleType.getPointer());
+
+    return CompileError::ok();
 }
 
 /// <summary>
@@ -813,7 +829,7 @@ SemanticResult assignCheck(AstNode* lType, Ref<AstNode> rExpr)
         return assignMessageCheck(lType, rExpr);
 
     case AST_TUPLE_DEF:
-    case AST_TUPLE:
+    //case AST_TUPLE:
         return assignTupleCheck(lType, rExpr);
 
     default:
@@ -976,6 +992,9 @@ SemanticResult assignTupleCheck(AstNode* lType, Ref<AstNode> rExpr)
             //TODO: Implement tuple default values.
             if (i < lType->childCount())
                 return incompatibleTypesError(lType, rExpr);
+
+            //Same type, of course.
+            newTuple->setDataType(rExpr->getDataType());
 
             if (!errors.empty())
                 return SemanticResult(errors);

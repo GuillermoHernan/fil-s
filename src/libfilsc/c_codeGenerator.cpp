@@ -152,7 +152,7 @@ void dataTypeCodegen(AstNode* type, CodeGeneratorState& state)
 {
     switch (type->getType())
     {
-    case AST_TUPLE:
+    //case AST_TUPLE:
     case AST_TUPLE_DEF:
         tupleDefCodegen(type, state);
         break;
@@ -668,7 +668,7 @@ void memberAccessCodegen(
 
     switch (ltype->getType())
     {
-    case AST_TUPLE:
+    //case AST_TUPLE:
     case AST_TUPLE_DEF:
         tupleMemberAccessCodegen(node, state, resultDest);
         return;

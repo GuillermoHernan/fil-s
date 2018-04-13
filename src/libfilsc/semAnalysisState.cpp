@@ -79,3 +79,59 @@ void SemAnalysisState::setScope(Ref<AstNode> node, Ref<SymbolScope> scope)
     assert(m_scopesMap.count(node.getPointer()) == 0);
     m_scopesMap[node.getPointer()] = scope;
 }
+
+/// <summary>
+/// Tries to registers a new unnamed type (an unnamed tuple).
+/// Only registers it if no equivalent tuple has been registered.
+/// </summary>
+/// <param name="tupleType"></param>
+/// <returns>The tuple passed as parameter, or the previously registered tuple</returns>
+Ref<AstNode> SemAnalysisState::registerUnnamedType(Ref<AstNode> tupleType)
+{
+    assert(tupleType->getType() == AST_TUPLE_DEF);
+    auto result = m_unnamedTypes.insert(tupleType);
+
+    if (result.second)
+        return tupleType;
+    else
+        return *result.first;
+}
+
+/// <summary>
+/// Gets the list of unnmaed types.
+/// </summary>
+/// <returns></returns>
+AstNodeList SemAnalysisState::getUnnamedTypes()const
+{
+    return AstNodeList(m_unnamedTypes.begin(), m_unnamedTypes.end());
+}
+
+
+/// <summary>
+/// Compares tuple types for sort them in a set or map.
+/// </summary>
+/// <param name="typeA"></param>
+/// <param name="typeB"></param>
+/// <returns></returns>
+bool SemAnalysisState::CompareTupleTypes::operator()(Ref<AstNode> typeA, Ref<AstNode> typeB)
+{
+    assert(typeA->getType() == AST_TUPLE_DEF);
+    assert(typeB->getType() == AST_TUPLE_DEF);
+
+    if (typeA->childCount() != typeB->childCount())
+        return typeA->childCount() < typeB->childCount();
+    else
+    {
+        for (size_t i = 0; i < typeA->childCount(); ++i)
+        {
+            auto childAType = typeA->child(i)->getDataType();
+            auto childBType = typeB->child(i)->getDataType();
+
+            if (childAType != childBType)
+                return childAType < childBType;
+        }
+    }
+
+    //If they are equal, (typeA < typeB) is false.
+    return false;
+}

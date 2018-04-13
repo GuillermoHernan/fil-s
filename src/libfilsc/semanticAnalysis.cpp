@@ -31,6 +31,8 @@ SemanticResult semanticAnalysis(Ref<AstNode> node)
             node = result.result;
     }
 
+    node->addChild(createUnnamedTypesNode(state));
+
     return SemanticResult(node);
 }
 
@@ -73,7 +75,12 @@ SemanticResult semanticAnalysis(
             return SemanticResult(errors);
     }
 
-    return buildModuleNode(resultNodes, moduleName);
+    auto result = buildModuleNode(resultNodes, moduleName);
+
+    if (result.ok())
+        result.result->addChild(createUnnamedTypesNode(state));
+
+    return result;
 }
 
 
@@ -264,4 +271,20 @@ SemanticResult buildModuleNode(const AstStr2NodesMap& nodes, const std::string& 
     }
 
     return SemanticResult(moduleNode);
+}
+
+/// <summary>
+/// Creates the node which contains the automatically generated unnamed tuples.
+/// </summary>
+/// <param name="state"></param>
+/// <returns></returns>
+Ref<AstNode> createUnnamedTypesNode(const SemAnalysisState& state)
+{
+    auto    typeNodes = state.getUnnamedTypes();
+    auto    result = AstNode::create(AST_LIST, ScriptPosition());
+
+    for (auto typeNode : typeNodes)
+        result->addChild(typeNode);
+
+    return result;
 }
