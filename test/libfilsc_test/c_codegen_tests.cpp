@@ -114,6 +114,10 @@ private:
         static const char * prolog =
             "#include <stdio.h>\n"
             "//************ Prolog\n"
+            "\n"
+            "typedef unsigned char bool;\n"
+            "static const bool true = 1;\n"
+            "static const bool false = 0;\n"
             "\n";
         static const char * epilog =
             "\n//************ Epilog\n"
