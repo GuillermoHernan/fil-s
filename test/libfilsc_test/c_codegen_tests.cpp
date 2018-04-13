@@ -11,7 +11,7 @@
 //#include <time.h>
 
 using namespace std;
-#if 0
+
 /// <summary>
 /// Fixture for code generation tests.
 /// </summary>
@@ -33,19 +33,6 @@ protected:
     /// <returns></returns>
     int runTest(const char* name, const char* code)
     {
-        bool actorMode = false;
-
-        auto entryPointFn = [&actorMode](Ref<AstNode> node) {
-            if (node->getType() == AST_FUNCTION && node->getName() == "test")
-                return true;
-            else if (node->getType() == AST_ACTOR && node->getName() == "Test")
-            {
-                actorMode = true;
-                return true;
-            }
-            else
-                return false;
-        };
         //clock_t		t0 = clock();
         auto parseRes = testParse(code);
 
@@ -60,9 +47,9 @@ protected:
 
         writeAST(semanticRes.result, name);
 
-        string Ccode = generateCode(semanticRes.result, entryPointFn);
+        string Ccode = generateCode(semanticRes.result, configureCodeGenerator());
 
-        writeCcode(Ccode, name, actorMode);
+        writeCcode(Ccode, name);
         _flushall();	//To ensure all generated files are written to the disk.
 
         //clock_t t1 = clock();
@@ -119,11 +106,10 @@ private:
     }
 
     /// <summary>
-    /// Writes the 'C' code to a file in the test directory;
+    /// Creates the code genrator configuration structure.
     /// </summary>
-    /// <param name="code"></param>
-    /// <param name="testName"></param>
-    void writeCcode(const std::string& code, const char* testName, bool actorMode)
+    /// <returns></returns>
+    CodeGeneratorConfig configureCodeGenerator()
     {
         static const char * prolog =
             "#include <stdio.h>\n"
@@ -138,31 +124,37 @@ private:
             "	\n"
             "	return result;\n"
             "}\n";
-        static const char * epilogActor =
-            "\n//************ Epilog\n"
-            "\n"
-            "Test mainActor;\n"
-            "\n"
-            "int main()\n"
-            "{\n"
-            //"	printf (\"%d\\n\", result);\n"
-            //"	\n"
-            //"	return result;\n"
-            "  return 0;\n"
-            "}\n";
 
+        //static const char * epilogActor =
+        //    "\n//************ Epilog\n"
+        //    "\n"
+        //    "Test mainActor;\n"
+        //    "\n"
+        //    "int main()\n"
+        //    "{\n"
+
+        CodeGeneratorConfig result;
+
+        result.prolog = prolog;
+        result.epilog = epilog;
+
+        result.predefNames["test"] = "test";
+
+        return result;
+    }
+
+    /// <summary>
+    /// Writes the 'C' code to a file in the test directory;
+    /// </summary>
+    /// <param name="code"></param>
+    /// <param name="testName"></param>
+    void writeCcode(const std::string& code, const char* testName)
+    {
         //TODO: How do we run actors???
 
         string path = buildOutputFilePath(testName, ".c");
 
-        string fullCode = prolog + code;
-
-        if (actorMode)
-            fullCode += epilogActor;
-        else
-            fullCode += epilog;
-
-        if (!writeTextFile(path, fullCode))
+        if (!writeTextFile(path, code))
         {
             string message = "Cannot write file: " + path;
             throw exception(message.c_str());
@@ -489,4 +481,3 @@ TEST_F(C_CodegenTests, actors)
         "}\n"
     );
 }
-#endif

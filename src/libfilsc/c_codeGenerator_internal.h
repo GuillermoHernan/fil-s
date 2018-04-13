@@ -11,8 +11,6 @@ struct IVariableInfo;
 
 typedef void(*NodeCodegenFN)(Ref<AstNode> node, CodeGeneratorState& state, const IVariableInfo& resultDest);
 
-void writeProlog(std::ostream& output);
-void writeEpilog(std::ostream& output);
 void codegen(Ref<AstNode> node, CodeGeneratorState& state, const IVariableInfo& resultDest);
 
 void dataTypeCodegen(AstNode* type, CodeGeneratorState& state);

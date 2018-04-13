@@ -21,7 +21,9 @@ using namespace std;
 /// <returns>A string containing 'C' source code.</returns>
 string generateCode(Ref<AstNode> node)
 {
-    return generateCode(node, [](auto node) {return false; });
+    static const CodeGeneratorConfig defaultCfg;
+
+    return generateCode(node, defaultCfg);
 }
 
 /// <summary>
@@ -29,21 +31,26 @@ string generateCode(Ref<AstNode> node)
 /// It allows to specify the entry point.
 /// </summary>
 /// <param name="node">AST root</param>
-/// <param name="entryPointFn">Function to look for the entry point. The entry point
-/// has the same name in 'FIL-S' and 'C' sources.</param>
+/// <param name="config">Code generator configuration</param>
 /// <returns></returns>
-string generateCode(Ref<AstNode> node, std::function<bool(Ref<AstNode>)> entryPointFn)
+string generateCode(Ref<AstNode> node, const CodeGeneratorConfig& config)
 {
     ostringstream		output;
     CodeGeneratorState	state(&output);
 
+    //Set names for items which have defaults.
     auto &topLevelItems = node->children();
-    auto it = find_if(topLevelItems.begin(), topLevelItems.end(), entryPointFn);
 
-    if (it != topLevelItems.end())
-        state.setCname(*it, (*it)->getName());
+    for (auto& item : topLevelItems)
+    {
+        auto it = config.predefNames.find(item->getName());
 
-    writeProlog(state.output());
+        if (it != config.predefNames.end())
+            state.setCname(item, it->second);
+    }
+
+    //write prolog.
+    state.output() << config.prolog;
 
     //Generate types.
     auto types = astGatherTypes(node);
@@ -68,65 +75,11 @@ string generateCode(Ref<AstNode> node, std::function<bool(Ref<AstNode>)> entryPo
     for (auto& actor : actors)
         codegen(actor, state, VoidVariable());
 
-    writeEpilog(state.output());
+    //Write epilog
+    state.output() << config.epilog;
 
     return output.str();
 }
-
-/// <summary>
-/// Writes prolog code. These are declarations needed by the rest of the code.
-/// </summary>
-/// <param name="output"></param>
-void writeProlog(std::ostream& output)
-{
-    //TODO: Configurable prolog / epilog. May be platform dependent.
-    static const char* prolog =
-        "#include <stdlib.h>\n"
-        "\n"
-        "typedef struct {\n"
-        "  void *actorPtr;\n"
-        "  void *inputPtr;\n"
-        "}MessageSlot;\n"
-        "\n"
-        "void postMessage (const MessageSlot* address, const void* params, size_t paramsSize);\n"
-        "void initPcr ();\n"
-        "void runScheduler ();\n"
-        "\n"
-        "typedef unsigned char bool;\n"
-        "static const bool true = 1;\n"
-        "static const bool false = 0;\n"
-        "\n"
-        "void main(){\n"
-        "  initPcr();\n"
-        "  runScheduler();\n"
-        "}\n"
-        "\n"
-        ;
-
-    output << prolog;
-}
-
-/// <summary>
-/// Writes epilog code. Code which is placed after all generated code.
-/// </summary>
-/// <param name="output"></param>
-void writeEpilog(std::ostream& output)
-{
-    //TODO: Configurable prolog / epilog. May be platform dependent.
-    static const char* epilog =
-        "\n"
-        "void initActors()\n"
-        "{\n"
-        "  static _Main	mainActor;\n"
-        "\n"
-        "  _Main_constructor(&mainActor, NULL);\n"
-        "}\n"
-        "\n"
-        ;
-
-    output << epilog;
-}
-
 
 /// <summary>
 /// Generates code for an AST node. Based on the node type, selects the appropriate 

@@ -50,7 +50,6 @@ std::string					findModuleInDir(const std::string& moduleName, const fs::path& d
 bool						isModuleDirectory(const fs::path& modulePath);
 
 bool						containsEntryPoint(Ref<AstNode> ast);
-bool						isEntryPoint(Ref<AstNode> node);
 
 BuildResult					buildExecutable(ModuleNode* module, const BuilderConfig& cfg);
 void						writeCCodeFile(const std::string& code, ModuleNode* module);

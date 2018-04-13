@@ -471,6 +471,10 @@ bool containsEntryPoint(Ref<AstNode> ast)
 {
     const auto & nodes = ast->children();
 
+    auto isEntryPoint = [](Ref<AstNode> node)->bool {
+        return node->getName() == "_Main";
+    };
+
     switch (ast->getType())
     {
     case AST_MODULE:
@@ -485,15 +489,23 @@ bool containsEntryPoint(Ref<AstNode> ast)
 }
 
 /// <summary>
-/// Checks whether an AST node is the entry point.
+/// Creates a code generator configuration structure from a Builder 
+/// configuration structure.
 /// </summary>
-/// <param name="node"></param>
+/// <param name="cfg"></param>
 /// <returns></returns>
-bool isEntryPoint(Ref<AstNode> node)
+CodeGeneratorConfig configureCodeGenerator(const BuilderConfig& cfg)
 {
-    return node->getType() == AST_ACTOR && node->getName() == "_Main";
-}
+    //return node->getType() == AST_ACTOR && node->getName() == "_Main";
+    CodeGeneratorConfig     result;
 
+    result.predefNames["_Main"] = "_Main";
+
+    result.epilog = readTextFile(joinPaths(cfg.PlatformPath, "epilog.c"));
+    result.prolog = readTextFile(joinPaths(cfg.PlatformPath, "prolog.c"));
+
+    return result;
+}
 
 /// <summary>
 /// Generates code from a successfully compiled module.
@@ -507,7 +519,7 @@ BuildResult buildExecutable(ModuleNode* module, const BuilderConfig& cfg)
 
     try
     {
-        string code = generateCode(module->getAST(), isEntryPoint);
+        string code = generateCode(module->getAST(), configureCodeGenerator(cfg));
 
         writeCCodeFile(code, module);
         _flushall();	//To ensure all generated files are written to the disk.
