@@ -1,5 +1,7 @@
 /// <summary>
 /// Abstract Syntax Tree classes / functions
+/// This file contains mostly constructor functions for AST nodes, and some 
+/// utility functions to query the AST.
 /// </summary>
 
 #include "pch.h"
