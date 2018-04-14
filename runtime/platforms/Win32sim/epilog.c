@@ -1,5 +1,5 @@
 /*
- * prolog.c
+ * epilog.c
  *
  * The contents of this file are added at the en of any generated 
  * 'C' code for 'Win32Sim' platform
