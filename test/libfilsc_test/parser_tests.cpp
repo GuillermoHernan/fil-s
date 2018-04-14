@@ -566,11 +566,17 @@ TEST(Parser, parseCallExpr)
     EXPECT_PARSE_OK(parseCallExpr_("fn()"));
     EXPECT_PARSE_OK(parseCallExpr_("obj.fn(1,2)"));
     EXPECT_PARSE_OK(parseCallExpr_("obj.fn(1,2)(3)(4)"));
+    EXPECT_PARSE_OK(parseCallExpr_("a[1]"));
+    EXPECT_PARSE_OK(parseCallExpr_("a[1]()"));
+    EXPECT_PARSE_OK(parseCallExpr_("a[1][2]"));
+    EXPECT_PARSE_OK(parseCallExpr_("a[x](y,z)"));
 
     EXPECT_PARSE_ERROR(parseCallExpr_("fn 3"));
     EXPECT_PARSE_ERROR(parseCallExpr_("fn (3"));
+    EXPECT_PARSE_ERROR(parseCallExpr_("fn [3)"));
     EXPECT_PARSE_ERROR(parseCallExpr_("fn 3)"));
     EXPECT_PARSE_ERROR(parseCallExpr_("fn\n(b,c)"));
+    EXPECT_PARSE_ERROR(parseCallExpr_("fn\n[2]()"));
 }
 
 /// <summary>

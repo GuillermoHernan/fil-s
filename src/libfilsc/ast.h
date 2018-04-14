@@ -33,6 +33,7 @@ enum AstNodeTypes
     , AST_FUNCTION_TYPE
     , AST_ASSIGNMENT
     , AST_FNCALL
+    , AST_CTCALL
     , AST_INTEGER
     , AST_FLOAT
     , AST_STRING

@@ -680,6 +680,7 @@ std::string astTypeToString(AstNodeTypes type)
         types[AST_FUNCTION_TYPE] = "AST_FUNCTION_TYPE";
         types[AST_ASSIGNMENT] = "AST_ASSIGNMENT";
         types[AST_FNCALL] = "AST_FNCALL";
+        types[AST_CTCALL] = "AST_CTCALL";
         types[AST_INTEGER] = "AST_INTEGER";
         types[AST_FLOAT] = "AST_FLOAT";
         types[AST_STRING] = "AST_STRING";
@@ -744,6 +745,7 @@ AstNodeTypes astTypeFromString(const std::string& str)
         types["AST_FUNCTION_TYPE"] = AST_FUNCTION_TYPE;
         types["AST_ASSIGNMENT"] = AST_ASSIGNMENT;
         types["AST_FNCALL"] = AST_FNCALL;
+        types["AST_CTCALL"] = AST_CTCALL;
         types["AST_INTEGER"] = AST_INTEGER;
         types["AST_FLOAT"] = AST_FLOAT;
         types["AST_STRING"] = AST_STRING;

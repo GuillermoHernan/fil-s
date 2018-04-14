@@ -731,7 +731,7 @@ ExprResult parsePostfixExpr(LexToken token)
 
         if (opText == ".")
             r = r.then(parseMemberAccess);
-        else if (opText == "(" && !newLine)
+        else if ((opText == "(" || opText == "[") && !newLine)
             r = r.then(parseCallExpr);
         else
             break;
@@ -763,12 +763,30 @@ ExprResult parsePostfixOperator(LexToken token, Ref<AstNode> termExpr)
 /// <returns></returns>
 ExprResult parseCallExpr(LexToken token, Ref<AstNode> fnExpr)
 {
-    ExprResult	r = parseTuple(token);
+    if (token.text() == "[")
+    {
+        auto r = parseList(token, parseExpression, "[", "]", ",");
 
-    if (r.ok())
-        r.result = astCreateFnCall(token.getPosition(), fnExpr, r.result);
+        if (r.ok())
+        {
+            auto ctParams = r.result;
+            ctParams->changeType(AST_TUPLE);
 
-    return r.final();
+            r.result = astCreateFnCall(token.getPosition(), fnExpr, ctParams);
+            r.result->changeType(AST_CTCALL);
+        }
+
+        return r.final();
+    }
+    else
+    {
+        ExprResult	r = parseTuple(token);
+
+        if (r.ok())
+            r.result = astCreateFnCall(token.getPosition(), fnExpr, r.result);
+
+        return r.final();
+    }
 }
 
 /// <summary>
