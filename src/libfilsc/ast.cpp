@@ -139,6 +139,25 @@ Ref<AstNode> astCreateDeclaration(ScriptPosition pos,
     return result;
 }
 
+/// <summary>
+/// Creates an array declaration node.
+/// </summary>
+/// <param name="pos"></param>
+/// <param name="typeSpec"></param>
+/// <param name="sizeExpr"></param>
+/// <returns></returns>
+Ref<AstNode> astCreateArrayDecl(ScriptPosition pos,
+    Ref<AstNode> typeSpec,
+    Ref<AstNode> sizeExpr)
+{
+    auto result = AstNode::create(AST_ARRAY_DECL, pos);
+
+    result->addChild(typeSpec);
+    result->addChild(sizeExpr);
+    return result;
+}
+
+
 
 /// <summary>
 /// Creates a type definition node.
@@ -682,6 +701,7 @@ std::string astTypeToString(AstNodeTypes type)
         types[AST_UNNAMED_INPUT] = "AST_UNNAMED_INPUT";
         types[AST_IMPORT] = "AST_IMPORT";
         types[AST_GET_ADDRESS] = "AST_GET_ADDRESS";
+        types[AST_ARRAY_DECL] = "AST_ARRAY_DECL";
         //types[AST_TYPES_COUNT] = "AST_TYPES_COUNT";
 
         assert(types.size() == AST_TYPES_COUNT);
@@ -745,6 +765,7 @@ AstNodeTypes astTypeFromString(const std::string& str)
         types["AST_UNNAMED_INPUT"] = AST_UNNAMED_INPUT;
         types["AST_IMPORT"] = AST_IMPORT;
         types["AST_GET_ADDRESS"] = AST_GET_ADDRESS;
+        types["AST_ARRAY_DECL"] = AST_ARRAY_DECL;
         //types[AST_TYPES_COUNT"] = AST_TYPES_COUNT";
 
         assert(types.size() == AST_TYPES_COUNT);

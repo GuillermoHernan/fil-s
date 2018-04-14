@@ -351,9 +351,14 @@ ExprResult parseDeclaration(LexToken token)
     if (!r.ok())
         return r.final();
 
-    //Type descriptor is optional.
-    if (r.nextText() == ":")
+    if (r.nextText() == "[")
     {
+        r = r.then(parseArrayDeclaration);
+        typeDescriptor = r.result;
+    }
+    else if (r.nextText() == ":")
+    {
+        //Type descriptor is optional.
         r = r.then(parseTypeSpecifier);
         typeDescriptor = r.result;
     }
@@ -381,6 +386,34 @@ ExprResult parseAnyDeclaration(LexToken token)
 {
     return parseConst(token).orElse(parseVar).orElse(parseDeclaration);
 }
+
+/// <summary>
+/// Parses an array declaration. Only type specification, not the name, which
+/// should be parsed by the calling code.
+/// </summary>
+ExprResult parseArrayDeclaration(LexToken token)
+{
+    auto r = ExprResult::require("[", token).then(parseExpression).requireOp("]");
+
+    if (r.ok())
+    {
+        auto sizeExpr = r.result;
+
+        if (r.nextText() == "[")
+            r = r.then(parseArrayDeclaration);
+        else
+            r = r.then(parseTypeSpecifier);
+
+        if (r.ok())
+        {
+            auto arrayDecl = astCreateArrayDecl(token.getPosition(), r.result, sizeExpr);
+            r.result = arrayDecl;
+        }
+    }
+
+    return r;
+}
+
 
 /// <summary>
 /// Parses a constant definition expression

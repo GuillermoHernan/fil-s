@@ -204,6 +204,8 @@ TEST(Parser, parseDeclaration)
     EXPECT_PARSE_OK(parseDeclaration_("initialized = a"));
     EXPECT_PARSE_OK(parseDeclaration_("full:int = 3"));
     EXPECT_PARSE_OK(parseDeclaration_("tuple1:(int, int, float)"));
+    EXPECT_PARSE_OK(parseDeclaration_("array1[10]:int"));
+    EXPECT_PARSE_OK(parseDeclaration_("array2[5]:(int, int, float)"));
 
     EXPECT_PARSE_ERROR(parseDeclaration_("var full:int = a"));
     EXPECT_PARSE_ERROR(parseDeclaration_("if = 3"));
@@ -220,6 +222,48 @@ TEST(Parser, parseDeclaration)
     ASSERT_EQ(2, r.result->children().size());
     ASSERT_TRUE(r.result->children()[0].notNull());
     EXPECT_EQ(AST_TUPLE_DEF, r.result->children()[0]->getType());
+}
+
+/// <summary>
+/// Tests 'parseArrayDeclaration' function.
+/// </summary>
+/// <param name=""></param>
+/// <param name=""></param>
+/// <returns></returns>
+TEST(Parser, parseArrayDeclaration)
+{
+    auto parseArrayDeclaration_ = [](const char* code)
+    {
+        return checkAllParsed(code, parseArrayDeclaration);
+    };
+
+    EXPECT_PARSE_OK(parseArrayDeclaration_("[10]:int"));
+    EXPECT_PARSE_OK(parseArrayDeclaration_("[5][10]:int"));
+    EXPECT_PARSE_OK(parseArrayDeclaration_("[5][10]:(int,bool)"));
+
+    EXPECT_PARSE_ERROR(parseArrayDeclaration_("35"));
+    EXPECT_PARSE_ERROR(parseArrayDeclaration_(":[10]:int"));
+    EXPECT_PARSE_ERROR(parseArrayDeclaration_("[]:int"));
+    EXPECT_PARSE_ERROR(parseArrayDeclaration_("[2]"));
+    EXPECT_PARSE_ERROR(parseArrayDeclaration_("[2:int"));
+    EXPECT_PARSE_ERROR(parseArrayDeclaration_("[2]int"));
+    EXPECT_PARSE_ERROR(parseArrayDeclaration_("[2]::int"));
+
+    auto r = parseArrayDeclaration_("[5][10]:int");
+    ASSERT_TRUE(r.ok());
+
+    ASSERT_EQ(AST_ARRAY_DECL, r.result->getType());
+    
+    auto arrayNodes = findNodes(r.result, [](Ref<AstNode> n) {
+        return n->getType() == AST_ARRAY_DECL;
+    });
+
+    EXPECT_EQ(2, arrayNodes.size());
+
+    ASSERT_EQ(2, r.result->childCount());
+    EXPECT_EQ(AST_ARRAY_DECL, r.result->child(0)->getType());
+    EXPECT_EQ(AST_INTEGER, r.result->child(1)->getType());
+    EXPECT_STREQ("5", r.result->child(1)->getValue().c_str());
 }
 
 /// <summary>

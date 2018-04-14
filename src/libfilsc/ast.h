@@ -54,6 +54,7 @@ enum AstNodeTypes
     , AST_UNNAMED_INPUT
     , AST_IMPORT
     , AST_GET_ADDRESS
+    , AST_ARRAY_DECL
 
     //Remember to add new entries to 'astTypeToString' and 'astTypeFromString' functions!
 
@@ -111,6 +112,10 @@ Ref<AstNode> astCreateDeclaration(ScriptPosition pos,
     const std::string& name,
     Ref<AstNode> typeDesc,
     Ref<AstNode> initExpr);
+Ref<AstNode> astCreateArrayDecl(ScriptPosition pos, 
+    Ref<AstNode> typeSpec,
+    Ref<AstNode> sizeExpr);
+
 
 Ref<AstNode> astCreateFunction(ScriptPosition pos,
     const std::string& name,
