@@ -79,9 +79,19 @@ namespace testRunner
         private static bool runTest(string path, string compilerPath)
         {
             if (compileTest(path, compilerPath))
-                return launchTestedProgram(path);
-            else
-                return false;
+            {
+                if (launchTestedProgram(path))
+                {
+                    string name = Path.GetFileName(path);
+                    Console.ForegroundColor = SuccessColor;
+                    Console.Out.Write("[PASSED]: ");
+                    Console.ResetColor();
+                    Console.Out.WriteLine(name);
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         /// <summary>
@@ -104,13 +114,7 @@ namespace testRunner
                 return false;
             }
             else if (result.code == 0)
-            {
-                Console.ForegroundColor = SuccessColor;
-                Console.Out.Write("[PASSED]: ");
-                Console.ResetColor();
-                Console.Out.WriteLine(name);
                 return true;
-            }
             else
             {
                 Console.ForegroundColor = FailColor;
@@ -179,15 +183,18 @@ namespace testRunner
         private static bool launchTestedProgram(string path)
         {
             string name = Path.GetFileName(path);
-            string exePath = Path.Combine(path, name + ".exe");
+            string exePath = Path.Combine(path, "bin\\" + name + ".exe");
 
             var result = launchProcess(exePath, "");
 
             if (!result.launched)
             {
                 Console.ForegroundColor = FailColor;
-                Console.Out.WriteLine("Failed to test program!");
+                Console.Out.Write("[FAILED]: ");
                 Console.ResetColor();
+                Console.Out.WriteLine(name);
+                Console.Out.WriteLine("    Failed to launch program: " + exePath);
+
                 return false;
             }
             else
