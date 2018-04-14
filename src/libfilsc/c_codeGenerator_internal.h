@@ -27,11 +27,14 @@ void tupleCodegen(Ref<AstNode> node, CodeGeneratorState& state, const IVariableI
 void varCodegen(Ref<AstNode> node, CodeGeneratorState& state, const IVariableInfo& resultDest);
 void tupleDefCodegen(Ref<AstNode> node, CodeGeneratorState& state, const IVariableInfo& resultDest);
 void tupleDefCodegen(AstNode* type, CodeGeneratorState& state);
+void arrayTypeCodegen(AstNode* type, CodeGeneratorState& state);
+
 void tupleAdapterCodegen(Ref<AstNode> node, CodeGeneratorState& state, const IVariableInfo& resultDest);
 void ifCodegen(Ref<AstNode> node, CodeGeneratorState& state, const IVariableInfo& resultDest);
 void returnCodegen(Ref<AstNode> node, CodeGeneratorState& state, const IVariableInfo& resultDest);
 void assignmentCodegen(Ref<AstNode> node, CodeGeneratorState& state, const IVariableInfo& resultDest);
 void callCodegen(Ref<AstNode> node, CodeGeneratorState& state, const IVariableInfo& resultDest);
+void arrayAccessOpCodegen(Ref<AstNode> node, CodeGeneratorState& state, const IVariableInfo& resultDest);
 void literalCodegen(Ref<AstNode> node, CodeGeneratorState& state, const IVariableInfo& resultDest);
 void varAccessCodegen(Ref<AstNode> node, CodeGeneratorState& state, const IVariableInfo& resultDest);
 void memberAccessCodegen(Ref<AstNode> node, CodeGeneratorState& state, const IVariableInfo& resultDest);

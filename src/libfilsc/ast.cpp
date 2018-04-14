@@ -1004,6 +1004,7 @@ bool astIsDataType(const AstNode* node)
     case AST_ACTOR:
     case AST_FUNCTION_TYPE:
     case AST_MESSAGE_TYPE:
+    case AST_ARRAY_DECL:
         return true;
     default:
         return false;

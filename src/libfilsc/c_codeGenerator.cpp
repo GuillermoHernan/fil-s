@@ -120,6 +120,7 @@ void codegen(Ref<AstNode> node, CodeGeneratorState& state, const IVariableInfo& 
         types[AST_FUNCTION] = functionCodegen;
         types[AST_ASSIGNMENT] = assignmentCodegen;
         types[AST_FNCALL] = callCodegen;
+        types[AST_CTCALL] = arrayAccessOpCodegen;
         types[AST_INTEGER] = literalCodegen;
         types[AST_FLOAT] = literalCodegen;
         types[AST_STRING] = literalCodegen;
@@ -154,6 +155,10 @@ void dataTypeCodegen(AstNode* type, CodeGeneratorState& state)
     //case AST_TUPLE:
     case AST_TUPLE_DEF:
         tupleDefCodegen(type, state);
+        break;
+
+    case AST_ARRAY_DECL:
+        arrayTypeCodegen(type, state);
         break;
 
     case AST_ACTOR:
@@ -438,6 +443,21 @@ void tupleDefCodegen(AstNode* type, CodeGeneratorState& state)
 }
 
 /// <summary>
+/// Declares an array type
+/// </summary>
+/// <param name="type"></param>
+/// <param name="state"></param>
+void arrayTypeCodegen(AstNode* type, CodeGeneratorState& state)
+{
+    auto    itemType = type->child(0)->getDataType();
+    string  name = state.cname(type);
+    string  itemTypeName = state.cname(itemType);
+    string  size = type->child(1)->getValue();
+
+    state.output() << "typedef " << itemTypeName << " " << name << "[" << size << "];\n";
+}
+
+/// <summary>
 /// Generates code for a tuple adapter node.
 /// </summary>
 void tupleAdapterCodegen(Ref<AstNode> node, CodeGeneratorState& state, const IVariableInfo& resultDest)
@@ -600,6 +620,34 @@ void callCodegen(Ref<AstNode> node, CodeGeneratorState& state, const IVariableIn
         }
 
     }
+}
+
+/// <summary>
+/// Generates code for the intem access operator '[]' 
+/// </summary>
+void arrayAccessOpCodegen(Ref<AstNode> node, CodeGeneratorState& state, const IVariableInfo& resultDest)
+{
+    //TODO: Array references should be checked!!! This is supposed to be one of the main 
+    //features of this language.
+    auto arrayExpr = node->child(0);
+    auto indexExpr = node->child(1)->child(0);
+    auto arrayItemType = node->getDataType();
+
+    TempVariable    tmpArray(arrayItemType, state, true);
+    TempVariable    indexTmp(indexExpr->getDataType(), state, false);
+
+    //HACK: The 'array' variable is treated as a reference when declared, but as 
+    //not a reference when used. This is due how arrays in 'C' are treated.
+    tmpArray.isReference = false;
+
+    codegen(arrayExpr, state, tmpArray);
+    codegen(indexExpr, state, indexTmp);
+
+    string          refPrefix;
+    if (resultDest.isReference)
+        refPrefix = "&";
+
+    state.output() << resultDest << " = " << refPrefix << tmpArray << "[" << indexTmp << "];\n";
 }
 
 /// <summary>

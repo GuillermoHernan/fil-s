@@ -103,7 +103,7 @@ struct IVariableInfo
         return astIsVoidType(dataType());
     }
 
-    const bool isReference;
+    bool isReference;
 
 protected:
     IVariableInfo(bool ref) : isReference(ref) {}
