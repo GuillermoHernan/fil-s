@@ -42,7 +42,6 @@ SemanticResult typeCheckPass(Ref<AstNode> node, SemAnalysisState& state)
         functions.add(AST_BINARYOP, binaryOpTypeCheck);
         functions.add(AST_PREFIXOP, prefixOpTypeCheck);
         functions.add(AST_POSTFIXOP, postfixOpTypeCheck);
-        functions.add(AST_DEFAULT_TYPE, defaultTypeAssign);
         functions.add(AST_ACTOR, actorTypeCheck);
         functions.add(AST_INPUT, messageTypeCheck);
         functions.add(AST_MESSAGE_TYPE, assignItselftAsType);
@@ -642,24 +641,6 @@ CompileError literalTypeAssign(Ref<AstNode> node, SemAnalysisState& state)
     return CompileError::ok();
 }
 
-/// <summary>Assigns the type for a default type node.</summary>
-CompileError defaultTypeAssign(Ref<AstNode> node, SemAnalysisState& state)
-{
-    //TODO: Think in better alternatives to handle default types. The current one
-    //is weird. A hack.
-    string name = node->getName();
-
-    if (name == "int")
-        node->setDataType(astGetInt());
-    else
-    {
-        assert(name == "bool");
-        node->setDataType(astGetBool());
-    }
-
-    return CompileError::ok();
-}
-
 /// <summary>
 /// Performs type-checking for actor declarations.
 /// </summary>
@@ -724,11 +705,6 @@ CompileError actorInstanceTypeCheck(Ref<AstNode> node, SemAnalysisState& state)
 
     if (parent->getType() != AST_ACTOR)
         return semError(node, ETYPE_MISPLACED_ACTOR_INSTANCE);
-
-    //TODO: PRobably, this is going to be detected by a more generic function.
-    //which will handle recursive definitions.
-    //if (parent->getDataType() == actorType)
-    //	return semError(node, ETYPE_RECURSIVE_ACTOR_INSTANCE);
 
     if (!node->hasFlag(ASTF_CONST))
         return semError(node, ETYPE_NON_CONST_ACTOR_INSTANCE);
@@ -1138,7 +1114,6 @@ bool areTypesCompatible(AstNode* typeA, AstNode* typeB)
 {
     auto r = assignCheck(typeA, typeB);
 
-    //TODO: Check if this simplistic implementation works.
     if (!r.ok())
         return false;
     else

@@ -368,7 +368,6 @@ void tupleCodegen(
     CodeGeneratorState& state,
     const IVariableInfo& resultDest)
 {
-    //TODO: Review this check. Is really right not to evaluate the sub-expressions?
     if (resultDest.isVoid())
         return;
 
@@ -388,11 +387,6 @@ void tupleCodegen(
 void varCodegen(Ref<AstNode> node, CodeGeneratorState& state, const IVariableInfo& resultDest)
 {
     auto	typeNode = node->getDataType();
-
-    //TODO: This should be done in a previous, structure declaration pass.
-    //TODO: Check that this is already done.
-    //if (typeNode->type() == DT_TUPLE && state.hasName(typeNode) == false)
-    //	tupleDefCodegen(typeNode, state);
 
     state.output() << state.cname(typeNode) << " ";
     state.output() << state.cname(node) << ";\n";
@@ -553,9 +547,6 @@ void callCodegen(Ref<AstNode> node, CodeGeneratorState& state, const IVariableIn
 
     //By the moment, only direct function invocation is supported
     assert(fnExpr->getType() == AST_IDENTIFIER);
-
-    //TODO: Debug comment, remove.
-    //state.output() << "//Type: " << astTypeToString(fnExpr->getDataType()) << "\n";
 
     auto	fnNode = fnExpr->getReference();
     auto    fnType = fnNode->getDataType();
@@ -1008,9 +999,6 @@ void generateActorInput(Ref<AstNode> actor, Ref<AstNode> input, CodeGeneratorSta
 
     //Declare a block for temporaries.
     CodegenBlock	functionBlock(state);
-
-    //TODO: Already done in struct creation pass. Confirm and delete.
-    //generateParamsStruct(input, state, "input message");
 
     //Header
     state.output() << "//Code for '" << input->getName() << "' input message\n";

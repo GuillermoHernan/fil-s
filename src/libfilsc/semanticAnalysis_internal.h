@@ -20,8 +20,6 @@ typedef std::vector<PassFunction>					PassList;
 
 const PassList& getSemAnalysisPasses();
 
-SemanticResult modulesPass(Ref<AstNode> node, SemAnalysisState& state);
-
 SemanticResult semInOrderWalk(const PassOperations& fnSet, SemAnalysisState& state, Ref<AstNode> node);
 SemanticResult semInOrderWalk(PassFunction fn, SemAnalysisState& state, Ref<AstNode> node);
 

@@ -40,10 +40,17 @@ bool solveDependencies(
     return true;
 }
 
-//TODO: Provide more information in comments, if this code is kept.
+
 /// <summary>
-/// Sorts a set of items taking into account its dependencies.
+/// Provides a mechanism to sort a set of items which have dependencies between them.
+/// The result is sorted so that the dependencies of an item are allways in a previous position
+/// int he resulting vector.
 /// </summary>
+/// <remarks>There MUST NOT be circular references. If there are, the function may never return.</remarks>
+/// <param name="items">Initial set of items</param>
+/// <param name="depFN">Function which returns the dependencies of a particular item.</param>
+/// <returns>The dependency-sorted array. It includes the initial set of items ('items' parameter),
+/// and any dependencies discovered calling 'depFN'</returns>
 template <class Type>
 std::vector<Type> dependencySort(
     const std::vector<Type>& items,

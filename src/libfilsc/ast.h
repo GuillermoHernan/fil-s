@@ -166,7 +166,6 @@ Ref<AstNode> astCreateMessageType(ScriptPosition pos, Ref<AstNode> params);
 Ref<AstNode> astCreateOutputMsg(ScriptPosition pos, const std::string& name);
 Ref<AstNode> astCreateLiteral(LexToken token);
 Ref<AstNode> astCreateBool(ScriptPosition pos, bool value);
-//Ref<AstNode> astCreateDefaultType(Ref<DefaultType> type);
 Ref<AstNode> astCreateUnnamedInput(ScriptPosition pos,
     Ref<AstNode> outputPath,
     Ref<AstNode> params,

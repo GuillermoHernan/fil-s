@@ -154,8 +154,6 @@ private:
     /// <param name="testName"></param>
     void writeCcode(const std::string& code, const char* testName)
     {
-        //TODO: How do we run actors???
-
         string path = buildOutputFilePath(testName, ".c");
 
         if (!writeTextFile(path, code))
@@ -237,7 +235,6 @@ TEST_F(C_CodegenTests, generateCode)
 {
     int res = runTest("generate1", "function test ():int {0}");
 
-    //TODO: this is a very basic check. Add more checks.
     ASSERT_EQ(0, res);
 }
 

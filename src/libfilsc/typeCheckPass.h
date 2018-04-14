@@ -45,7 +45,6 @@ CompileError logicalOperatorTypeCheck(Ref<AstNode> node, SemAnalysisState& state
 CompileError returnTypeAssign(Ref<AstNode> node, SemAnalysisState& state);
 CompileError returnTypeCheck(Ref<AstNode> node, SemAnalysisState& state);
 CompileError literalTypeAssign(Ref<AstNode> node, SemAnalysisState& state);
-CompileError defaultTypeAssign(Ref<AstNode> node, SemAnalysisState& state);
 
 CompileError actorTypeCheck(Ref<AstNode> node, SemAnalysisState& state);
 CompileError assignItselftAsType(Ref<AstNode> node, SemAnalysisState& state);

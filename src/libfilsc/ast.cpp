@@ -440,19 +440,6 @@ Ref<AstNode> astCreateBool(ScriptPosition pos, bool value)
     return AstNode::create(AST_BOOL, pos, "", strValue);
 }
 
-//TODO: Which will be the role of this function after the refactor?
-///// <summary>
-///// Creates an AST node for a default (predefined) data type.
-///// </summary>
-///// <returns></returns>
-//Ref<AstNode> astCreateDefaultType(Ref<DefaultType> type)
-//{
-//	auto node = AstNode::create(AST_DEFAULT_TYPE, ScriptPosition(), type->getName());
-//
-//	node->setDataType(type);
-//	return node;
-//}
-
 /// <summary>
 /// Creates an unnamed input AST node.
 /// </summary>

@@ -591,8 +591,6 @@ OperationResult<StrMap> getCLibrariesDependencies(ModuleNode* module, const Buil
     vector<CompileError>    errors;
 
     //TODO: Handle the case of a library with same name, but different location. Error?
-    //TODO: Múltiple errors if module appears several times in the dependency graph. That is
-    //legal. Circular references are illegal.
 
     //Check child modules.
     module->walkDependencies([&libraries, &errors, &cfg](auto childModule) {

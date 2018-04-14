@@ -95,7 +95,6 @@ const PassList& getSemAnalysisPasses()
 
     if (passes.empty())
     {
-        passes.push_back(modulesPass);
         passes.push_back(scopeCreationPass);
         passes.push_back(symbolGatherPass);
         passes.push_back(preTypeCheckPass);
@@ -104,18 +103,6 @@ const PassList& getSemAnalysisPasses()
     }
 
     return passes;
-}
-
-/// <summary>
-/// Gathers referenced modules, and builds them if necessary.
-/// </summary>
-/// <param name="node"></param>
-/// <param name="state"></param>
-/// <returns></returns>
-SemanticResult modulesPass(Ref<AstNode> node, SemAnalysisState& state)
-{
-    //TODO: implement it.
-    return SemanticResult(node);
 }
 
 /// <summary>
