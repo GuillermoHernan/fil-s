@@ -561,7 +561,6 @@ TEST(TypeCheck, actorInstanceTypeCheck)
     EXPECT_EQ(ETYPE_NON_CONST_ACTOR_INSTANCE, r.errors[0].type());
 }
 
-
 /// <summary>
 /// Tests 'unnamedInputTypeCheck' function.
 /// Also tests 'getConnectOutputType' function
@@ -612,4 +611,79 @@ TEST(TypeCheck, unnamedInputTypeCheck)
     ASSERT_LE((size_t)2, r.errors.size());
     EXPECT_EQ(ETYPE_INVALID_CONNECT_OUTPUT, r.errors[0].type());
     EXPECT_EQ(ETYPE_INVALID_CONNECT_OUTPUT, r.errors[1].type());
+}
+
+/// <summary>
+/// Tests 'arrayAccessTypeCheck' function.
+/// </summary>
+TEST(TypeCheck, arrayAccessTypeCheck)
+{
+    EXPECT_SEM_OK(semAnalysisCheck(
+        "function test(){\n"
+        "  var arr[5]:int\n"
+        "  arr[0] = 1\n"
+        "  arr[1] = 2\n"
+        "  arr[2] = 3\n"
+        "  arr[3] = 5\n"
+        "  arr[4] = 7\n"
+        "}\n"
+    ));
+
+    auto r = semAnalysisCheck(
+        "function test(){\n"
+        "  var arr[5]:int\n"
+        "  arr[0,0] = 1\n"
+        "}\n"
+    );
+    ASSERT_SEM_ERROR(r);
+    EXPECT_EQ(ETYPE_INVALID_ARRAY_INDEX, r.errors[0].type());
+
+    r = semAnalysisCheck(
+        "function test(b:bool){\n"
+        "  var arr[5]:int\n"
+        "  arr[b] = 1\n"
+        "}\n"
+    );
+    ASSERT_SEM_ERROR(r);
+    EXPECT_EQ(ETYPE_INVALID_ARRAY_INDEX, r.errors[0].type());
+}
+
+/// <summary>
+/// Tests 'tupleItemAccessTypeCheck' function.
+/// </summary>
+TEST(TypeCheck, tupleItemAccessTypeCheck)
+{
+    EXPECT_SEM_OK(semAnalysisCheck(
+        "function test(){\n"
+        "  var t = (2,3)\n"
+        "  t[0] + t[1]\n"
+        "}\n"
+    ));
+
+    auto r = semAnalysisCheck(
+        "function test(){\n"
+        "  var t = (2,3)\n"
+        "  t[0] + t[]\n"
+        "}\n"
+    );
+    ASSERT_SEM_ERROR(r);
+    EXPECT_EQ(ETYPE_INVALID_TUPLE_INDEX, r.errors[0].type());
+
+    r = semAnalysisCheck(
+        "function test(i:int){\n"
+        "  var t = (2,3)\n"
+        "  t[i]\n"
+        "}\n"
+    );
+    ASSERT_SEM_ERROR(r);
+    EXPECT_EQ(ETYPE_INVALID_TUPLE_INDEX, r.errors[0].type());
+
+    r = semAnalysisCheck(
+        "function test(){\n"
+        "  var t = (2,3)\n"
+        "  t[0] + t[1] + t[2]\n"
+        "}\n"
+    );
+    ASSERT_SEM_ERROR(r);
+    EXPECT_EQ(ETYPE_TUPLE_INDEX_OUT_OF_RANGE_2, r.errors[0].type());
 }

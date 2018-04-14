@@ -32,6 +32,7 @@ SemanticResult typeCheckPass(Ref<AstNode> node, SemAnalysisState& state)
         functions.add(AST_FUNCTION_TYPE, assignItselftAsType);
         functions.add(AST_ASSIGNMENT, assignmentTypeCheck);
         functions.add(AST_FNCALL, callTypeCheck);
+        functions.add(AST_CTCALL, compileTimeCallTypeCheck);        
         functions.add(AST_INTEGER, literalTypeAssign);
         functions.add(AST_FLOAT, literalTypeAssign);
         functions.add(AST_STRING, literalTypeAssign);
@@ -47,6 +48,7 @@ SemanticResult typeCheckPass(Ref<AstNode> node, SemAnalysisState& state)
         functions.add(AST_MESSAGE_TYPE, assignItselftAsType);
         functions.add(AST_OUTPUT, messageTypeCheck);
         functions.add(AST_UNNAMED_INPUT, unnamedInputTypeCheck);
+        functions.add(AST_ARRAY_DECL, arrayDeclarationTypeCheck);
 
         functions.add(AST_ASSIGNMENT, addTupleAdapter);
     }
@@ -372,6 +374,76 @@ CompileError callTypeCheck(Ref<AstNode> node, SemAnalysisState& state)
     return assignCheck(astGetParameters(type), node, 1);
 }
 
+/// <summary>Type checking for 'compile time' call operator (fn[...]),
+/// which is also used to access array elements (for historical reasons)
+/// </summary>
+CompileError compileTimeCallTypeCheck(Ref<AstNode> node, SemAnalysisState& state)
+{
+    auto fnExpr = node->child(0);
+
+    switch (fnExpr->getDataType()->getType())
+    {
+    case AST_ARRAY_DECL:
+        return arrayAccessTypeCheck(node, state);
+
+    case AST_TUPLE_DEF:
+        return tupleItemAccessTypeCheck(node, state);
+
+    default:
+        return semError(node, ETYPE_NOT_IMPLEMENTED_1, "Compile time parameters evaluation");
+    }
+}
+
+/// <summary>
+/// Type checks the array access operator.
+/// </summary>
+CompileError arrayAccessTypeCheck(Ref<AstNode> node, SemAnalysisState& state)
+{
+    auto arrayExpr = node->child(0);
+    auto params = node->child(1);
+
+    if (params->childCount() != 1)
+        return semError(params, ETYPE_INVALID_ARRAY_INDEX);
+
+    auto indexExpr = params->child(0);
+    if (!astIsIntType (indexExpr->getDataType()))
+        return semError(params, ETYPE_INVALID_ARRAY_INDEX);
+
+    //The type of the expression is the type of the array items
+    auto dataType = arrayExpr->getDataType()->child(0)->getDataType();
+    node->setDataType(dataType);
+
+    return CompileError::ok();
+}
+
+/// <summary>Type checks a tuple item access operation.</summary>
+CompileError tupleItemAccessTypeCheck(Ref<AstNode> node, SemAnalysisState& state)
+{
+    auto tupleExpr = node->child(0);
+    auto tupleType = tupleExpr->getDataType();
+    auto params = node->child(1);
+
+    if (params->childCount() != 1)
+        return semError(params, ETYPE_INVALID_TUPLE_INDEX);
+
+    auto indexExpr = params->child(0);
+    if (indexExpr->getType() != AST_INTEGER)
+        return semError(params, ETYPE_INVALID_TUPLE_INDEX);
+
+    int indexVal = stoi(indexExpr->getValue());
+    const int limit = (int)tupleType->childCount();
+
+    //Range check (can be done at compile time)
+    if (indexVal < 0 || indexVal >= limit)
+        return semError(params, ETYPE_TUPLE_INDEX_OUT_OF_RANGE_2, indexVal, limit);
+
+    //The type of the expression is the type of the tuple item.
+    auto dataType = tupleType->child(indexVal)->getDataType();
+    node->setDataType(dataType);
+
+    return CompileError::ok();
+}
+
 /// <summary>Type check for variable / symbol reading</summary>
 /// <param name="node"></param>
 /// <param name="state"></param>
@@ -678,6 +750,20 @@ CompileError actorInstanceTypeCheck(Ref<AstNode> node, SemAnalysisState& state)
         else
             return incompatibleTypesError(params, astGetVoid()).errors[0];
     }
+}
+
+/// <summary> Type checking for array declarations.</summary>
+CompileError arrayDeclarationTypeCheck(Ref<AstNode> node, SemAnalysisState& state)
+{
+    auto typeSpec = node->child(0);
+    auto sizeExpr = node->child(1);
+
+    if (sizeExpr->getType() != AST_INTEGER)
+        return semError(sizeExpr, ETYPE_INVALID_ARRAY_SIZE);
+
+    //Data type its itself.
+    node->setDataType(node.getPointer());
+    return CompileError::ok();
 }
 
 /// <summary>

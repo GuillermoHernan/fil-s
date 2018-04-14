@@ -25,6 +25,10 @@ CompileError ifTypeCheck(Ref<AstNode> node, SemAnalysisState& state);
 CompileError functionDefTypeCheck(Ref<AstNode> node, SemAnalysisState& state);
 CompileError assignmentTypeCheck(Ref<AstNode> node, SemAnalysisState& state);
 CompileError callTypeCheck(Ref<AstNode> node, SemAnalysisState& state);
+CompileError compileTimeCallTypeCheck(Ref<AstNode> node, SemAnalysisState& state);
+CompileError arrayAccessTypeCheck(Ref<AstNode> node, SemAnalysisState& state);
+CompileError tupleItemAccessTypeCheck(Ref<AstNode> node, SemAnalysisState& state);
+
 CompileError varReadTypeCheck(Ref<AstNode> node, SemAnalysisState& state);
 CompileError memberAccessTypeCheck(Ref<AstNode> node, SemAnalysisState& state);
 CompileError binaryOpTypeCheck(Ref<AstNode> node, SemAnalysisState& state);
@@ -48,6 +52,8 @@ CompileError assignItselftAsType(Ref<AstNode> node, SemAnalysisState& state);
 CompileError messageTypeCheck(Ref<AstNode> node, SemAnalysisState& state);
 CompileError unnamedInputTypeCheck(Ref<AstNode> node, SemAnalysisState& state);
 CompileError actorInstanceTypeCheck(Ref<AstNode> node, SemAnalysisState& state);
+CompileError arrayDeclarationTypeCheck(Ref<AstNode> node, SemAnalysisState& state);
+
 AstNode* getConnectOutputType(Ref<AstNode> pathNode, SemAnalysisState& state);
 
 

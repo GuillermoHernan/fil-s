@@ -47,6 +47,10 @@ enum ErrorTypes
     ETYPE_BASE_DIR_NOT_CONFIGURED, 
     ETYPE_CODE_GENERATION_ERROR_1,
     ETYPE_C_LIBRARY_NOT_FOUND_1,
+    ETYPE_INVALID_ARRAY_SIZE,
+    ETYPE_INVALID_ARRAY_INDEX,
+    ETYPE_INVALID_TUPLE_INDEX,
+    ETYPE_TUPLE_INDEX_OUT_OF_RANGE_2,
 
     //Add new error types above this line.
     //REMEMBER to add the description to 'errorTypeTemplate' function.

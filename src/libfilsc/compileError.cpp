@@ -142,6 +142,11 @@ const char * errorTypeTemplate(ErrorTypes type)
         /*ETYPE_BASE_DIR_NOT_CONFIGURED*/"Compiler base directory not configured. Check compiler install.",
         /*ETYPE_CODE_GENERATION_ERROR_1*/"Internal code generation error: %s",
         /*ETYPE_C_LIBRARY_NOT_FOUND_1*/ "'C' library not found: %s",
+        /*ETYPE_INVALID_ARRAY_SIZE*/    "The array size must be an integer constant",
+        /*ETYPE_INVALID_ARRAY_INDEX*/   "The array index must be a single integer",
+        /*ETYPE_INVALID_TUPLE_INDEX*/   "The tuple index must be an integer constant",
+        /*ETYPE_TUPLE_INDEX_OUT_OF_RANGE_2*/"Tuple index '%d' is out of range [0, %d)",
+
     };
 
     return templates[type];
