@@ -359,18 +359,6 @@ Ref<AstNode> astCreateArray(ScriptPosition pos)
     return AstNode::create(AST_ARRAY, pos);
 }
 
-Ref<AstNode> astCreateArrayAccess(ScriptPosition pos,
-    Ref<AstNode> arrayExpr,
-    Ref<AstNode> indexExpr)
-{
-    auto result = AstNode::create(AST_ARRAY_ACCESS, pos);
-
-    result->addChild(arrayExpr);
-    result->addChild(indexExpr);
-
-    return result;
-}
-
 Ref<AstNode> astCreateMemberAccess(ScriptPosition pos,
     Ref<AstNode> objExpr,
     Ref<AstNode> identifier)
@@ -689,7 +677,6 @@ std::string astTypeToString(AstNodeTypes type)
         types[AST_BOOL] = "AST_BOOL";
         types[AST_IDENTIFIER] = "AST_IDENTIFIER";
         types[AST_ARRAY] = "AST_ARRAY";
-        types[AST_ARRAY_ACCESS] = "AST_ARRAY_ACCESS";
         types[AST_MEMBER_ACCESS] = "AST_MEMBER_ACCESS";
         types[AST_MEMBER_NAME] = "AST_MEMBER_NAME";
         types[AST_BINARYOP] = "AST_BINARYOP";
@@ -754,7 +741,6 @@ AstNodeTypes astTypeFromString(const std::string& str)
         types["AST_BOOL"] = AST_BOOL;
         types["AST_IDENTIFIER"] = AST_IDENTIFIER;
         types["AST_ARRAY"] = AST_ARRAY;
-        types["AST_ARRAY_ACCESS"] = AST_ARRAY_ACCESS;
         types["AST_MEMBER_ACCESS"] = AST_MEMBER_ACCESS;
         types["AST_MEMBER_NAME"] = AST_MEMBER_NAME;
         types["AST_BINARYOP"] = AST_BINARYOP;

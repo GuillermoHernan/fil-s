@@ -40,7 +40,6 @@ enum AstNodeTypes
     , AST_BOOL
     , AST_IDENTIFIER
     , AST_ARRAY
-    , AST_ARRAY_ACCESS
     , AST_MEMBER_ACCESS
     , AST_MEMBER_NAME
     , AST_BINARYOP
@@ -156,9 +155,6 @@ Ref<AstNode> astCreateBinaryOp(LexToken token,
     Ref<AstNode> rexpr);
 Ref<AstNode> astCreateFnCall(ScriptPosition pos, Ref<AstNode> fnExpr, Ref<AstNode> params);
 Ref<AstNode> astCreateArray(ScriptPosition pos);
-Ref<AstNode> astCreateArrayAccess(ScriptPosition pos,
-    Ref<AstNode> arrayExpr,
-    Ref<AstNode> indexExpr);
 Ref<AstNode> astCreateMemberAccess(ScriptPosition pos,
     Ref<AstNode> objExpr,
     Ref<AstNode> identifier);

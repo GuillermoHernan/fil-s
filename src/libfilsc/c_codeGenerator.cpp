@@ -126,7 +126,6 @@ void codegen(Ref<AstNode> node, CodeGeneratorState& state, const IVariableInfo& 
         types[AST_BOOL] = literalCodegen;
         types[AST_IDENTIFIER] = varAccessCodegen;
         types[AST_ARRAY] = invalidNodeCodegen;
-        types[AST_ARRAY_ACCESS] = invalidNodeCodegen;
         types[AST_MEMBER_ACCESS] = memberAccessCodegen;
         types[AST_BINARYOP] = binaryOpCodegen;
         types[AST_PREFIXOP] = prefixOpCodegen;
