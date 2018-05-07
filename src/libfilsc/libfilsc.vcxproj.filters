@@ -36,6 +36,7 @@
     <ClInclude Include="builder_internal.h" />
     <ClInclude Include="astSerialization.h" />
     <ClInclude Include="dependencySolver.h" />
+    <ClInclude Include="moduleAssembler.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp" />
@@ -58,5 +59,6 @@
     <ClCompile Include="builder.cpp" />
     <ClCompile Include="DependencyTree.cpp" />
     <ClCompile Include="astSerialization.cpp" />
+    <ClCompile Include="moduleAssembler.cpp" />
   </ItemGroup>
 </Project>

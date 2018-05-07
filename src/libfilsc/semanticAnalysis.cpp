@@ -36,57 +36,15 @@ SemanticResult semanticAnalysis(Ref<AstNode> node)
     return SemanticResult(node);
 }
 
-/// <summary>
-/// Semantic analysis entry point, when modules are used.
-/// </summary>
-/// <param name="moduleName">Module name</param>
-/// <param name="sources">Map of source file names to its parsed ASTs. These ASTs are
-/// parsed, but not semantically analyzed.</param>
-/// <param name="modules">Compiled modules map. These are the modules on which the current 
-/// module depends. These ASTs are already semantically analyzed.</param>
-/// <returns></returns>
-SemanticResult semanticAnalysis(
-    const std::string& moduleName,
-    const AstStr2NodesMap& sources, 
-    const AstStr2NodesMap& modules)
+SemanticResult compileTimeEvaluation(Ref<AstNode> node)
 {
-    const auto &		passes = getSemAnalysisPasses();
-    SemAnalysisState	state;
-    AstStr2NodesMap		resultNodes = sources;
-
-    state.modules = modules;
-
-    for (auto pass : passes)
-    {
-        SemanticResult::ErrorList	errors;
-
-        for (auto& src : sources)
-        {
-            state.currentFile = src.first;
-            auto result = pass(resultNodes[src.first], state);
-
-            if (!result.ok())
-                result.appendErrorsTo(errors);
-            else
-                resultNodes[src.first] = result.result;
-        }
-
-        if (!errors.empty())
-            return SemanticResult(errors);
-    }
-
-    auto result = buildModuleNode(resultNodes, moduleName);
-
-    if (result.ok())
-        result.result->addChild(createUnnamedTypesNode(state));
-
-    return result;
+    //TODO: Placeholder for the entry point of compile time evaluation.
+    return node;
 }
-
 
 /// <summary>
 /// Gets the list of semantic analysis passes to execute.
-/// The list is in execution ordenr
+/// The list is in execution order
 /// </summary>
 /// <returns></returns>
 const PassList& getSemAnalysisPasses()
@@ -232,32 +190,6 @@ CompileError semError(Ref<AstNode> node, ErrorTypes type, ...)
     va_end(aptr);
 
     return result;
-}
-
-/// <summary>
-/// Builds an 'AST_MODULE' node from the node map.
-/// </summary>
-/// <param name="nodes"></param>
-/// <returns></returns>
-SemanticResult buildModuleNode(const AstStr2NodesMap& nodes, const std::string& name)
-{
-    auto moduleNode = astCreateModule(name);
-
-    for (auto& nodeEntry : nodes)
-    {
-        auto scriptNode = nodeEntry.second;
-        moduleNode->addChild(scriptNode);
-
-        //TODO: Check if it is the appropriate time to export the symbols. At this time,
-        //is late for node source files to share its contents.
-        for (auto item : scriptNode->children())
-        {
-            if (item.notNull() && !item->getName().empty())
-                moduleNode->addChild(item);
-        }
-    }
-
-    return SemanticResult(moduleNode);
 }
 
 /// <summary>

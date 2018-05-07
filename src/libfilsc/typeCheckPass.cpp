@@ -48,6 +48,7 @@ SemanticResult typeCheckPass(Ref<AstNode> node, SemAnalysisState& state)
         functions.add(AST_OUTPUT, messageTypeCheck);
         functions.add(AST_UNNAMED_INPUT, unnamedInputTypeCheck);
         functions.add(AST_ARRAY_DECL, arrayDeclarationTypeCheck);
+        functions.add(AST_MODULE, moduleTypeCheck);
 
         functions.add(AST_ASSIGNMENT, addTupleAdapter);
     }
@@ -739,6 +740,14 @@ CompileError arrayDeclarationTypeCheck(Ref<AstNode> node, SemAnalysisState& stat
 
     //Data type its itself.
     node->setDataType(node.getPointer());
+    return CompileError::ok();
+}
+
+///<summary> Module type check</summary>
+CompileError moduleTypeCheck(Ref<AstNode> node, SemAnalysisState& state)
+{
+    //Just mark it as 'type checked'
+    node->addFlag(ASTF_TYPECHECKED);
     return CompileError::ok();
 }
 

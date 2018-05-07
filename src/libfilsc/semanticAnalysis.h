@@ -16,3 +16,5 @@ SemanticResult semanticAnalysis(
     const std::string& moduleName,
     const AstStr2NodesMap& sources, 
     const AstStr2NodesMap& modules);
+
+SemanticResult  compileTimeEvaluation(Ref<AstNode> node);

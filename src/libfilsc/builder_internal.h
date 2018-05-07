@@ -32,6 +32,7 @@ DependenciesResult			getDependencies(
     StrSet& parents,
     const BuilderConfig& cfg);
 BuildResult					buildModule(ModuleNode* module, const BuilderConfig& cfg);
+BuildResult                 saveAST(ModuleNode* module, Ref<AstNode> ast);
 
 std::string                 findRuntime(const std::string& builderPath);
 

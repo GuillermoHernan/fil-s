@@ -72,6 +72,7 @@ enum AstFlags
     ASTF_VAR = 4,
     ASTF_ACTOR_MEMBER = 8,
     ASTF_EXTERN_C = 16,
+    ASTF_TYPECHECKED = 32,
 };
 
 class AstNode;
@@ -214,6 +215,11 @@ public:
     void addChild(Ref<AstNode> child)
     {
         m_children.push_back(child);
+    }
+
+    void addChildToFront(Ref<AstNode> child)
+    {
+        m_children.insert(m_children.begin(), child);
     }
 
     void setChild(unsigned index, Ref<AstNode> node)

@@ -87,7 +87,7 @@ void AstNode::setDataType(AstNode* dataType)
 /// <param name="node"></param>
 void AstNode::setReference(AstNode* node)
 {
-    assert(getType() == AST_IDENTIFIER);
+    assert(getType() == AST_IDENTIFIER || getType() == AST_IMPORT);
     m_reference = node;
 }
 

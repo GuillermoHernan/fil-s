@@ -11,6 +11,7 @@
 #include "parser.h"
 #include "utils.h"
 #include "dependencySolver.h"
+#include "moduleAssembler.h"
 
 using namespace std;
 
@@ -200,27 +201,72 @@ DependenciesResult getDependencies(
 BuildResult	buildModule(ModuleNode* module, const BuilderConfig& cfg)
 {
     AstStr2NodesMap		modules;
-    AstStr2NodesMap		sources;
+    AstNodeList		    sources;
 
-    //Create the map which maps module names to its AST, needed to perform 
-    //semantic analysis.
+    //Create the map which maps module names to its AST.
     module->walkDependencies([&modules](auto dependency) {
         modules[dependency->name()] = dependency->getAST();
     });
 
-    //Fill map of (source path)->(parsed AST)
+    //Create parsed scripts list.
     module->walkSources([&sources](auto srcFile) {
-        sources[srcFile->path()] = srcFile->getAST();
+        sources.push_back(srcFile->getAST());
     });
 
-    auto r = semanticAnalysis(module->name(), sources, modules);
-
+    //Add the import to runtime to all sources, if it is a dependency.
+    if (modules.count("frt") > 0)
+    {
+        for (auto srcNode : sources)
+        {
+            auto importNode = astCreateImport(srcNode->position(), "frt", 0);
+            srcNode->addChildToFront(importNode);
+        }
+    }
+    
+    //Join all source file nodes into one module node.
+    auto r = assembleModule(module->name(), sources);
     if (!r.ok())
-        return BuildResult(r.errors);
+        return r.errors;
 
+    r = assignImportedModules(r.result, modules);
+    if (!r.ok())
+        return r.errors;
+
+    if (!containsEntryPoint(r.result))
+    {
+        //If it is not an executable, we cannot proceed further
+        return saveAST(module, r.result);
+    }
+    else
+    {
+        r = compileTimeEvaluation(r.result);
+        if (!r.ok())
+            return r.errors;
+
+        r = semanticAnalysis(r.result);
+        if (!r.ok())
+            return r.errors;
+
+        auto saveResult = saveAST(module, r.result);
+        if (!saveResult.ok())
+            return saveResult;
+
+        return buildExecutable(module, cfg);
+    }
+}
+
+/// <summary>
+/// Sets and saves the AST of a module.
+/// </summary>
+/// <param name="module"></param>
+/// <param name="ast"></param>
+/// <returns></returns>
+BuildResult saveAST(ModuleNode* module, Ref<AstNode> ast)
+{
     try
     {
-        module->setAST(r.result);
+        module->setAST(ast);
+        return SuccessfulResult(true);
     }
     catch (const exception& error)
     {
@@ -230,12 +276,6 @@ BuildResult	buildModule(ModuleNode* module, const BuilderConfig& cfg)
             module->getCompiledPath().c_str(),
             error.what()));
     }
-
-    if (containsEntryPoint(r.result))
-        return buildExecutable(module, cfg);
-    else
-        return SuccessfulResult(true);
-
 }
 
 /// <summary>

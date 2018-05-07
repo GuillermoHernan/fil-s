@@ -164,6 +164,7 @@
     <ClInclude Include="errorTypes.h" />
     <ClInclude Include="gatherPass.h" />
     <ClInclude Include="lexer.h" />
+    <ClInclude Include="moduleAssembler.h" />
     <ClInclude Include="operationResult.h" />
     <ClInclude Include="parser.h" />
     <ClInclude Include="parserResults.h" />
@@ -191,6 +192,7 @@
     <ClCompile Include="DependencyTree.cpp" />
     <ClCompile Include="gatherPass.cpp" />
     <ClCompile Include="lexer.cpp" />
+    <ClCompile Include="moduleAssembler.cpp" />
     <ClCompile Include="parser.cpp" />
     <ClCompile Include="parserResults.cpp" />
     <ClCompile Include="passOperations.cpp" />

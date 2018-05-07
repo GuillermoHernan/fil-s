@@ -19,7 +19,7 @@ SemanticResult symbolGatherPass(Ref<AstNode> node, SemAnalysisState& state)
 
     if (operations.empty())
     {
-        operations.add(AST_SCRIPT, importRuntime);
+        //operations.add(AST_SCRIPT, importRuntime);
         operations.add(AST_IMPORT, importSymbols);
         operations.add(AST_FUNCTION, gatherSymbol);
         operations.add(AST_DECLARATION, gatherSymbol);
@@ -120,32 +120,41 @@ CompileError gatherParameters(Ref<AstNode> node, SemAnalysisState& state)
 CompileError importSymbols(Ref<AstNode> node, SemAnalysisState& state)
 {
     if (!node->hasFlag(ASTF_EXTERN_C))
-        return importSymbols(node->getValue(), state.parent(), state);
-    else
-        return CompileError::ok();
+    {
+        auto scope = state.getScope(node);
+        auto module = node->getReference();
+
+        if (!module->hasFlag(ASTF_TYPECHECKED))
+        {
+            //TODO: Find a way to report more than one error.
+            auto r = semanticAnalysis(ref(module));
+
+            if (!r.ok())
+                return r.errors[0];
+        }
+
+        importSymbols(scope, node->getReference());
+    }
+
+    return CompileError::ok();
 }
 
 /// <summary>
 /// Imports the symbols from another referenced module.
 /// </summary>
-/// <param name="modName"></param>
-/// <param name="targetNode"></param>
-/// <param name="state"></param>
+/// <param name="scope">Symbol table into which symbols will be inserted</param>
+/// <param name="module">Referenced module.</param>
 /// <returns></returns>
-CompileError importSymbols(const std::string& modName, Ref<AstNode> targetNode, SemAnalysisState& state)
+void importSymbols(Ref<SymbolScope> scope, AstNode* module)
 {
-    auto scope = state.getScope(targetNode);
+    assert(module != nullptr);
+    assert(module->getType() == AST_MODULE);
 
-    auto itMod = state.modules.find(modName);
-    assert(itMod != state.modules.end());
-
-    for (auto item : itMod->second->children())
+    for (auto item : module->children())
     {
-        if (!item->getName().empty() && item->getName()[0] != '_')
+        if (item.notNull() && item->getType() != AST_SCRIPT && !item->getName().empty())
             scope->add(item->getName(), item);
     }
-
-    return CompileError::ok();
 }
 
 /// <summary>
@@ -155,13 +164,19 @@ CompileError importSymbols(const std::string& modName, Ref<AstNode> targetNode, 
 /// <param name="node"></param>
 /// <param name="state"></param>
 /// <returns></returns>
-CompileError importRuntime(Ref<AstNode> node, SemAnalysisState& state)
-{
-    if (state.modules.count("frt") > 0)
-        return importSymbols("frt", node, state);
-    else
-        return CompileError::ok();
-}
+//CompileError importRuntime(Ref<AstNode> node, SemAnalysisState& state)
+//{
+//    auto it = state.modules.find("frt");
+//
+//    if (it != state.modules.end())
+//    {
+//        auto scope = state.getScope(node);
+//
+//        importSymbols(scope, it->second.getPointer());
+//    }
+//
+//    return CompileError::ok();
+//}
 
 
 

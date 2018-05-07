@@ -52,6 +52,7 @@ CompileError messageTypeCheck(Ref<AstNode> node, SemAnalysisState& state);
 CompileError unnamedInputTypeCheck(Ref<AstNode> node, SemAnalysisState& state);
 CompileError actorInstanceTypeCheck(Ref<AstNode> node, SemAnalysisState& state);
 CompileError arrayDeclarationTypeCheck(Ref<AstNode> node, SemAnalysisState& state);
+CompileError moduleTypeCheck(Ref<AstNode> node, SemAnalysisState& state);
 
 AstNode* getConnectOutputType(Ref<AstNode> pathNode, SemAnalysisState& state);
 

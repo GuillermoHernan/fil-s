@@ -43,7 +43,12 @@ void buildScope(Ref<AstNode> node, Ref<SymbolScope> currentScope, SemAnalysisSta
 
     //Walk children
     for (auto child : node->children())
+    {
+        if (node->getType() == AST_MODULE && child->getType() != AST_SCRIPT)
+            break;
+
         buildScope(child, currentScope, state);
+    }
 }
 
 /// <summary>
@@ -62,5 +67,6 @@ bool needsOwnScope(Ref<AstNode> node)
         || type == AST_INPUT
         || type == AST_ACTOR
         || type == AST_UNNAMED_INPUT
+        || type == AST_SCRIPT
         ;
 }
